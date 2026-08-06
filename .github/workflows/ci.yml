@@ -1,0 +1,74 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# A newer push to the same PR cancels the older run.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  # Path-aware gate. Skipping happens at the JOB level so a skipped job still
+  # reports its check to the ruleset — never convert this to workflow-level
+  # `paths:` filtering, which would leave required checks stuck on "Expected".
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            web:
+              - 'src/**'
+              - 'prisma/**'
+              - 'public/**'
+              - 'package.json'
+              - 'package-lock.json'
+              - 'tsconfig.json'
+              - 'next.config.ts'
+              - 'postcss.config.mjs'
+              - 'eslint.config.mjs'
+              - 'components.json'
+              - 'prisma.config.ts'
+
+  web:
+    name: Lint & build (web)
+    needs: changes
+    if: needs.changes.outputs.web == 'true' && github.event.pull_request.draft != true
+    runs-on: ubuntu-latest
+    env:
+      # Build-time placeholders — no live database or mail service is contacted.
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/church?schema=public
+      RESEND_API_KEY: ci-placeholder
+      EMAIL_FROM: Church <ci@example.com>
+      APP_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build
+        run: npm run build
