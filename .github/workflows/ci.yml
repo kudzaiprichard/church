@@ -13,6 +13,8 @@ concurrency:
 
 permissions:
   contents: read
+  # paths-filter reads the PR's changed-file list through the API.
+  pull-requests: read
 
 jobs:
   # Path-aware gate. Skipping happens at the JOB level so a skipped job still
