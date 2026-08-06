@@ -150,3 +150,43 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
 }
+
+/* A shaft of light crossing the hero window. The only looping motion on the
+   page, and slow enough to read as daylight rather than as a effect. */
+@keyframes window-light {
+  0%,
+  8% {
+    transform: translateX(0);
+  }
+  92%,
+  100% {
+    transform: translateX(520px);
+  }
+}
+
+.window-light {
+  animation: window-light 15s ease-in-out infinite alternate;
+}
+
+/* The oculus label swapping as panes are chosen. */
+@keyframes oculus-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-oculus {
+  animation: oculus-in 260ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .window-light,
+  .animate-oculus {
+    animation: none;
+  }
+}
