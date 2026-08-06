@@ -1,89 +1,81 @@
-import Link from "next/link";
+import { church } from "@/lib/church";
 
-import { Button } from "@/components/ui/button";
-import { church, services } from "@/lib/church";
-
-import { ArchedImage } from "./arched-image";
+import { ActionLink } from "./action";
+import { HeroGlass } from "./hero-glass";
+import { NextGatheringLine } from "./next-gathering-line";
 import { Reveal } from "./reveal";
-import stainedGlass from "../../../public/images/stained-glass-lancets.jpg";
 
-const sunday = services.filter((service) => service.day === "Sunday");
-
+/**
+ * The name across the top, everything a visitor needs to act on beside it, and
+ * the window standing underneath.
+ *
+ * The opening used to put the glass in a tall column down the right, which
+ * left a wide empty field between the words and the picture and gave the
+ * photograph a crop it could not carry. Laying the type across the full
+ * measure and standing the glass along the foot fixes both: the headline gets
+ * the room it deserves, and the window is finally shown at its own proportions.
+ *
+ * Reveals here are CSS animations rather than scroll observers — there is
+ * nothing above the fold to scroll into view, and waiting on hydration would
+ * mean opening on a blank page.
+ *
+ * The section is one screen exactly. The nav is sticky and so takes its own
+ * space at the top of the flow, which is what the 5.5rem subtracts; the glass
+ * then takes whatever height the words leave rather than claiming a slice of
+ * the viewport of its own. `svh` rather than `vh` so a phone's collapsing
+ * address bar cannot push the window off the bottom.
+ */
 export function Hero() {
   return (
-    <section id="welcome" className="relative">
-      <div className="mx-auto w-full max-w-6xl px-6">
-        <div className="grid grid-cols-[2.25rem_minmax(0,1fr)] md:grid-cols-[7rem_minmax(0,1fr)]">
-          <div className="border-border relative border-r">
-            <span className="numeric text-accent-foreground bg-background absolute top-24 -right-[0.6rem] py-2 text-[0.7rem] tracking-[0.15em]">
-              I
-            </span>
-          </div>
+    <section
+      id="welcome"
+      className="relative flex min-h-[calc(100svh-5.5rem)] flex-col justify-between"
+    >
+      <div className="mx-auto w-full max-w-7xl px-6 pt-10 pb-10 sm:px-8 md:pt-14 md:pb-12 lg:px-12">
+        <Reveal onLoad>
+          <p className="text-muted-foreground font-mono text-xs tracking-[0.2em] uppercase">
+            {church.address.city} · Since {church.founded}
+          </p>
+        </Reveal>
 
-          <div className="grid items-center gap-14 pt-20 pb-24 pl-6 sm:pt-24 md:grid-cols-[1.1fr_0.9fr] md:pl-12">
-            <div>
-              <Reveal>
-                <p className="text-muted-foreground font-mono text-xs tracking-[0.2em] uppercase">
-                  {church.address.city} · Since {church.founded}
-                </p>
-              </Reveal>
+        <div className="mt-7 grid gap-x-16 gap-y-9 lg:grid-cols-[1.1fr_minmax(0,25rem)] lg:items-end">
+          <Reveal from="mask" onLoad delay={90}>
+            <h1 className="text-[2.75rem] leading-[0.98] text-balance sm:text-6xl lg:text-[4.5rem] xl:text-[5.25rem]">
+              You are welcome at {church.shortName}.
+            </h1>
+          </Reveal>
 
-              <Reveal delay={80}>
-                <h1 className="mt-6 text-4xl leading-[1.05] text-balance sm:text-6xl">
-                  You are welcome at {church.shortName}.
-                </h1>
-              </Reveal>
+          {/* The three things a first-time visitor might do, stacked against
+              the headline rather than under it. */}
+          <div className="lg:pb-2">
+            <Reveal onLoad delay={220}>
+              <p className="text-muted-foreground max-w-md text-lg text-pretty">
+                {church.tagline} Come as you are, sit at the back if you like, and leave knowing
+                someone&apos;s name.
+              </p>
+            </Reveal>
 
-              <Reveal delay={160}>
-                <p className="text-muted-foreground mt-7 max-w-md text-lg text-pretty">
-                  {church.tagline} Come as you are, sit at the back if you like, and leave knowing
-                  someone&apos;s name.
-                </p>
-              </Reveal>
-
-              <Reveal delay={230}>
-                <div className="mt-9 flex flex-wrap gap-3">
-                  <Button asChild size="lg">
-                    <Link href="#visit">Plan your visit</Link>
-                  </Button>
-                  <Button asChild variant="ghost" size="lg">
-                    <Link href="#sermons">Last Sunday&apos;s sermon</Link>
-                  </Button>
-                </div>
-              </Reveal>
-
-              {/* The two facts a first-time visitor actually needs. */}
-              <Reveal delay={300}>
-                <dl className="border-border mt-12 grid max-w-md grid-cols-2 gap-px overflow-hidden border">
-                  {sunday.map((service) => (
-                    <div key={service.time} className="bg-card p-4">
-                      <dt className="text-muted-foreground font-mono text-[0.65rem] tracking-[0.15em] uppercase">
-                        {service.name}
-                      </dt>
-                      <dd className="numeric mt-1 text-2xl">{service.time}</dd>
-                      <dd className="text-muted-foreground mt-1 text-xs text-pretty">
-                        {service.note}
-                      </dd>
-                    </div>
-                  ))}
-                </dl>
-                <p className="text-muted-foreground mt-3 max-w-md font-mono text-xs">
-                  {church.address.line1}, {church.address.city}
-                </p>
-              </Reveal>
-            </div>
-
-            <Reveal delay={140} from="right">
-              <ArchedImage
-                src={stainedGlass}
-                alt="Stained glass lancet windows in the chapel, lit from behind"
-                className="mx-auto max-w-[20rem]"
-                priority
-              />
+            <Reveal onLoad delay={300}>
+              <div className="mt-8 flex flex-wrap items-center gap-x-8 gap-y-3">
+                <ActionLink href="#visit" arrow>
+                  Plan your visit
+                </ActionLink>
+                <ActionLink href="#times" tone="quiet">
+                  Service times
+                </ActionLink>
+              </div>
             </Reveal>
           </div>
         </div>
+
+        <Reveal onLoad delay={370}>
+          <div className="border-foreground/20 mt-10 border-t pt-5">
+            <NextGatheringLine />
+          </div>
+        </Reveal>
       </div>
+
+      <HeroGlass className="min-h-0 flex-1" />
     </section>
   );
 }
