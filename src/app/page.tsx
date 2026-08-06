@@ -8,10 +8,10 @@ import { LancetClipDef } from "@/components/landing/lancet-clip";
 import { QuoteBand } from "@/components/landing/quote-band";
 import { RoseWindow } from "@/components/landing/rose-window";
 import { Section } from "@/components/landing/section";
-import { Sermons } from "@/components/landing/sermons";
+import { Sermons, SeriesCard } from "@/components/landing/sermons";
 import { SiteNav } from "@/components/landing/site-nav";
 import { TwoTiers } from "@/components/landing/two-tiers";
-import { Visit } from "@/components/landing/visit";
+import { VisitContact, VisitFacts } from "@/components/landing/visit";
 import { WeeklyRhythm } from "@/components/landing/weekly-rhythm";
 import { church } from "@/lib/church";
 
@@ -20,6 +20,13 @@ export const metadata: Metadata = {
   description: church.tagline,
 };
 
+/**
+ * The order of service. Each section takes the framing its content asks for —
+ * a sticky heading beside a list, a heading set over symmetric panels, a
+ * heading pushed aside so a timetable can have the room. The spine is what
+ * holds them together; the variation is what keeps them from reading as one
+ * shape repeated eight times.
+ */
 export default function Home() {
   return (
     <>
@@ -35,16 +42,19 @@ export default function Home() {
           label="Planning a visit"
           heading="What a Sunday actually looks like."
           intro="If you have never been, this is everything you would otherwise have to ask someone at the door."
+          variant="aside"
+          asideExtra={<VisitContact />}
         >
-          <Visit />
+          <VisitFacts />
         </Section>
 
         <Section
           id="week"
           numeral="III"
-          label="The rhythm"
-          heading="The week we keep together."
-          intro="Sunday sets the pace, and the rest of the week carries it — groups in homes, prayer in the chapel, youth in the hall."
+          label="The week"
+          heading="The rhythm we keep together."
+          intro="Sunday sets the pace. The rest of the week carries it — groups in homes, prayer in the chapel, youth in the hall."
+          variant="minimal"
           className="bg-card border-border border-y"
         >
           <WeeklyRhythm />
@@ -58,6 +68,7 @@ export default function Home() {
           label="Twelve ministries"
           heading="One window, twelve lights."
           intro="Every part of the church's life, and the people who carry it. Choose a light to see what it does and who it is for."
+          size="lg"
         >
           <RoseWindow />
         </Section>
@@ -67,7 +78,9 @@ export default function Home() {
           numeral="V"
           label="Teaching"
           heading="What we are working through."
-          intro="Sermons are posted by Monday evening, with the passage and who preached it. Members can keep private notes against any of them."
+          intro="Sermons go up by Monday evening with the passage and who preached. Members can keep private notes against any of them."
+          variant="aside"
+          asideExtra={<SeriesCard />}
           className="bg-card border-border border-y"
         >
           <Sermons />
@@ -79,6 +92,8 @@ export default function Home() {
           label="What's on"
           heading="Coming up at the chapel."
           intro="The next few things worth putting in a diary. Members get a reminder before each one."
+          variant="minimal"
+          size="sm"
         >
           <Events />
         </Section>
@@ -88,7 +103,9 @@ export default function Home() {
           numeral="VII"
           label="Members"
           heading="Two doors into the same church."
-          intro="Most of this site is open to anyone. Signing in adds the part that is only yours — your giving, your groups, your notes."
+          intro="Most of this site is open to anyone. Signing in adds the part that is only yours."
+          variant="centred"
+          className="bg-card border-border border-y"
         >
           <TwoTiers />
         </Section>
@@ -98,8 +115,8 @@ export default function Home() {
           numeral="VIII"
           label="Last Sunday"
           heading="The board, after a service."
-          intro="What the week left behind, counted."
-          className="bg-card border-border border-y"
+          variant="minimal"
+          size="sm"
         >
           <HymnBoard />
         </Section>

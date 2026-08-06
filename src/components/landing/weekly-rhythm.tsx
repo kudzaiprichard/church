@@ -6,42 +6,63 @@ import { cn } from "@/lib/utils";
 import { useInView, usePrefersReducedMotion } from "./use-scroll";
 
 /**
- * The week as it is actually kept. Column height is how much of the church's
- * week lands on that day — Sunday is tall because Sunday is tall.
+ * The week as it is actually kept — a timetable, not a chart. Seven columns
+ * divided by hairlines, each carrying its gatherings with times. Sunday is
+ * given the width and the colour because Sunday carries the week.
  */
 export function WeeklyRhythm() {
-  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.25 });
+  const [ref, inView] = useInView<HTMLDivElement>({ threshold: 0.2 });
   const reduced = usePrefersReducedMotion();
-  const grown = inView || reduced;
+  const settled = inView || reduced;
 
   return (
-    <div ref={ref} className="flex items-end gap-2 sm:gap-4">
-      {week.map((entry, index) => (
-        <div key={entry.day} className="min-w-0 flex-1">
-          <div className="flex h-44 w-full items-end sm:h-56">
+    <div ref={ref} className="border-foreground/20 border-t">
+      <div className="grid sm:grid-cols-[1.5fr_repeat(6,1fr)]">
+        {week.map((day, index) => {
+          const isSunday = index === 0;
+          return (
             <div
+              key={day.day}
               className={cn(
-                "w-full transition-[height] duration-700 ease-out motion-reduce:transition-none",
-                // Sunday carries the week, so it is the one solid column.
-                index === 0 ? "bg-primary" : "bg-[oklch(0.885_0.012_82)]",
+                "border-foreground/12 flex flex-col border-b transition-[opacity,transform] duration-700 ease-out sm:border-b-0 sm:border-l first:sm:border-l-0",
+                "motion-reduce:transition-none",
+                settled ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0",
+                isSunday && "bg-primary/[0.06]",
               )}
-              style={{
-                height: grown ? `${entry.height}%` : "0%",
-                transitionDelay: reduced ? undefined : `${index * 80}ms`,
-              }}
-            />
-          </div>
-          <div className="border-foreground/25 border-t pt-3">
-            <p className="numeric text-muted-foreground text-[0.65rem] tracking-widest uppercase">
-              {entry.day}
-            </p>
-            <p className="font-heading mt-1 text-sm leading-tight">{entry.title}</p>
-            <p className="text-muted-foreground mt-1 hidden text-xs leading-snug text-pretty sm:block">
-              {entry.detail}
-            </p>
-          </div>
-        </div>
-      ))}
+              style={{ transitionDelay: reduced ? undefined : `${index * 70}ms` }}
+            >
+              <div
+                className={cn(
+                  "px-4 py-3",
+                  isSunday ? "bg-primary text-primary-foreground" : "text-muted-foreground",
+                )}
+              >
+                <p className="numeric text-[0.7rem] tracking-[0.18em] uppercase">
+                  <span className="sm:hidden">{day.day}</span>
+                  <span className="hidden sm:inline">{isSunday ? day.day : day.short}</span>
+                </p>
+              </div>
+
+              <ul className="flex flex-1 flex-col gap-4 px-4 py-5">
+                {day.items.map((item) => (
+                  <li key={item.name}>
+                    <p className="numeric text-sm">{item.time}</p>
+                    <p
+                      className={cn(
+                        "mt-1 leading-snug text-pretty",
+                        isSunday ? "font-heading text-base" : "text-sm",
+                      )}
+                    >
+                      {item.name}
+                    </p>
+                    <p className="text-muted-foreground mt-0.5 text-xs">{item.place}</p>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }

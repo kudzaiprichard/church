@@ -63,14 +63,50 @@ export const ministries = [
   { name: "Counselling", detail: "Confidential appointments with trained members." },
 ];
 
+/** The week as a timetable — what happens, when, and where. */
 export const week = [
-  { day: "Sun", height: 100, title: "Two services", detail: "08:00 and 10:30, with children's church." },
-  { day: "Mon", height: 34, title: "Office hours", detail: "Pastoral appointments, 09:00 to 15:00." },
-  { day: "Tue", height: 52, title: "Young adults", detail: "Small groups in homes across the city." },
-  { day: "Wed", height: 70, title: "Midweek prayer", detail: "Intercession in the chapel at 18:00." },
-  { day: "Thu", height: 40, title: "Choir practice", detail: "Worship team and choir, 17:30." },
-  { day: "Fri", height: 62, title: "Youth night", detail: "Years 8 to 13 in the hall, 18:30." },
-  { day: "Sat", height: 46, title: "Outreach", detail: "Feeding scheme and men's breakfast." },
+  {
+    day: "Sunday",
+    short: "Sun",
+    items: [
+      { time: "08:00", name: "First Service", place: "Chapel" },
+      { time: "10:30", name: "Second Service", place: "Main hall" },
+      { time: "12:00", name: "Tea together", place: "Courtyard" },
+    ],
+  },
+  {
+    day: "Monday",
+    short: "Mon",
+    items: [{ time: "09:00", name: "Office & pastoral visits", place: "Until 15:00" }],
+  },
+  {
+    day: "Tuesday",
+    short: "Tue",
+    items: [{ time: "18:30", name: "Young adults", place: "In homes" }],
+  },
+  {
+    day: "Wednesday",
+    short: "Wed",
+    items: [{ time: "18:00", name: "Midweek prayer", place: "Chapel" }],
+  },
+  {
+    day: "Thursday",
+    short: "Thu",
+    items: [{ time: "17:30", name: "Choir & band", place: "Main hall" }],
+  },
+  {
+    day: "Friday",
+    short: "Fri",
+    items: [{ time: "18:30", name: "Youth gathering", place: "Main hall" }],
+  },
+  {
+    day: "Saturday",
+    short: "Sat",
+    items: [
+      { time: "07:00", name: "Outreach", place: "Meet at the hall" },
+      { time: "08:00", name: "Men's breakfast", place: "Fortnightly" },
+    ],
+  },
 ];
 
 export const currentSeries = {

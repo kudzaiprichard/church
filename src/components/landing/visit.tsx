@@ -1,49 +1,53 @@
-import { church, services, visitFacts } from "@/lib/church";
+import { church, visitFacts } from "@/lib/church";
+import { cn } from "@/lib/utils";
 
 import { Reveal } from "./reveal";
 
-export function Visit() {
+/** The four questions a first-time visitor would otherwise have to ask. */
+export function VisitFacts() {
   return (
-    <div className="grid gap-14 lg:grid-cols-[minmax(0,1fr)_20rem] lg:gap-16">
-      {/* content-start, or the rows stretch to match the taller timetable
-          column and open a gulf between the two rows of facts. */}
-      <dl className="grid content-start gap-x-10 gap-y-10 sm:grid-cols-2">
-        {visitFacts.map((fact, index) => (
-          <Reveal key={fact.heading} delay={index * 70}>
-            <dt className="font-heading text-lg">{fact.heading}</dt>
-            <dd className="text-muted-foreground mt-2 text-sm leading-relaxed text-pretty">
+    <dl className="border-foreground/15 grid border-t sm:grid-cols-2">
+      {visitFacts.map((fact, index) => (
+        <div
+          key={fact.heading}
+          className={cn(
+            "border-foreground/15 border-b px-0 py-7 sm:px-7",
+            index % 2 === 0 ? "sm:border-r sm:pl-0" : "",
+          )}
+        >
+          <Reveal delay={index * 70}>
+            <dt className="flex items-baseline gap-3">
+              <span className="numeric text-muted-foreground text-[0.65rem]">
+                {String(index + 1).padStart(2, "0")}
+              </span>
+              <span className="font-heading text-lg">{fact.heading}</span>
+            </dt>
+            <dd className="text-muted-foreground mt-2 pl-8 text-sm leading-relaxed text-pretty">
               {fact.body}
             </dd>
           </Reveal>
-        ))}
-      </dl>
-
-      {/* The full week's gatherings, as a plain timetable. */}
-      <Reveal delay={140}>
-        <div className="border-border bg-card border p-6">
-          <p className="text-muted-foreground font-mono text-[0.65rem] tracking-[0.2em] uppercase">
-            Every week
-          </p>
-          <ul className="mt-5 space-y-4">
-            {services.map((service) => (
-              <li key={service.name} className="border-border flex gap-4 border-b pb-4 last:border-0 last:pb-0">
-                <span className="numeric shrink-0 text-sm">{service.time}</span>
-                <span className="min-w-0">
-                  <span className="block text-sm">{service.name}</span>
-                  <span className="text-muted-foreground block text-xs">{service.day}</span>
-                </span>
-              </li>
-            ))}
-          </ul>
-          <p className="text-muted-foreground mt-6 border-t border-dashed pt-4 font-mono text-xs leading-relaxed">
-            {church.address.line1}
-            <br />
-            {church.address.city}, {church.address.country}
-            <br />
-            {church.phone}
-          </p>
         </div>
-      </Reveal>
-    </div>
+      ))}
+    </dl>
+  );
+}
+
+/** Where to find us, for the sticky column beside the facts. */
+export function VisitContact() {
+  return (
+    <address className="border-foreground/15 border-t pt-5 font-mono text-xs leading-relaxed not-italic">
+      <span className="text-muted-foreground block tracking-[0.15em] uppercase">Find us</span>
+      <span className="mt-3 block">
+        {church.address.line1}
+        <br />
+        {church.address.city}, {church.address.country}
+      </span>
+      <a href={`tel:${church.phone.replace(/\s/g, "")}`} className="mt-3 block underline-offset-4 hover:underline">
+        {church.phone}
+      </a>
+      <a href={`mailto:${church.email}`} className="block underline-offset-4 hover:underline">
+        {church.email}
+      </a>
+    </address>
   );
 }
