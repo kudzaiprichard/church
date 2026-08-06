@@ -19,6 +19,33 @@ export const church = {
   phone: "+263 24 279 0114",
   email: "hello@cornerstonechapel.org",
   pastor: "Rev. Tendai Marufu",
+  denomination: "In fellowship with the Evangelical Church of Zimbabwe",
+  /** Opens the address in whichever map app the visitor uses. */
+  mapUrl:
+    "https://www.google.com/maps/search/?api=1&query=14+Josiah+Chinamano+Avenue,+Harare,+Zimbabwe",
+  /** The one thing people ask at the door before they ask anything else. */
+  parking: "Free parking behind the hall. Entrance off Sixth Street, not the main avenue.",
+  landmark: "On the corner of Josiah Chinamano and Sixth, opposite the post office.",
+};
+
+/** Who we are, in the fewest words that still say something. */
+export const mission = {
+  statement:
+    "A church is not a building you visit. It is a few hundred people who know your name and notice when you are missing.",
+  body: "We are an ordinary congregation in the centre of Harare — teachers, nurses, students, traders, grandmothers. We read the Bible together, we pray for each other by name, and we try to be useful to the street we sit on. Everything else here exists to make that possible in a city where everyone is busy.",
+};
+
+/** Placeholder handles. Point these at the real accounts before launch. */
+export const socials = [
+  { name: "Facebook", href: "https://facebook.com/cornerstonechapelhre" },
+  { name: "Instagram", href: "https://instagram.com/cornerstonechapelhre" },
+  { name: "YouTube", href: "https://youtube.com/@cornerstonechapelhre" },
+  { name: "WhatsApp", href: "https://wa.me/263242790114" },
+];
+
+export const bulletin = {
+  heading: "The weekly bulletin",
+  blurb: "One email on a Friday — the week ahead, who is preaching, and who needs praying for.",
 };
 
 export const services = [
@@ -47,7 +74,39 @@ export const visitFacts = [
   },
 ];
 
-/** Twelve ministries — one for each light of the rose window. */
+/**
+ * The shape of a Sunday morning, in minutes. It adds up to ninety, which is
+ * the claim the page makes — so if you change one of these, change another.
+ */
+export const sundayShape = [
+  {
+    name: "Welcome & singing",
+    minutes: 20,
+    note: "Four or five songs. Stand or stay sitting, whichever you like.",
+  },
+  {
+    name: "Notices & offering",
+    minutes: 7,
+    note: "A bag is passed. Visitors are not expected to put anything in it.",
+  },
+  {
+    name: "Reading & sermon",
+    minutes: 35,
+    note: "One passage, read aloud and then worked through. The longest part.",
+  },
+  {
+    name: "Prayer & response",
+    minutes: 18,
+    note: "Out loud and in silence. Communion on the first Sunday of the month.",
+  },
+  {
+    name: "Blessing",
+    minutes: 10,
+    note: "A few words to send everyone out, then tea in the courtyard.",
+  },
+];
+
+/** Twelve ministries — kept for the member-facing modules. */
 export const ministries = [
   { name: "Children", detail: "Sunday teaching and holiday clubs for ages 3 to 12." },
   { name: "Youth", detail: "Friday gatherings, camps and mentoring for teenagers." },

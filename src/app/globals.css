@@ -7,7 +7,12 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-inter);
+  /* The two tones the page keeps returning to: the deep plum of the dark bands
+     and the brass hairline that marks every section. Named so no component has
+     to carry a hardcoded oklch() in a style attribute. */
+  --color-ink: var(--ink);
+  --color-brass: var(--brass);
+  --font-sans: var(--font-instrument-sans);
   --font-mono: var(--font-jetbrains-mono);
   --font-heading: var(--font-fraunces);
   --color-sidebar-ring: var(--sidebar-ring);
@@ -77,6 +82,15 @@
   --chart-4: oklch(0.55 0.072 245);
   --chart-5: oklch(0.62 0.098 40);
   --radius: 0.5rem;
+  --ink: oklch(0.185 0.030 350);
+  --brass: oklch(0.62 0.100 78);
+  /* Solid actions are flat, so the whole of their hover and press has to live
+     in the fill. On paper that means going deeper, not lighter. */
+  --primary-hover: oklch(0.30 0.092 348);
+  --primary-active: oklch(0.255 0.090 348);
+  /* The shade the page falls away to at its edges. Nothing is drawn on the
+     background — it only recedes. */
+  --depth: oklch(0.30 0.030 350 / 8%);
   --sidebar: oklch(0.955 0.010 82);
   --sidebar-foreground: oklch(0.255 0.018 350);
   --sidebar-primary: oklch(0.36 0.088 348);
@@ -108,6 +122,18 @@
   --border: oklch(0.945 0.008 85 / 12%);
   --input: oklch(0.945 0.008 85 / 16%);
   --ring: oklch(0.62 0.095 345);
+  /* The dark bands are already close to the page, so ink goes a shade deeper
+     than the background to stay a distinct plane. Brass lifts to hold its
+     hairline against it. */
+  --ink: oklch(0.145 0.026 350);
+  --brass: oklch(0.72 0.098 80);
+  /* On ink the fill is already light, so it lifts rather than deepens —
+     otherwise hovering would read as the button switching off. */
+  --primary-hover: oklch(0.79 0.100 345);
+  --primary-active: oklch(0.845 0.092 345);
+  /* Ink falls away much further than paper does — this is where the depth
+     really reads, and the edges go almost black. */
+  --depth: oklch(0.055 0.012 350 / 62%);
   --chart-1: oklch(0.68 0.115 345);
   --chart-2: oklch(0.76 0.105 80);
   --chart-3: oklch(0.68 0.062 148);
@@ -143,6 +169,24 @@
   }
 }
 
+/* A solid action, flat. No shelf, no shadow, no lift — nothing that suggests
+   the button is an object sitting on top of the page. That leaves the fill to
+   carry every state on its own, so hover and press are one deliberate step
+   each: deeper on paper, brighter on ink. Written here rather than assembled
+   from utilities at the call site, so the three states stay one idea. */
+@utility action-solid {
+  background-color: var(--primary);
+  color: var(--primary-foreground);
+
+  &:hover {
+    background-color: var(--primary-hover);
+  }
+
+  &:active {
+    background-color: var(--primary-active);
+  }
+}
+
 /* Money, attendance counts and dates line up in columns — figures are always
    tabular so digits don't shift width between rows. */
 @utility numeric {
@@ -151,8 +195,45 @@
   letter-spacing: -0.01em;
 }
 
-/* A shaft of light crossing the hero window. The only looping motion on the
-   page, and slow enough to read as daylight rather than as a effect. */
+/* One easing curve for the whole page. A slight overshoot at the end of a
+   reveal is what separates "designed" from "faded in". */
+@theme inline {
+  --ease-rise: cubic-bezier(0.16, 0.84, 0.32, 1);
+}
+
+/* One continuous sheet, settling very slightly as it descends. Enough that
+   section seams stop being edges, not enough to be seen as a gradient. Set on
+   the page wrapper so it stretches to the real content height. */
+.page-wash {
+  background-image: linear-gradient(
+    to bottom,
+    var(--background) 0%,
+    color-mix(in oklab, var(--background) 94%, var(--depth)) 55%,
+    color-mix(in oklab, var(--background) 90%, var(--depth)) 100%
+  );
+}
+
+/* Depth.
+
+   Nothing is drawn on the background. It is one solid colour that falls away
+   towards its edges — the page sits on a surface that carries on past the
+   window rather than stopping at it, which is the whole of the effect. Static,
+   symmetrical, and the same hue as the page, so it reads as distance rather
+   than as a light someone has left on.
+
+   The centre is held completely clear to about half the radius, which is where
+   all the reading happens. */
+@utility depth-field {
+  background-image: radial-gradient(
+    ellipse 118% 88% at 50% 42%,
+    transparent 0%,
+    transparent 48%,
+    var(--depth) 100%
+  );
+}
+
+/* A shaft of light crossing the hero window. Slow enough to read as daylight
+   rather than as an effect. */
 @keyframes window-light {
   0%,
   8% {
@@ -166,6 +247,20 @@
 
 .window-light {
   animation: window-light 15s ease-in-out infinite alternate;
+}
+
+
+/* A glint going round the ninety-minute dial. One full turn takes the better
+   part of a minute — slow enough to be a quality of the drawing rather than a
+   thing that demands to be watched. */
+@keyframes dial-sweep {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.dial-sweep {
+  animation: dial-sweep 48s linear infinite;
 }
 
 /* The oculus label swapping as panes are chosen. */
@@ -184,9 +279,73 @@
   animation: oculus-in 260ms ease-out;
 }
 
+/* Above the fold there is nothing to scroll into view, so the opening reveals
+   run as plain CSS animations that start the moment the stylesheet parses.
+   Nothing waits on hydration, and the hero is never a blank page while the
+   JavaScript arrives. `both` holds the start frame through the delay. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(1.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes mask-rise {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-rise {
+  animation: rise-in 700ms var(--ease-rise) both;
+}
+
+.animate-mask-rise {
+  animation: mask-rise 900ms var(--ease-rise) both;
+}
+
+/* Reveals hold their letterforms inside a clipped band and rise out of it.
+   Only transform moves, so the whole thing stays on the compositor. The extra
+   bottom padding is negative-margined back out — without it the mask crops
+   descenders on a heading. */
+.reveal-mask {
+  overflow: hidden;
+  padding-bottom: 0.2em;
+  margin-bottom: -0.2em;
+}
+
+/* A rule that draws itself in rather than appearing. */
+.rule-draw {
+  transform-origin: left center;
+  transition: transform 900ms var(--ease-rise);
+}
+
+/* Everything below the fold waits on an IntersectionObserver, which means it
+   waits on JavaScript. With scripting off there is no observer to fire, so the
+   held-back state is lifted and the page is simply all there. */
+@media (scripting: none) {
+  .reveal-pending {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .window-light,
-  .animate-oculus {
+  .animate-oculus,
+  .dial-sweep,
+  .animate-rise,
+  .animate-mask-rise {
     animation: none;
+  }
+  .rule-draw {
+    transition: none;
   }
 }
