@@ -43,6 +43,36 @@ gh pr merge --squash --delete-branch
 
 Branches are short-lived: merge a slice a day rather than a branch a month.
 
+## Deploying
+
+The schema reaches the database through **migrations**, not `prisma db push`. `npm run vercel-build`
+runs `prisma migrate deploy` before `next build`, so every deploy applies whatever is in
+`prisma/migrations` and a fresh database (a new Neon branch, say) builds itself. Vercel picks that
+script up automatically; nothing needs configuring for it.
+
+Use `db push` only against a local database you are happy to lose. Anything that should reach a
+deployed environment needs a migration committed alongside it:
+
+```bash
+npx prisma migrate dev --name what_changed   # writes prisma/migrations/<timestamp>_what_changed
+```
+
+The variables a deployment needs are documented in `.env.example`. Three are worth calling out
+because nothing fails loudly enough at build time to catch them:
+
+- **`DATABASE_URL`** — on a serverless host use the **pooled** endpoint (Neon's contains `-pooler`),
+  or connections are exhausted under any real traffic.
+- **`APP_URL`** — the deployment's own `https://` URL. It builds the links inside invitation and
+  password-reset emails, so the default `http://localhost:3000` silently sends real people to their
+  own machine.
+- **`BOOTSTRAP_ADMIN_EMAIL` / `BOOTSTRAP_ADMIN_PASSWORD`** — without both, a fresh database gets no
+  administrator and there is nobody to sign in as. The server warns at boot and starts anyway.
+  Remove them once you have signed in.
+
+`RESEND_API_KEY` is optional everywhere: without it mail is written to the server log rather than
+sent, which is fine for standing an environment up and useless the moment a member needs a password
+reset.
+
 ## Commit messages
 
 Conventional commits, with **one bullet per file in the commit**:
