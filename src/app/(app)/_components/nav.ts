@@ -1,6 +1,17 @@
 import type { Role } from "@/generated/prisma/enums";
 
 /**
+ * Where the sidebar's collapsed state is remembered.
+ *
+ * It lives in this plain module rather than beside the shell that uses it,
+ * because every export of a `"use client"` module becomes a *client reference*
+ * when a Server Component imports it — the layout would have received a proxy
+ * object instead of the string, looked up a cookie by that, found nothing, and
+ * silently rendered expanded every time.
+ */
+export const SIDEBAR_COOKIE = "sidebar_collapsed";
+
+/**
  * The shape of the internal system, in one place.
  *
  * The sidebar renders from this and the breadcrumbs read labels out of it, so
