@@ -23,19 +23,39 @@ enum Role {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
+  id String @id @default(cuid())
+
+  email String @unique
+  // Null until the member accepts their invite and chooses a password. Login
+  // treats a null hash as "invited, not yet activated" rather than as a
+  // credential failure.
+  passwordHash String?
   firstName    String
   lastName     String
   phone        String?
-  role         Role     @default(MEMBER)
+  role         Role    @default(MEMBER)
   avatarUrl    String?
-  joinedAt     DateTime @default(now())
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
 
+  // Set when an admin resets someone's password by hand. The invite flow does
+  // not need it, because an invited member chooses their own password before
+  // they ever sign in.
+  mustChangePassword Boolean   @default(false)
+  passwordChangedAt  DateTime?
+  lastLoginAt        DateTime?
+
+  // Throttling for online guessing. Cleared on every successful sign-in.
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
+  joinedAt  DateTime @default(now())
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions         Session[]
+  authTokens       AuthToken[]
+  auditActions     AuditLog[]        @relation("AuditActor")
+  auditSubjects    AuditLog[]        @relation("AuditTarget")
   groupMemberships GroupMembership[]
   sentMessages     Message[]          @relation("MessageSender")
   receivedMessages MessageRecipient[]
@@ -51,6 +71,103 @@ model User {
   uploadedSermons  Sermon[]           @relation("SermonUploader")
 
   @@index([role])
+}
+
+/// A signed-in browser.
+///
+/// Sessions live in the database rather than in a signed token because the
+/// spec lets an admin deactivate a member and change anyone's role — and both
+/// have to take effect on the next request, which a self-contained token
+/// cannot do. Only the SHA-256 of the session token is stored, so a dump of
+/// this table does not hand anyone a working session.
+model Session {
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
+  userId     String
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  userAgent  String?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+enum AuthTokenPurpose {
+  INVITE
+  PASSWORD_RESET
+}
+
+/// A single-use link sent by email — either an invitation to choose a first
+/// password, or a reset for a forgotten one. Same machinery for both; only the
+/// purpose, the wording and the lifetime differ.
+///
+/// Stored as a hash for the same reason sessions are.
+model AuthToken {
+  id        String           @id @default(cuid())
+  tokenHash String           @unique
+  userId    String
+  purpose   AuthTokenPurpose
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
+}
+
+enum AuditAction {
+  ADMIN_BOOTSTRAPPED
+  USER_INVITED
+  INVITE_RESENT
+  PASSWORD_RESET_SENT
+  ROLE_CHANGED
+  USER_DEACTIVATED
+  USER_REACTIVATED
+  ACCOUNT_LOCKED
+}
+
+/// Who did what to whom.
+///
+/// Admins can see every member's giving, change anyone's role and switch
+/// accounts off. Those are exactly the powers that need a record, and the
+/// record has to outlive the people in it — so the actor and target emails are
+/// copied in as text rather than only referenced. Delete the account and the
+/// row still says what happened; the foreign keys go null and the story stays
+/// readable.
+///
+/// Nothing here is ever edited or deleted by the application. It is append-only
+/// by construction: there is no update path in the codebase.
+model AuditLog {
+  id     String      @id @default(cuid())
+  action AuditAction
+
+  /// Null when the system itself acted — the first-administrator bootstrap has
+  /// no signed-in person behind it.
+  actorId    String?
+  actorEmail String?
+
+  targetId    String?
+  targetEmail String?
+
+  /// Free text for the specifics: "MEMBER → ADMIN", and so on.
+  detail String?
+
+  ip        String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  actor  User? @relation("AuditActor", fields: [actorId], references: [id], onDelete: SetNull)
+  target User? @relation("AuditTarget", fields: [targetId], references: [id], onDelete: SetNull)
+
+  @@index([createdAt])
+  @@index([targetId])
+  @@index([action])
 }
 
 // ---------------------------------------------------------------------------
