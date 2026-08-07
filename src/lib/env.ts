@@ -44,12 +44,24 @@ const schema = z
     APP_URL: z.url().default("http://localhost:3000"),
 
     /**
-     * Mail. Optional here and required below only in production: a fresh clone
-     * should start and let you sign in without anyone first registering a
-     * Resend account, and `lib/email` falls back to writing the message to the
-     * console when the key is absent.
+     * Mail. Optional everywhere, including production.
+     *
+     * It was briefly required in production, on the reasoning that a password
+     * reset nobody receives is an account nobody can recover. That reasoning
+     * still holds, but making it fatal was the wrong call: this module throws
+     * at import, so a missing key took down every route that reaches it — the
+     * sign-in path among them — and turned "email is not set up yet" into "the
+     * app does not boot". Standing a deployment up before wiring email to it is
+     * a legitimate thing to do.
+     *
+     * The concern is now a loud warning from `instrumentation.ts` at boot. An
+     * empty string is treated as absent, because that is what a variable set
+     * but not filled in looks like, and failing on it helps nobody.
      */
-    RESEND_API_KEY: z.string().min(1).optional(),
+    RESEND_API_KEY: z
+      .string()
+      .transform((value) => value.trim() || undefined)
+      .optional(),
     // Plain address or "Display Name <address@domain>" — Resend accepts both.
     EMAIL_FROM: z.string().min(3).default("Church <onboarding@resend.dev>"),
 
@@ -66,16 +78,6 @@ const schema = z
   })
   .superRefine((value, ctx) => {
     if (value.NODE_ENV !== "production") return;
-
-    // Development can log mail to the console; production cannot, because a
-    // password reset nobody receives is an account nobody can recover.
-    if (!value.RESEND_API_KEY) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["RESEND_API_KEY"],
-        message: "required in production — outbound email has no console fallback there",
-      });
-    }
 
     /**
      * Plain http to a real host in production means the session cookie, which

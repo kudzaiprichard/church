@@ -24,7 +24,20 @@ export async function register() {
    * a process that cannot reach its database should never report itself
    * healthy to a load balancer.
    */
-  await import("@/lib/env");
+  const { env, emailIsConfigured } = await import("@/lib/env");
+
+  /**
+   * Not fatal, deliberately — see the note on RESEND_API_KEY in `lib/env`.
+   * Loud, though, because in production this is the difference between a
+   * password reset arriving and vanishing into a server log nobody reads.
+   */
+  if (env.NODE_ENV === "production" && !emailIsConfigured) {
+    console.warn(
+      "[env] RESEND_API_KEY is not set. Outbound email will be written to this " +
+        "log instead of sent, so invitations and password resets will not reach " +
+        "anyone. Set it before inviting members.",
+    );
+  }
 
   const { bootstrapFirstAdmin } = await import("@/lib/auth/bootstrap");
 
