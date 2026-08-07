@@ -34,7 +34,16 @@ const order = [
 
 const barEntries = order.filter((entry) => entry.inBar);
 
-export function SiteNav() {
+/**
+ * What the bar is allowed to know about whoever is reading it.
+ *
+ * Deliberately two fields. The nav needs to greet someone and to name where
+ * their link goes, and nothing else about a user should be in a Client
+ * Component on a public page — see the read in `app/page.tsx`.
+ */
+export type NavSession = { firstName: string; isAdmin: boolean } | null;
+
+export function SiteNav({ session }: { session: NavSession }) {
   const [condensed, setCondensed] = useState(false);
   const [current, setCurrent] = useState("welcome");
   const [open, setOpen] = useState(false);
@@ -123,6 +132,11 @@ export function SiteNav() {
         </ol>
 
         <div className="ml-auto flex items-center gap-2 lg:ml-0">
+          <SessionLink session={session} />
+
+          {/* Hairline, so the member door reads as separate from the visitor CTA. */}
+          <span aria-hidden className="bg-border mx-1 hidden h-5 w-px sm:block" />
+
           <ActionLink href="#plan" className="hidden px-5 py-2.5 text-[0.8rem] sm:inline-flex">
             Plan your visit
           </ActionLink>
@@ -170,6 +184,19 @@ export function SiteNav() {
                 ))}
               </ol>
 
+              {/* The bar hides the session link below `sm`, so it lives here too. */}
+              <SheetClose asChild>
+                <Link
+                  href={session ? "/dashboard" : "/login"}
+                  className="focus-visible:ring-ring border-border mt-8 flex items-center justify-between rounded-md border px-4 py-3 text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                >
+                  <span>{session ? `Signed in as ${session.firstName}` : "Sign in"}</span>
+                  <span className="text-muted-foreground font-mono text-[0.6rem] tracking-[0.18em] uppercase">
+                    {session ? "Dashboard" : "Members"}
+                  </span>
+                </Link>
+              </SheetClose>
+
               <div className="mt-8 grid gap-2">
                 <a
                   href={`tel:${church.phone.replace(/\s/g, "")}`}
@@ -191,6 +218,45 @@ export function SiteNav() {
         </div>
       </nav>
     </header>
+  );
+}
+
+/**
+ * The one place on the public site that knows whether you are signed in.
+ *
+ * Signed out it is a quiet text link, not a second button: the page already has
+ * one call to action ("Plan your visit"), and for a first-time visitor — who
+ * most of this page is written for — signing in is not the thing to do. Signed
+ * in it becomes the way back to your own area, marked with an initial so the
+ * change of state is visible at a glance rather than only on reading it.
+ */
+function SessionLink({ session }: { session: NavSession }) {
+  if (!session) {
+    return (
+      <Link
+        href="/login"
+        className="focus-visible:ring-ring text-muted-foreground hover:text-foreground hidden cursor-pointer rounded-sm px-2 py-1.5 font-mono text-[0.62rem] tracking-[0.18em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none sm:inline-flex"
+      >
+        Sign in
+      </Link>
+    );
+  }
+
+  return (
+    <Link
+      href="/dashboard"
+      className="group focus-visible:ring-ring hover:bg-muted hidden cursor-pointer items-center gap-2 rounded-full py-1 pr-3 pl-1 transition-colors focus-visible:ring-2 focus-visible:outline-none sm:inline-flex"
+    >
+      <span
+        aria-hidden
+        className="bg-accent text-accent-foreground border-border/60 numeric grid size-7 place-items-center rounded-full border text-[0.7rem]"
+      >
+        {session.firstName.charAt(0).toUpperCase()}
+      </span>
+      <span className="text-muted-foreground group-hover:text-foreground font-mono text-[0.62rem] tracking-[0.18em] uppercase transition-colors">
+        {session.isAdmin ? "Admin" : session.firstName}
+      </span>
+    </Link>
   );
 }
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 
 import { getSession } from "@/lib/auth/dal";
@@ -26,6 +27,24 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       </p>
 
       <LoginForm next={typeof next === "string" ? next : undefined} />
+
+      {/*
+        A labelled way back to the public site.
+
+        The wordmark above this already links to `/`, but a logo is a
+        convention people have to know rather than something they can read —
+        and the visitor most likely to be stuck here is the one who followed
+        "Sign in" out of curiosity and has no account. This screen tells them
+        accounts come from the church office, so it should also give them
+        somewhere to go once they have read that.
+      */}
+      <Link
+        href="/"
+        className="focus-visible:ring-ring text-muted-foreground hover:text-foreground border-border mt-9 flex items-center gap-2 border-t pt-6 font-mono text-[0.62rem] tracking-[0.18em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
+      >
+        <span aria-hidden>&larr;</span>
+        Back to the site
+      </Link>
     </>
   );
 }
