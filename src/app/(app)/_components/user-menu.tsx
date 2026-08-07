@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDownIcon, KeyRoundIcon, LogOutIcon, UserIcon } from "lucide-react";
+import { ChevronDownIcon, KeyRoundIcon, UserIcon } from "lucide-react";
 import Link from "next/link";
 
 import {
@@ -13,6 +13,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import type { SessionUser } from "@/lib/auth/dal";
 import { cn } from "@/lib/utils";
+
+import { SignOutItem } from "./sign-out-item";
 
 /**
  * Who you are, at the right-hand end of the top bar.
@@ -82,14 +84,7 @@ export function UserMenu({
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuItem asChild variant="destructive">
-          <form action={signOut}>
-            <button type="submit" className="flex w-full items-center gap-2">
-              <LogOutIcon aria-hidden />
-              Sign out
-            </button>
-          </form>
-        </DropdownMenuItem>
+        <SignOutItem signOut={signOut} />
       </DropdownMenuContent>
     </DropdownMenu>
   );
