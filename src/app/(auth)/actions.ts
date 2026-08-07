@@ -6,6 +6,7 @@ import { after } from "next/server";
 import { z } from "zod";
 
 import type { AuthTokenPurpose } from "@/generated/prisma/enums";
+import { recordAudit } from "@/lib/auth/audit";
 import { consumeAuthToken, issueAuthToken, resetRequestedRecently } from "@/lib/auth/auth-tokens";
 import { getSession } from "@/lib/auth/dal";
 import { passwordResetEmail } from "@/lib/auth/emails";
@@ -151,13 +152,26 @@ export async function signIn(_previous: AuthFormState, formData: FormData): Prom
 
   if (!(await verifyPassword(user.passwordHash, parsed.data.password))) {
     const attempts = user.failedLoginAttempts + 1;
+    const locked = attempts >= MAX_ATTEMPTS;
+
     await prisma.user.update({
       where: { id: user.id },
       data: {
         failedLoginAttempts: attempts,
-        lockedUntil: attempts >= MAX_ATTEMPTS ? new Date(Date.now() + LOCK_MS) : null,
+        lockedUntil: locked ? new Date(Date.now() + LOCK_MS) : null,
       },
     });
+
+    // Only the lockout, not every failure — a line per fat-fingered password
+    // would bury the one entry that means somebody is being worked on.
+    if (locked) {
+      await recordAudit({
+        action: "ACCOUNT_LOCKED",
+        target: user,
+        detail: `${attempts} failed sign-in attempts`,
+      });
+    }
+
     return { error: SIGN_IN_FAILED };
   }
 

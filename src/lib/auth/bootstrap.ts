@@ -3,6 +3,7 @@ import "server-only";
 import { env } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
+import { recordAuditIn } from "./audit";
 import { hashPassword } from "./password";
 
 /**
@@ -61,16 +62,29 @@ export async function bootstrapFirstAdmin() {
   const [firstName, ...rest] = (env.BOOTSTRAP_ADMIN_NAME ?? "Church Office").trim().split(/\s+/);
 
   try {
-    await prisma.user.create({
-      data: {
-        email,
-        passwordHash: await hashPassword(password),
-        firstName,
-        lastName: rest.join(" ") || "Admin",
-        role: "ADMIN",
-        mustChangePassword: true,
-        passwordChangedAt: new Date(),
-      },
+    const passwordHash = await hashPassword(password);
+
+    await prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email,
+          passwordHash,
+          firstName,
+          lastName: rest.join(" ") || "Admin",
+          role: "ADMIN",
+          mustChangePassword: true,
+          passwordChangedAt: new Date(),
+        },
+      });
+
+      // No actor: nobody was signed in, the server did this at boot. Recorded
+      // all the same — an administrator appearing from nowhere is precisely
+      // the event an auditor would want to find an explanation for.
+      await recordAuditIn(tx, {
+        action: "ADMIN_BOOTSTRAPPED",
+        target: created,
+        detail: "created from the environment because no administrator existed",
+      });
     });
   } catch {
     // Almost certainly the unique index firing because another instance won

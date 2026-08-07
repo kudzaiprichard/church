@@ -78,13 +78,13 @@ const nextConfig: NextConfig = {
          * same cache. This says: not on disk, not in a shared cache, not on a
          * back-button restore.
          */
-        source: "/(dashboard|members|account|change-password)/:path*",
+        source: "/(dashboard|members|account|audit|change-password)/:path*",
         headers: [
           { key: "Cache-Control", value: "private, no-store, max-age=0, must-revalidate" },
         ],
       },
       {
-        source: "/(dashboard|members|account|change-password)",
+        source: "/(dashboard|members|account|audit|change-password)",
         headers: [
           { key: "Cache-Control", value: "private, no-store, max-age=0, must-revalidate" },
         ],

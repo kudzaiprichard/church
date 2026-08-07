@@ -3,6 +3,7 @@ import {
   CalendarDaysIcon,
   ChurchIcon,
   ClipboardCheckIcon,
+  ScrollTextIcon,
   CircleUserIcon,
   HandHeartIcon,
   HandshakeIcon,
@@ -43,6 +44,7 @@ const ICONS: Record<IconName, LucideIcon> = {
   sermons: MusicIcon,
   bell: BellIcon,
   account: UserIcon,
+  audit: ScrollTextIcon,
 };
 
 export function NavIcon({ name, className }: { name: IconName; className?: string }) {

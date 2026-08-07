@@ -34,7 +34,8 @@ export type IconName =
   | "partnership"
   | "sermons"
   | "bell"
-  | "account";
+  | "account"
+  | "audit";
 
 export type PanelItem = {
   href: string;
@@ -69,6 +70,7 @@ export const RAIL: RailSection[] = [
     href: "/members",
     items: [
       { href: "/members", label: "Members", icon: "users", adminOnly: true },
+      { href: "/audit", label: "Audit log", icon: "audit", adminOnly: true },
       { href: "/groups", label: "Connect groups", icon: "groups", soon: true },
     ],
   },

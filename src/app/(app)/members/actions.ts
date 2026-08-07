@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import { recordAudit, recordAuditIn } from "@/lib/auth/audit";
 import { issueAuthToken } from "@/lib/auth/auth-tokens";
 import { requireAdmin } from "@/lib/auth/dal";
 import { inviteEmail, passwordResetEmail } from "@/lib/auth/emails";
@@ -60,13 +61,24 @@ export async function inviteMember(
   // Created without a password. Until the invitation is accepted the row exists
   // but cannot be signed in to — `passwordHash` is null and sign-in treats that
   // as a failure.
-  const user = await prisma.user.create({
-    data: {
-      email: parsed.data.email,
-      firstName: parsed.data.firstName,
-      lastName: parsed.data.lastName,
-      role: parsed.data.role,
-    },
+  const user = await prisma.$transaction(async (tx) => {
+    const created = await tx.user.create({
+      data: {
+        email: parsed.data.email,
+        firstName: parsed.data.firstName,
+        lastName: parsed.data.lastName,
+        role: parsed.data.role,
+      },
+    });
+
+    await recordAuditIn(tx, {
+      action: "USER_INVITED",
+      actor: admin,
+      target: created,
+      detail: `invited as ${parsed.data.role}`,
+    });
+
+    return created;
   });
 
   const { url } = await issueAuthToken(user.id, "INVITE");
@@ -121,6 +133,8 @@ export async function resendInvitation(userId: string) {
     console.error("[members] Could not resend an invitation email:", error);
   }
 
+  await recordAudit({ action: "INVITE_RESENT", actor: admin, target: user });
+
   revalidatePath("/members");
 }
 
@@ -132,7 +146,7 @@ export async function resendInvitation(userId: string) {
  * plaintext — they choose their own, exactly as they did at the start.
  */
 export async function sendPasswordReset(userId: string) {
-  await requireAdmin();
+  const admin = await requireAdmin();
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   // An account that never activated needs its invitation resending instead.
@@ -148,6 +162,8 @@ export async function sendPasswordReset(userId: string) {
     console.error("[members] Could not send a password reset email:", error);
   }
 
+  await recordAudit({ action: "PASSWORD_RESET_SENT", actor: admin, target: user });
+
   revalidatePath("/members");
 }
 
@@ -157,7 +173,21 @@ export async function setRole(userId: string, role: "ADMIN" | "MEMBER") {
   // Demoting yourself is how a church ends up with no administrator at all.
   if (userId === admin.id) return;
 
-  await prisma.user.update({ where: { id: userId }, data: { role } });
+  const target = await prisma.user.findUnique({ where: { id: userId } });
+  if (!target || target.role === role) return;
+
+  // The change and its record are one write. Granting somebody the run of every
+  // member's finances is the single act most worth being able to trace, so it
+  // must not be possible for it to land without a line saying who did it.
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: userId }, data: { role } });
+    await recordAuditIn(tx, {
+      action: "ROLE_CHANGED",
+      actor: admin,
+      target,
+      detail: `${target.role} → ${role}`,
+    });
+  });
 
   // The old session carries the old role in everything it has already been
   // allowed to see, so it goes. They sign in again with the access they now have.
@@ -172,7 +202,17 @@ export async function setActive(userId: string, isActive: boolean) {
   // Same reasoning as above: do not let an admin lock themselves out.
   if (userId === admin.id) return;
 
-  await prisma.user.update({ where: { id: userId }, data: { isActive } });
+  const target = await prisma.user.findUnique({ where: { id: userId } });
+  if (!target || target.isActive === isActive) return;
+
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({ where: { id: userId }, data: { isActive } });
+    await recordAuditIn(tx, {
+      action: isActive ? "USER_REACTIVATED" : "USER_DEACTIVATED",
+      actor: admin,
+      target,
+    });
+  });
 
   // Deactivation has to bite now, not whenever a token would have expired.
   // This is the reason sessions live in the database at all.
