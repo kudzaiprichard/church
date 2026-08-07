@@ -77,6 +77,10 @@
   --chart-4: oklch(0.55 0.072 245);
   --chart-5: oklch(0.62 0.098 40);
   --radius: 0.5rem;
+  /* The one accent the internal shell uses for wayfinding: the bar on the
+     active rail icon and panel row, the breadcrumb chevron, the panel
+     heading dot. Brass, the same note the public site uses for its rules. */
+  --rail-accent: oklch(0.62 0.100 78);
   --sidebar: oklch(0.955 0.010 82);
   --sidebar-foreground: oklch(0.255 0.018 350);
   --sidebar-primary: oklch(0.36 0.088 348);
@@ -108,6 +112,8 @@
   --border: oklch(0.945 0.008 85 / 12%);
   --input: oklch(0.945 0.008 85 / 16%);
   --ring: oklch(0.62 0.095 345);
+  /* Lifted on ink so the same 2px bar still reads against a dark ground. */
+  --rail-accent: oklch(0.74 0.100 80);
   --chart-1: oklch(0.68 0.115 345);
   --chart-2: oklch(0.76 0.105 80);
   --chart-3: oklch(0.68 0.062 148);

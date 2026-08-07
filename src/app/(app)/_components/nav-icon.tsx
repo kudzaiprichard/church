@@ -1,7 +1,9 @@
 import {
   BellIcon,
   CalendarDaysIcon,
+  ChurchIcon,
   ClipboardCheckIcon,
+  CircleUserIcon,
   HandHeartIcon,
   HandshakeIcon,
   InboxIcon,
@@ -22,6 +24,13 @@ import type { IconName } from "./nav";
  * an icon library along with it.
  */
 const ICONS: Record<IconName, LucideIcon> = {
+  // Rail sections
+  overview: LayoutDashboardIcon,
+  people: UsersIcon,
+  life: ChurchIcon,
+  records: ClipboardCheckIcon,
+  you: CircleUserIcon,
+  // Panel pages
   dashboard: LayoutDashboardIcon,
   users: UsersIcon,
   groups: UsersRoundIcon,
