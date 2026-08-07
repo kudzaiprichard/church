@@ -58,7 +58,7 @@ export function Topbar({
             <li className="text-muted-foreground truncate font-mono tracking-[0.16em] uppercase">
               {breadcrumb.section}
             </li>
-            <li aria-hidden className="shrink-0 text-[var(--rail-accent)]/60">
+            <li aria-hidden className="shrink-0 text-[var(--brass)]/60">
               <ChevronRightIcon className="size-3" />
             </li>
             <li aria-current="page" className="text-foreground truncate font-medium">

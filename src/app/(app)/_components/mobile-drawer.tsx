@@ -50,7 +50,7 @@ export function MobileDrawer({
                   <span className="text-muted-foreground font-mono text-[0.6rem] tracking-[0.18em] uppercase">
                     {section.label}
                   </span>
-                  <span aria-hidden className="h-px flex-1 bg-[var(--rail-accent)]/25" />
+                  <span aria-hidden className="h-px flex-1 bg-[var(--brass)]/25" />
                 </div>
 
                 <ul className="space-y-0.5">
@@ -81,7 +81,7 @@ export function MobileDrawer({
                             "relative flex items-center rounded-none px-2 py-2 text-sm transition-colors duration-150",
                             "before:absolute before:top-1/2 before:left-0 before:h-4 before:w-[2px] before:-translate-y-1/2 before:transition-opacity",
                             active
-                              ? "bg-primary/10 text-primary before:bg-[var(--rail-accent)] font-medium before:opacity-100"
+                              ? "bg-primary/10 text-primary before:bg-[var(--brass)] font-medium before:opacity-100"
                               : "text-foreground/80 hover:bg-secondary hover:text-foreground before:opacity-0",
                           )}
                         >

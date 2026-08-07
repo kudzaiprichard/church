@@ -103,7 +103,7 @@ function RailButton({ section, active }: { section: RailSection; active: boolean
             "focus-visible:ring-ring transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none",
             "after:pointer-events-none after:absolute after:top-1/2 after:-left-[7px] after:h-5 after:w-[2px] after:-translate-y-1/2 after:transition-opacity after:duration-200",
             active
-              ? "bg-primary/10 text-primary after:bg-[var(--rail-accent)] after:opacity-100"
+              ? "bg-primary/10 text-primary after:bg-[var(--brass)] after:opacity-100"
               : "text-muted-foreground hover:bg-secondary hover:text-foreground after:opacity-0",
           )}
         >

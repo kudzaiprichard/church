@@ -51,9 +51,9 @@ export function ContextPanel({
           <h2 className="inline-flex min-w-0 items-center gap-2">
             <span
               aria-hidden
-              className="flex size-2.5 shrink-0 items-center justify-center rounded-full border border-[var(--rail-accent)]/60"
+              className="flex size-2.5 shrink-0 items-center justify-center rounded-full border border-[var(--brass)]/60"
             >
-              <span className="size-1 rounded-full bg-[var(--rail-accent)]" />
+              <span className="size-1 rounded-full bg-[var(--brass)]" />
             </span>
             <span className="text-foreground truncate font-mono text-xs tracking-[0.18em] uppercase">
               {section.label}
@@ -127,7 +127,7 @@ export function ContextPanel({
                     "focus-visible:ring-2 focus-visible:outline-none",
                     "before:absolute before:top-1/2 before:left-0 before:h-4 before:w-[2px] before:-translate-y-1/2 before:transition-opacity before:duration-200",
                     active
-                      ? "bg-primary/10 text-primary before:bg-[var(--rail-accent)] font-medium before:opacity-100"
+                      ? "bg-primary/10 text-primary before:bg-[var(--brass)] font-medium before:opacity-100"
                       : "text-foreground/80 hover:bg-secondary hover:text-foreground before:opacity-0",
                   )}
                 >
