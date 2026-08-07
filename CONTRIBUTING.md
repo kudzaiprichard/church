@@ -4,10 +4,18 @@ How changes land on `main` in this repo.
 
 ## The rules
 
-- `main` is protected. Nothing lands on it except through a pull request.
+- Nothing lands on `main` except through a pull request.
 - Every PR needs **green CI** and **one approving review from a code owner** (`@kudzaiprichard`).
-- No force-pushes to `main`, and `main` cannot be deleted.
+- No force-pushes to `main`, and `main` is never deleted.
 - Only **complete, working** changes merge. `main` must build and work at every commit.
+
+> **These are followed by convention, not yet by enforcement.** The repository is private on a Free
+> plan, where GitHub branch protection and rulesets are paid features, so `main` currently reports
+> `"protected": false` and nothing mechanically stops a direct push. Treat the rules as binding
+> anyway — they are what keeps CI honest and history reviewable.
+
+CI runs two checks on every pull request: **Detect changes** and **Lint & build (web)**. Both must be
+green. (`GitGuardian Security Checks` also reports, but is a third-party app and not a gate.)
 
 ## The workflow
 
