@@ -337,6 +337,174 @@
   }
 }
 
+/* --- Loaders -------------------------------------------------------------
+
+   Two of them, built from one mark (components/loader/rose-cross).
+
+   Every stroke uses `pathLength: 100`, set on the elements themselves, so a
+   dash array of 100 always means "the whole line" regardless of the real arc
+   length. The animations below can then be written in percentages and stay
+   correct if the geometry ever changes.
+
+   The whole sequence loops. A loader that plays once and then sits still
+   looks like a page that has given up, which is the opposite of what it is
+   there to say. */
+
+/* The rim inscribes itself, holds while the rest of the window fills, then
+   clears so the cycle can begin again. */
+@keyframes rim-draw {
+  0% {
+    stroke-dashoffset: 100;
+  }
+  45%,
+  85% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: -100;
+  }
+}
+
+.loader-rim {
+  stroke-dasharray: 100;
+  animation: rim-draw 2600ms var(--ease-rise) infinite;
+}
+
+/* Each spoke kindles in turn, so the light travels round the window rather
+   than the whole ring lifting at once. */
+@keyframes spoke-kindle {
+  0%,
+  55%,
+  100% {
+    opacity: 0.1;
+  }
+  70% {
+    opacity: 0.9;
+  }
+}
+
+.loader-spokes line {
+  opacity: 0.1;
+  animation: spoke-kindle 2600ms ease-in-out infinite;
+  /* Twelve spokes across roughly a third of the cycle. */
+  animation-delay: calc(var(--spoke) * 60ms);
+}
+
+/* The cross is written: upright first, then across. */
+@keyframes limb-draw {
+  0% {
+    stroke-dashoffset: 100;
+  }
+  40%,
+  88% {
+    stroke-dashoffset: 0;
+  }
+  100% {
+    stroke-dashoffset: 100;
+  }
+}
+
+.loader-cross line {
+  stroke-dasharray: 100;
+  animation: limb-draw 2600ms var(--ease-rise) infinite;
+}
+
+.loader-cross .loader-limb-upright {
+  animation-delay: 220ms;
+}
+
+.loader-cross .loader-limb-across {
+  animation-delay: 620ms;
+}
+
+/* In orbit mode the cross simply sits there, breathing. */
+@keyframes cross-breathe {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.loader-cross-still {
+  animation: cross-breathe 2200ms ease-in-out infinite;
+}
+
+/* A short arc running the rim. Two properties move — the dash offset carries
+   it round, the dash array stretches and gathers it — which reads as a glint
+   with weight rather than a dot on a circle. */
+@keyframes glint-run {
+  0% {
+    stroke-dasharray: 1 99;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 22 78;
+  }
+  100% {
+    stroke-dasharray: 1 99;
+    stroke-dashoffset: -100;
+  }
+}
+
+.loader-glint {
+  animation: glint-run 1500ms ease-in-out infinite;
+}
+
+/* The boot overlay.
+
+   Server-rendered, so it is painted with the first frame of HTML and there is
+   never a flash of an unstyled page behind it. A small inline script sets
+   `data-site-ready` on <html> once the document has finished loading, and the
+   only thing that happens here is a fade. Transitioning `visibility` as well
+   as opacity keeps it from swallowing clicks once it is invisible. */
+#site-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  display: grid;
+  place-items: center;
+  background: var(--background);
+  transition:
+    opacity 560ms var(--ease-rise),
+    visibility 560ms var(--ease-rise);
+}
+
+[data-site-ready] #site-loader {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* The hairline beneath the mark, travelling while the page loads. */
+@keyframes wait-rule {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.wait-rule::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, var(--brass), transparent);
+  animation: wait-rule 1800ms ease-in-out infinite;
+}
+
+/* With scripting off nothing will ever set `data-site-ready`, so the overlay
+   would be a permanent lid over the site. The page underneath is complete on
+   its own — the same reasoning as the reveals above. */
+@media (scripting: none) {
+  #site-loader {
+    display: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .window-light,
   .animate-oculus,
@@ -347,5 +515,26 @@
   }
   .rule-draw {
     transition: none;
+  }
+
+  /* The loaders keep their meaning without the drawing: the mark is simply
+     present, and only the glint still turns, because something has to move
+     for "working" to be legible at all. */
+  .loader-rim,
+  .loader-cross line,
+  .loader-cross-still,
+  .wait-rule::after {
+    animation: none;
+  }
+  .loader-rim,
+  .loader-cross line {
+    stroke-dashoffset: 0;
+  }
+  .loader-spokes line {
+    animation: none;
+    opacity: 0.35;
+  }
+  .loader-glint {
+    animation-duration: 2600ms;
   }
 }

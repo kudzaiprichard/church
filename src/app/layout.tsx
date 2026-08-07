@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Instrument_Sans, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
+import { SiteLoader } from "@/components/loader/site-loader";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { church } from "@/lib/church";
@@ -50,6 +51,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           {children}
           <Toaster />
         </ThemeProvider>
+
+        {/* Last in the body, but fixed and above everything, so it covers the
+            page without being in its layout flow. Outside ThemeProvider
+            because it must not wait on a Client Component to mount. */}
+        <SiteLoader />
       </body>
     </html>
   );
