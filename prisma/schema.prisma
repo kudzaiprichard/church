@@ -23,19 +23,37 @@ enum Role {
 }
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
+  id String @id @default(cuid())
+
+  email String @unique
+  // Null until the member accepts their invite and chooses a password. Login
+  // treats a null hash as "invited, not yet activated" rather than as a
+  // credential failure.
+  passwordHash String?
   firstName    String
   lastName     String
   phone        String?
-  role         Role     @default(MEMBER)
+  role         Role    @default(MEMBER)
   avatarUrl    String?
-  joinedAt     DateTime @default(now())
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
 
+  // Set when an admin resets someone's password by hand. The invite flow does
+  // not need it, because an invited member chooses their own password before
+  // they ever sign in.
+  mustChangePassword Boolean   @default(false)
+  passwordChangedAt  DateTime?
+  lastLoginAt        DateTime?
+
+  // Throttling for online guessing. Cleared on every successful sign-in.
+  failedLoginAttempts Int       @default(0)
+  lockedUntil         DateTime?
+
+  joinedAt  DateTime @default(now())
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions         Session[]
+  authTokens       AuthToken[]
   groupMemberships GroupMembership[]
   sentMessages     Message[]          @relation("MessageSender")
   receivedMessages MessageRecipient[]
@@ -51,6 +69,54 @@ model User {
   uploadedSermons  Sermon[]           @relation("SermonUploader")
 
   @@index([role])
+}
+
+/// A signed-in browser.
+///
+/// Sessions live in the database rather than in a signed token because the
+/// spec lets an admin deactivate a member and change anyone's role — and both
+/// have to take effect on the next request, which a self-contained token
+/// cannot do. Only the SHA-256 of the session token is stored, so a dump of
+/// this table does not hand anyone a working session.
+model Session {
+  id         String   @id @default(cuid())
+  tokenHash  String   @unique
+  userId     String
+  expiresAt  DateTime
+  lastSeenAt DateTime @default(now())
+  userAgent  String?
+  ip         String?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+enum AuthTokenPurpose {
+  INVITE
+  PASSWORD_RESET
+}
+
+/// A single-use link sent by email — either an invitation to choose a first
+/// password, or a reset for a forgotten one. Same machinery for both; only the
+/// purpose, the wording and the lifetime differ.
+///
+/// Stored as a hash for the same reason sessions are.
+model AuthToken {
+  id        String           @id @default(cuid())
+  tokenHash String           @unique
+  userId    String
+  purpose   AuthTokenPurpose
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, purpose])
+  @@index([expiresAt])
 }
 
 // ---------------------------------------------------------------------------
