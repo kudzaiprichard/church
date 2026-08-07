@@ -1,9 +1,10 @@
 /**
  * Runs once per server instance, before the first request is served.
  *
- * The only thing it does is make sure somebody can sign in: a fresh database
- * has no users and the system has no public registration, so without this a
- * new install is a locked door with the key inside.
+ * Two jobs, in this order: prove the environment is usable, then make sure
+ * somebody can sign in — a fresh database has no users and the system has no
+ * public registration, so without the second a new install is a locked door
+ * with the key inside.
  */
 export async function register() {
   // `register` also runs while `next build` collects page data, where there is
@@ -11,6 +12,19 @@ export async function register() {
   // reach Prisma at all, so it is skipped too.
   if (process.env.NEXT_RUNTIME !== "nodejs") return;
   if (process.env.NEXT_PHASE === "phase-production-build") return;
+
+  /**
+   * Importing `lib/env` parses and validates it, so a missing or malformed
+   * variable stops the server here with a readable list of what is wrong.
+   *
+   * This is the point of the exercise. Modules that need configuration import
+   * `env` lazily, which means without this a bad `DATABASE_URL` would surface
+   * on whichever request first touched the database — a 500 at midnight rather
+   * than a failure to start at deploy time. Crashing is the correct outcome:
+   * a process that cannot reach its database should never report itself
+   * healthy to a load balancer.
+   */
+  await import("@/lib/env");
 
   const { bootstrapFirstAdmin } = await import("@/lib/auth/bootstrap");
 
@@ -20,6 +34,8 @@ export async function register() {
     // A database that is down at boot must not stop the server from starting —
     // the public site does not need one, and an operator restarting after an
     // outage should get a running app with a loud log rather than a crash loop.
+    // Note the difference from the env check above: bad configuration cannot
+    // fix itself, but a database usually comes back.
     console.error("[bootstrap] Could not check for an administrator:", error);
   }
 }

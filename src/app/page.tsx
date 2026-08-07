@@ -8,6 +8,7 @@ import { SiteNav } from "@/components/landing/site-nav";
 import { Teaching } from "@/components/landing/teaching";
 import { Times } from "@/components/landing/times";
 import { Welcome } from "@/components/landing/welcome";
+import { getSession } from "@/lib/auth/dal";
 
 /**
  * Six sections, and each one takes a different shape.
@@ -41,12 +42,28 @@ import { Welcome } from "@/components/landing/welcome";
  */
 const screen = "flex min-h-[calc(100svh-5.5rem)] scroll-mt-[5.5rem] flex-col justify-center";
 
-export default function Home() {
+export default async function Home() {
+  /**
+   * Read here rather than inside the nav, because the nav is a Client Component
+   * and the session lives behind an httpOnly cookie and a database lookup.
+   *
+   * Only a first name and a role cross the boundary — enough to greet someone
+   * and to label where the link goes. This is the whole reason `getSession`
+   * returns a DTO: passing the row itself would ship a password hash and
+   * lockout counters to the browser of anyone who viewed the home page.
+   *
+   * The cookie read makes this route dynamic, which for a page that must tell
+   * two visitors apart is the correct trade rather than a regression.
+   */
+  const user = await getSession();
+
   return (
     <div className="page-wash relative overflow-x-clip">
       <LancetClipDef />
       <Ambient />
-      <SiteNav />
+      <SiteNav
+        session={user ? { firstName: user.firstName, isAdmin: user.role === "ADMIN" } : null}
+      />
 
       <main className="relative z-10">
         <Hero />

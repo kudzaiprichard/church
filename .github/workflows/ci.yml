@@ -50,11 +50,17 @@ jobs:
     if: needs.changes.outputs.web == 'true' && github.event.pull_request.draft != true
     runs-on: ubuntu-latest
     env:
-      # Build-time placeholders — no live database or mail service is contacted.
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/church?schema=public
-      RESEND_API_KEY: ci-placeholder
-      EMAIL_FROM: Church <ci@example.com>
-      APP_URL: http://localhost:3000
+      # `next build` imports every module, including the env schema, on a runner
+      # that has no database and no business holding production secrets. This
+      # substitutes placeholders for the build only — see src/lib/env.ts.
+      #
+      # It replaces a hand-kept list of fake values here, which had to be
+      # updated by hand whenever a variable was added and silently failed the
+      # build when someone forgot. It is also what keeps the production rules in
+      # the schema honest: `next build` runs with NODE_ENV=production, so a real
+      # parse would reject the placeholder http:// APP_URL, which is exactly the
+      # check we want firing on a deploy and not on a pull request.
+      SKIP_ENV_VALIDATION: "1"
     steps:
       - uses: actions/checkout@v4
 
