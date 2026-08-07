@@ -53,6 +53,30 @@ export async function issueAuthToken(userId: string, purpose: AuthTokenPurpose) 
   };
 }
 
+/** A minute between reset emails for the same account. */
+const RESET_COOLDOWN_MS = 60 * 1000;
+
+/**
+ * Has this account already been sent a reset link in the last minute?
+ *
+ * The per-address throttle stops one attacker flooding many people; this stops
+ * many attackers — or one behind a rotating address — flooding one person. It
+ * is a database check rather than a counter in memory, so it survives a restart
+ * and holds across every instance.
+ */
+export async function resetRequestedRecently(userId: string) {
+  const recent = await prisma.authToken.findFirst({
+    where: {
+      userId,
+      purpose: "PASSWORD_RESET",
+      createdAt: { gt: new Date(Date.now() - RESET_COOLDOWN_MS) },
+    },
+    select: { id: true },
+  });
+
+  return recent !== null;
+}
+
 export type RedeemedToken =
   | { ok: true; userId: string; tokenId: string }
   | { ok: false; reason: "invalid" | "expired" | "used" };

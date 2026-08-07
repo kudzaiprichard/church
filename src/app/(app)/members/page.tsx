@@ -19,27 +19,35 @@ export const metadata: Metadata = { title: "Members" };
 export default async function MembersPage() {
   const admin = await requireAdmin();
 
-  const members = await prisma.user.findMany({
-    orderBy: [{ isActive: "desc" }, { lastName: "asc" }, { firstName: "asc" }],
-    select: {
-      id: true,
-      email: true,
-      firstName: true,
-      lastName: true,
-      role: true,
-      isActive: true,
-      joinedAt: true,
-      lastLoginAt: true,
-      passwordHash: true,
-    },
-  });
+  /**
+   * Two queries rather than one, on purpose.
+   *
+   * The page needs to know whether each person has ever set a password. The
+   * obvious way is to select `passwordHash` and test it for null — but that
+   * pulls every hash on the roll into application memory to answer a yes/no
+   * question, where it can then be logged, serialised into an error report, or
+   * spread into a client prop by a later edit. The second query asks the
+   * database the yes/no question directly and never leaves with the hashes.
+   */
+  const [members, unactivated] = await Promise.all([
+    prisma.user.findMany({
+      orderBy: [{ isActive: "desc" }, { lastName: "asc" }, { firstName: "asc" }],
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        isActive: true,
+        joinedAt: true,
+        lastLoginAt: true,
+      },
+    }),
+    prisma.user.findMany({ where: { passwordHash: null }, select: { id: true } }),
+  ]);
 
-  // The hash is fetched only to answer "has this person ever set a password?"
-  // and is turned into a boolean here so it goes no further.
-  const rows = members.map(({ passwordHash, ...member }) => ({
-    ...member,
-    activated: passwordHash !== null,
-  }));
+  const awaiting = new Set(unactivated.map((row) => row.id));
+  const rows = members.map((member) => ({ ...member, activated: !awaiting.has(member.id) }));
 
   const pending = rows.filter((member) => !member.activated).length;
 

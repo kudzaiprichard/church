@@ -2,17 +2,45 @@
 
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { z } from "zod";
 
 import type { AuthTokenPurpose } from "@/generated/prisma/enums";
-import { consumeAuthToken, issueAuthToken } from "@/lib/auth/auth-tokens";
+import { consumeAuthToken, issueAuthToken, resetRequestedRecently } from "@/lib/auth/auth-tokens";
 import { getSession } from "@/lib/auth/dal";
 import { passwordResetEmail } from "@/lib/auth/emails";
 import { PASSWORD_MAX_LENGTH, PASSWORD_MIN_LENGTH, hashPassword, verifyPassword } from "@/lib/auth/password";
+import {
+  RESET_LIMIT,
+  SIGN_IN_LIMIT,
+  clearRateLimit,
+  rateLimit,
+} from "@/lib/auth/rate-limit";
 import { createSession, destroyAllSessions, destroySession } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
 import type { AuthFormState } from "./form-state";
+
+/**
+ * Where to send somebody after they sign in.
+ *
+ * The proxy puts the page they were trying to reach in `?next=`, which means an
+ * attacker can put anything there too. Only a plain path on this site is
+ * allowed through: a single leading slash, no scheme, and no `//evil.com` or
+ * `/\evil.com` — browsers normalise a backslash to a slash, so both forms are
+ * protocol-relative URLs wearing a disguise.
+ *
+ * Anything else is discarded rather than rejected; the person still gets in,
+ * they just land on the dashboard.
+ */
+function safeNext(value: FormDataEntryValue | null): string | null {
+  if (typeof value !== "string" || value.length === 0) return null;
+  if (!value.startsWith("/")) return null;
+  if (value.startsWith("//")) return null;
+  if (value.includes("\\")) return null;
+  if (value.includes("://")) return null;
+  return value;
+}
 
 /**
  * Eight tries, then a quarter of an hour off.
@@ -85,6 +113,22 @@ export async function signIn(_previous: AuthFormState, formData: FormData): Prom
 
   if (!parsed.success) return { fieldErrors: fieldErrorsFrom(parsed.error.issues) };
 
+  const meta = await requestMeta();
+
+  /**
+   * Throttle by client address as well as by account.
+   *
+   * The lockout on `User` stops somebody working through one person's
+   * passwords. It does nothing about the attack that actually happens: one
+   * common password tried against every address on the roll, where no single
+   * account ever reaches eight failures. This counts the attempts themselves.
+   */
+  const throttle = rateLimit(`signin:${meta.ip ?? "unknown"}`, SIGN_IN_LIMIT.limit, SIGN_IN_LIMIT.windowMs);
+  if (!throttle.allowed) {
+    const minutes = Math.max(1, Math.ceil(throttle.retryAfter / 60));
+    return { error: `Too many attempts. Try again in ${minutes} minute${minutes === 1 ? "" : "s"}.` };
+  }
+
   const email = parsed.data.email.toLowerCase().trim();
   const user = await prisma.user.findUnique({ where: { email } });
 
@@ -122,9 +166,19 @@ export async function signIn(_previous: AuthFormState, formData: FormData): Prom
     data: { failedLoginAttempts: 0, lockedUntil: null, lastLoginAt: new Date() },
   });
 
-  await createSession(user.id, await requestMeta());
+  clearRateLimit(`signin:${meta.ip ?? "unknown"}`);
 
-  redirect(user.mustChangePassword ? "/change-password" : "/dashboard");
+  // Retire whatever session this browser was carrying before issuing a new one.
+  // Without it, a session planted in the victim's browser beforehand survives
+  // their sign-in — the classic fixation, and cheap to close.
+  await destroySession();
+  await createSession(user.id, meta);
+
+  const next = safeNext(formData.get("next"));
+
+  // A forced password change outranks wherever they were heading; they can
+  // carry on to it once the password is their own.
+  redirect(user.mustChangePassword ? "/change-password" : (next ?? "/dashboard"));
 }
 
 export async function signOut() {
@@ -205,22 +259,52 @@ export async function requestPasswordReset(
 
   if (!parsed.success) return { fieldErrors: { email: "Enter a valid email address." } };
 
+  const meta = await requestMeta();
+
+  // Five an hour from one address. Without this the form is a free mail cannon
+  // pointed at anybody whose address you can guess, and the church's sending
+  // reputation is the thing that pays for it.
+  const throttle = rateLimit(`reset:${meta.ip ?? "unknown"}`, RESET_LIMIT.limit, RESET_LIMIT.windowMs);
+  if (!throttle.allowed) {
+    // Still the same answer. Saying "you are being throttled" would confirm
+    // that earlier attempts hit something.
+    return { done: true };
+  }
+
   const user = await prisma.user.findUnique({ where: { email: parsed.data } });
 
   // A deactivated account, or one that never accepted its invitation, gets
   // nothing — but the caller is told the same story either way.
-  if (user?.isActive && user.passwordHash) {
+  const eligible = Boolean(user?.isActive && user.passwordHash);
+
+  if (user && eligible && !(await resetRequestedRecently(user.id))) {
     const { url } = await issueAuthToken(user.id, "PASSWORD_RESET");
     const mail = passwordResetEmail({ firstName: user.firstName, url });
 
-    try {
-      const { sendEmail } = await import("@/lib/email");
-      await sendEmail({ to: user.email, subject: mail.subject, text: mail.text, html: mail.html });
-    } catch (error) {
-      // The visitor cannot fix a mail outage and must not learn from the
-      // difference that this address exists. Log it for the operator instead.
-      console.error("[auth] Could not send a password reset email:", error);
-    }
+    /**
+     * Send after the response has gone out.
+     *
+     * This is the whole point. Awaiting the send here made a known address take
+     * as long as the mail provider does and an unknown one return instantly —
+     * so the identical wording was undone by a stopwatch, and the form answered
+     * "does this person attend here?" after all. `after` moves the work past
+     * the response, leaving both branches the same length.
+     */
+    after(async () => {
+      try {
+        const { sendEmail } = await import("@/lib/email");
+        await sendEmail({
+          to: user.email,
+          subject: mail.subject,
+          text: mail.text,
+          html: mail.html,
+        });
+      } catch (error) {
+        // The visitor cannot fix a mail outage and must not learn from the
+        // difference that this address exists. Log it for the operator instead.
+        console.error("[auth] Could not send a password reset email:", error);
+      }
+    });
   }
 
   return { done: true };

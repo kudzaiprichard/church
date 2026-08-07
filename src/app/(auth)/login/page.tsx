@@ -10,10 +10,12 @@ export const metadata: Metadata = {
   description: "Sign in to the member area.",
 };
 
-export default async function LoginPage() {
+export default async function LoginPage({ searchParams }: PageProps<"/login">) {
   // Somebody already signed in has no business on this page.
   const session = await getSession();
   if (session) redirect(session.mustChangePassword ? "/change-password" : "/dashboard");
+
+  const { next } = await searchParams;
 
   return (
     <>
@@ -23,7 +25,7 @@ export default async function LoginPage() {
         invitation will be sent to your email.
       </p>
 
-      <LoginForm />
+      <LoginForm next={typeof next === "string" ? next : undefined} />
     </>
   );
 }

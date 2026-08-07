@@ -8,6 +8,21 @@ import { AppShell } from "./_components/app-shell";
 import { PANEL_COOKIE, railFor } from "./_components/nav";
 
 /**
+ * Reduce a stored URL to a same-site path, or nothing.
+ *
+ * A single leading slash only: no scheme, and none of the protocol-relative
+ * disguises (`//host`, `/\host`, `javascript:`), since a browser will happily
+ * follow all of them out of the application.
+ */
+function safeInternalPath(value: string | null): string | null {
+  if (!value) return null;
+  if (!value.startsWith("/")) return null;
+  if (value.startsWith("//")) return null;
+  if (value.includes("\\") || value.includes("://")) return null;
+  return value;
+}
+
+/**
  * The member area.
  *
  * The guard here is for the chrome — it decides which sections the rail shows
@@ -40,8 +55,14 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       user={user}
       rail={railFor(user.role)}
       signOut={signOut}
-      notifications={notifications.map(({ readAt, createdAt, ...rest }) => ({
+      notifications={notifications.map(({ readAt, createdAt, linkUrl, ...rest }) => ({
         ...rest,
+        // `linkUrl` is written by other modules and ends up in an anchor's
+        // href, which is one of the few places a string becomes executable —
+        // `javascript:` and `data:` URLs both run there. Only a plain path on
+        // this site survives; anything else is dropped and the notification
+        // falls back to the inbox.
+        linkUrl: safeInternalPath(linkUrl),
         createdAt: createdAt.toISOString(),
         read: readAt !== null,
       }))}
