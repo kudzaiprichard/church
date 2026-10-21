@@ -1,7 +1,8 @@
 # Church Management System
 
 Membership, groups, giving and communication for the local church. Requirements live in
-[`docs/Church Management System.pdf`](./docs/Church%20Management%20System.pdf).
+[`docs/SCOPE.md`](./docs/SCOPE.md); the phased build and its git rules are in
+[`docs/IMPLEMENTATION_PLAN.md`](./docs/IMPLEMENTATION_PLAN.md).
 
 ## Stack
 
