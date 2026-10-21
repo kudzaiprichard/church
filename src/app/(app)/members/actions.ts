@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
+import type { Prisma } from "@/generated/prisma/client";
 import { recordAudit, recordAuditIn } from "@/lib/auth/audit";
 import { issueAuthToken } from "@/lib/auth/auth-tokens";
 import { requirePermission } from "@/lib/auth/dal";
@@ -31,6 +32,26 @@ const invitation = z.object({
 });
 
 const office = z.enum(ROLES);
+
+/**
+ * True when someone other than `userId` is an active Apostle.
+ *
+ * Asked inside the transaction that would remove `userId` from the office, so
+ * the check and the change see the same rows. Two Apostles demoting each
+ * other at the same moment would each find the other still in office; the
+ * serializable isolation on the callers is what makes one of them fail
+ * instead of both succeeding and leaving the church with nobody who can
+ * appoint anyone.
+ */
+async function anotherActiveApostle(tx: Prisma.TransactionClient, userId: string) {
+  const count = await tx.user.count({
+    where: { role: "APOSTLE", isActive: true, id: { not: userId } },
+  });
+  return count > 0;
+}
+
+/** Serializable, so the last-Apostle check above cannot be raced. */
+const GUARDED = { isolationLevel: "Serializable" } as const;
 
 export async function inviteMember(
   _previous: MemberFormState,
@@ -192,15 +213,23 @@ export async function setRole(userId: string, formData: FormData) {
   // The change and its record are one write. Granting somebody the run of every
   // member's finances is the single act most worth being able to trace, so it
   // must not be possible for it to land without a line saying who did it.
-  await prisma.$transaction(async (tx) => {
-    await tx.user.update({ where: { id: userId }, data: { role } });
-    await recordAuditIn(tx, {
-      action: "ROLE_CHANGED",
-      actor: admin,
-      target,
-      detail: `${ROLE_LABELS[target.role]} → ${ROLE_LABELS[role]}`,
-    });
-  });
+  const changed = await prisma
+    .$transaction(async (tx) => {
+      if (target.role === "APOSTLE" && !(await anotherActiveApostle(tx, userId))) return false;
+
+      await tx.user.update({ where: { id: userId }, data: { role } });
+      await recordAuditIn(tx, {
+        action: "ROLE_CHANGED",
+        actor: admin,
+        target,
+        detail: `${ROLE_LABELS[target.role]} → ${ROLE_LABELS[role]}`,
+      });
+      return true;
+    }, GUARDED)
+    // A serialization failure means a concurrent change won; nothing was written.
+    .catch(() => false);
+
+  if (!changed) return;
 
   // The old session carries the old role in everything it has already been
   // allowed to see, so it goes. They sign in again with the access they now have.
@@ -218,14 +247,24 @@ export async function setActive(userId: string, isActive: boolean) {
   const target = await prisma.user.findUnique({ where: { id: userId } });
   if (!target || target.isActive === isActive) return;
 
-  await prisma.$transaction(async (tx) => {
-    await tx.user.update({ where: { id: userId }, data: { isActive } });
-    await recordAuditIn(tx, {
-      action: isActive ? "USER_REACTIVATED" : "USER_DEACTIVATED",
-      actor: admin,
-      target,
-    });
-  });
+  const changed = await prisma
+    .$transaction(async (tx) => {
+      // Never switch off the last Apostle standing.
+      if (!isActive && target.role === "APOSTLE" && !(await anotherActiveApostle(tx, userId))) {
+        return false;
+      }
+
+      await tx.user.update({ where: { id: userId }, data: { isActive } });
+      await recordAuditIn(tx, {
+        action: isActive ? "USER_REACTIVATED" : "USER_DEACTIVATED",
+        actor: admin,
+        target,
+      });
+      return true;
+    }, GUARDED)
+    .catch(() => false);
+
+  if (!changed) return;
 
   // Deactivation has to bite now, not whenever a token would have expired.
   // This is the reason sessions live in the database at all.
