@@ -4,9 +4,15 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 
 import type { Role } from "@/generated/prisma/enums";
+import { prisma } from "@/lib/prisma";
 
 import { can, type Permission } from "./permissions";
-import { buildOwnerScope, buildSelfScope } from "./scopes";
+import {
+  buildGroupContentScope,
+  buildMemberScope,
+  buildOwnerScope,
+  buildSelfScope,
+} from "./scopes";
 import { resolveSession } from "./session";
 
 /**
@@ -134,4 +140,59 @@ export function selfScope(user: SessionUser, field: string = "userId") {
  */
 export function ownsOrCan(user: SessionUser, ownerId: string, permission: Permission) {
   return user.id === ownerId || can(user, permission);
+}
+
+/**
+ * The ids of the groups this person leads.
+ *
+ * Read from `Group.leaderId` on every request — cached for the length of one
+ * render pass, never on the session — so appointing or replacing a leader
+ * changes their powers on their very next page load, with no sign-out needed.
+ */
+export const ledGroupIds = cache(async (user: SessionUser): Promise<string[]> => {
+  const groups = await prisma.group.findMany({
+    where: { leaderId: user.id },
+    select: { id: true },
+  });
+  return groups.map((group) => group.id);
+});
+
+/** The ids of the groups this person belongs to, cached the same way. */
+export const memberGroupIds = cache(async (user: SessionUser): Promise<string[]> => {
+  const memberships = await prisma.groupMembership.findMany({
+    where: { userId: user.id },
+    select: { groupId: true },
+  });
+  return memberships.map((membership) => membership.groupId);
+});
+
+/**
+ * Require leadership of one group — its leader, or an Apostle.
+ *
+ * Fails the same way `requirePermission` does: back to the dashboard, with
+ * nothing said about whether the group exists.
+ */
+export async function requireGroupLeader(groupId: string): Promise<SessionUser> {
+  const user = await requireSession();
+  if (user.role === "APOSTLE") return user;
+
+  if (!(await ledGroupIds(user)).includes(groupId)) redirect("/dashboard");
+
+  return user;
+}
+
+/**
+ * Content for all church (`groupId: null`) or for groups the person belongs
+ * to; everything for Apostles. For events, prayer requests and group messages.
+ */
+export async function groupContentScope(user: SessionUser) {
+  return buildGroupContentScope(user, await memberGroupIds(user));
+}
+
+/**
+ * Which `User` rows this person may list: everyone (Apostle, Matron), members
+ * of the groups they lead (leaders), or only themselves.
+ */
+export async function memberScope(user: SessionUser) {
+  return buildMemberScope(user, await ledGroupIds(user));
 }

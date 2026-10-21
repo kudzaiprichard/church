@@ -14,7 +14,7 @@ import Link from "next/link";
 
 import { Logo } from "@/components/brand/logo";
 import { NextGatheringLine } from "@/components/landing/next-gathering-line";
-import { ownerScope, requireSession, selfScope } from "@/lib/auth/dal";
+import { ledGroupIds, ownerScope, requireSession, selfScope } from "@/lib/auth/dal";
 import { can } from "@/lib/auth/permissions";
 import { themeOfYear } from "@/lib/church";
 import { prisma } from "@/lib/prisma";
@@ -100,7 +100,7 @@ export default async function DashboardPage() {
     { href: "/change-password", label: "Change password", detail: "Signs out other devices", Icon: KeyRoundIcon },
   ];
 
-  const comingSoon = railFor(user)
+  const comingSoon = railFor(user, await ledGroupIds(user))
     .flatMap((section) => section.items)
     .filter((item) => item.soon);
 

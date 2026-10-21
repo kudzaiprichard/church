@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 
 import { signOut } from "@/app/(auth)/actions";
-import { requireSession, selfScope } from "@/lib/auth/dal";
+import { ledGroupIds, requireSession, selfScope } from "@/lib/auth/dal";
 import { prisma } from "@/lib/prisma";
 
 import { AppShell } from "./_components/app-shell";
@@ -41,7 +41,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
   const user = await requireSession();
   const jar = await cookies();
 
-  const [notifications, unreadCount] = await Promise.all([
+  const [notifications, unreadCount, led] = await Promise.all([
     prisma.notification.findMany({
       where: selfScope(user),
       orderBy: { createdAt: "desc" },
@@ -49,12 +49,13 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
       select: { id: true, title: true, body: true, linkUrl: true, createdAt: true, readAt: true },
     }),
     prisma.notification.count({ where: { ...selfScope(user), readAt: null } }),
+    ledGroupIds(user),
   ]);
 
   return (
     <AppShell
       user={user}
-      rail={railFor(user)}
+      rail={railFor(user, led)}
       signOut={signOut}
       notifications={notifications.map(({ readAt, createdAt, linkUrl, ...rest }) => ({
         ...rest,
