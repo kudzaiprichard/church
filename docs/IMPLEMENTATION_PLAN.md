@@ -21,7 +21,7 @@ The single place to see where the build stands. Update it as described in
 | Phase | Name | Branch | Status | PR | Started | Finished |
 |:-:|---|---|:-:|:-:|---|---|
 | — | Pre-flight | `docs/implementation-plan` | ✅ Done | #13, #14 | 2026-10-21 | 2026-10-21 |
-| 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | ⬜ Not started | — | — | — |
+| 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | 🟡 In progress | — | 2026-10-21 | — |
 | 1 | Groups & communication | `feat/phase-1-groups-messaging` | ⬜ Not started | — | — | — |
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ⬜ Not started | — | — | — |
 | 3 | Finance | `feat/phase-3-finance` | ⬜ Not started | — | — | — |
@@ -458,7 +458,7 @@ squash-merge flow.
 
 ## Phase 0 — Foundation
 
-**Status:** ⬜ Not started
+**Status:** 🟡 In progress
 **Branch:** `feat/phase-0-foundation`
 **Goal:** The access model, member records and church settings everything else depends on.
 **Scope:** §4, §5.2–5.6, §6 (People, Groups data, Baptismal record, Settings), §6.1, §9.1, §9.2
@@ -466,9 +466,9 @@ squash-merge flow.
 **Depends on:** Pre-flight.
 
 ### Entry criteria
-- [ ] Pre-flight ✅.
-- [ ] Real or confirmed-placeholder church contact details available for seeding (Q7 may be
-      answered later; placeholders allowed).
+- [x] Pre-flight ✅.
+- [x] Real or confirmed-placeholder church contact details available for seeding (Q7 may be
+      answered later; placeholders allowed). *Placeholders from `src/lib/church.ts` are seeded.*
 
 ### Deliverables (in commit order)
 
