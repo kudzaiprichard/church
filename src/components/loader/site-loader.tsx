@@ -1,4 +1,4 @@
-import { church } from "@/lib/church";
+import { churchIdentity } from "@/lib/church";
 
 import { RoseCross } from "./rose-cross";
 
@@ -22,7 +22,7 @@ export function SiteLoader() {
         <div className="flex flex-col items-center">
           <RoseCross mode="seal" className="text-brass size-20" />
 
-          <p className="font-heading mt-8 text-lg leading-none">{church.shortName}</p>
+          <p className="font-heading mt-8 text-lg leading-none">{churchIdentity.shortName}</p>
 
           {/* The travelling hairline. Sized here, animated in globals.css. */}
           <span className="bg-border relative mt-5 block h-px w-28 overflow-hidden">

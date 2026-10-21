@@ -5,7 +5,7 @@ import "./globals.css";
 import { SiteLoader } from "@/components/loader/site-loader";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
-import { church } from "@/lib/church";
+import { churchIdentity } from "@/lib/church";
 
 // Each face has one job:
 //   Plus Jakarta Sans  headings — modern, compact, holds tight tracking well
@@ -50,10 +50,10 @@ const jetBrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: `${church.shortName} — ${church.name}`,
-    template: `%s — ${church.name}`,
+    default: `${churchIdentity.shortName} — ${churchIdentity.name}`,
+    template: `%s — ${churchIdentity.name}`,
   },
-  description: church.tagline,
+  description: churchIdentity.description,
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

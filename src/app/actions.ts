@@ -2,7 +2,8 @@
 
 import { z } from "zod";
 
-import { church, services } from "@/lib/church";
+import { services } from "@/lib/church";
+import { getChurchInfo } from "@/lib/settings";
 
 /**
  * What the form gets back. `values` is echoed so a rejected submission can be
@@ -73,12 +74,15 @@ export async function planVisit(_previous: FormState, formData: FormData): Promi
   }
 
   const visitor = parsed.data;
+  // The office's address is whatever Settings says today.
+  const office = await getChurchInfo();
 
   try {
+    if (!office.email) throw new Error("No church email is set in Settings.");
     const { sendEmail } = await import("@/lib/email");
 
     await sendEmail({
-      to: church.email,
+      to: office.email,
       replyTo: visitor.email,
       subject: `Planning a visit — ${visitor.name}`,
       text: [
@@ -98,7 +102,9 @@ export async function planVisit(_previous: FormState, formData: FormData): Promi
     return {
       status: "error",
       values,
-      message: `We could not send that just now. Please call the office on ${church.phone} and we will look out for you.`,
+      message: office.phone
+        ? `We could not send that just now. Please call the office on ${office.phone} and we will look out for you.`
+        : "We could not send that just now. Please try again a little later.",
     };
   }
 
@@ -123,11 +129,14 @@ export async function subscribeToBulletin(
     return { status: "error", errors: { email: parsed.error.issues[0].message } };
   }
 
+  const office = await getChurchInfo();
+
   try {
+    if (!office.email) throw new Error("No church email is set in Settings.");
     const { sendEmail } = await import("@/lib/email");
 
     await sendEmail({
-      to: church.email,
+      to: office.email,
       replyTo: parsed.data,
       subject: "Bulletin signup",
       text: `${parsed.data} asked to receive the weekly bulletin.`,
@@ -136,7 +145,9 @@ export async function subscribeToBulletin(
   } catch {
     return {
       status: "error",
-      message: `We could not sign you up just now. Please email ${church.email}.`,
+      message: office.email
+        ? `We could not sign you up just now. Please email ${office.email}.`
+        : "We could not sign you up just now. Please try again a little later.",
     };
   }
 

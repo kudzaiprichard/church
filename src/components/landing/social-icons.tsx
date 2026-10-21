@@ -1,4 +1,5 @@
-import { socials } from "@/lib/church";
+import type { SocialPlatform } from "@/generated/prisma/enums";
+import type { SocialLinkDto } from "@/lib/settings";
 import { cn } from "@/lib/utils";
 
 /**
@@ -23,33 +24,56 @@ export const brand = {
   },
 } as const;
 
+/** The display name for each stored platform, which is also its key in `brand`. */
+export const PLATFORM_NAME: Record<SocialPlatform, keyof typeof brand> = {
+  FACEBOOK: "Facebook",
+  INSTAGRAM: "Instagram",
+  YOUTUBE: "YouTube",
+  WHATSAPP: "WhatsApp",
+};
+
 /** One channel's mark, in currentColor. */
 export function SocialGlyph({ name, className }: { name: keyof typeof brand; className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden focusable="false" className={cn("fill-current", className)}>
+    <svg
+      viewBox="0 0 24 24"
+      aria-hidden
+      focusable="false"
+      className={cn("fill-current", className)}
+    >
       <path d={brand[name].path} />
     </svg>
   );
 }
 
-/** The channels as a row of small round buttons, for the blue footer. */
-export function SocialIcons({ className }: { className?: string }) {
+/**
+ * The channels as a row of small round buttons, for the blue footer.
+ *
+ * The links come from Settings, where each URL is checked to be `https://` on
+ * its own platform's domain before it is saved.
+ */
+export function SocialIcons({ links, className }: { links: SocialLinkDto[]; className?: string }) {
+  if (links.length === 0) return null;
+
   return (
     <ul className={cn("flex items-center gap-2", className)}>
-      {socials.map((social) => (
-        <li key={social.name}>
-          <a
-            href={social.href}
-            target="_blank"
-            rel="noreferrer noopener"
-            title={`${social.name}: ${social.handle}`}
-            className="flex size-9 items-center justify-center rounded-lg bg-white/10 text-white/75 transition-colors hover:bg-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
-          >
-            <span className="sr-only">{social.name}</span>
-            <SocialGlyph name={social.name} className="size-4" />
-          </a>
-        </li>
-      ))}
+      {links.map((link) => {
+        const name = PLATFORM_NAME[link.platform];
+        return (
+          <li key={link.platform}>
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={`${name}: ${link.handle}`}
+              className="flex size-9 items-center justify-center rounded-lg bg-white/10 text-white/75 transition-colors hover:bg-white/20 hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+            >
+              <span className="sr-only">{name}</span>
+              <SocialGlyph name={name} className="size-4" />
+            </a>
+          </li>
+        );
+      })}
     </ul>
   );
 }

@@ -16,8 +16,9 @@ import { Logo } from "@/components/brand/logo";
 import { NextGatheringLine } from "@/components/landing/next-gathering-line";
 import { ledGroupIds, ownerScope, requireSession, selfScope } from "@/lib/auth/dal";
 import { can } from "@/lib/auth/permissions";
-import { themeOfYear } from "@/lib/church";
+import { lastUpdatedLine } from "@/lib/last-updated";
 import { prisma } from "@/lib/prisma";
+import { getThemes } from "@/lib/settings";
 
 import { railFor } from "../_components/nav";
 import { NavIcon } from "../_components/nav-icon";
@@ -64,10 +65,11 @@ export default async function DashboardPage() {
   const seesChurchAttendance = can(user, "attendance.viewAll");
   const now = new Date();
 
-  const [contributions, attendance, unreadMessages] = await Promise.all([
+  const [contributions, attendance, unreadMessages, { current: theme }] = await Promise.all([
     prisma.contribution.count({ where: ownerScope(user, "finance.viewAll") }),
     prisma.attendanceRecord.count({ where: ownerScope(user, "attendance.viewAll") }),
     prisma.messageRecipient.count({ where: { ...selfScope(user), readAt: null } }),
+    getThemes(),
   ]);
 
   const figures = [
@@ -90,14 +92,43 @@ export default async function DashboardPage() {
 
   const quickLinks = [
     ...(can(user, "members.enroll")
-      ? [{ href: "/members/new", label: "Enrol a member", detail: "Baptized members only", Icon: UsersIcon }]
+      ? [
+          {
+            href: "/members/new",
+            label: "Enrol a member",
+            detail: "Baptized members only",
+            Icon: UsersIcon,
+          },
+        ]
       : []),
     ...(can(user, "audit.view")
-      ? [{ href: "/audit", label: "Audit log", detail: "Every privileged act", Icon: ScrollTextIcon }]
+      ? [
+          {
+            href: "/audit",
+            label: "Audit log",
+            detail: "Every privileged act",
+            Icon: ScrollTextIcon,
+          },
+        ]
       : []),
-    { href: "/profile", label: "Your profile", detail: "Contact details and birthday", Icon: IdCardIcon },
-    { href: "/account", label: "Your account", detail: "Details and signed-in devices", Icon: UserIcon },
-    { href: "/change-password", label: "Change password", detail: "Signs out other devices", Icon: KeyRoundIcon },
+    {
+      href: "/profile",
+      label: "Your profile",
+      detail: "Contact details and birthday",
+      Icon: IdCardIcon,
+    },
+    {
+      href: "/account",
+      label: "Your account",
+      detail: "Details and signed-in devices",
+      Icon: UserIcon,
+    },
+    {
+      href: "/change-password",
+      label: "Change password",
+      detail: "Signs out other devices",
+      Icon: KeyRoundIcon,
+    },
   ];
 
   const comingSoon = railFor(user, await ledGroupIds(user))
@@ -124,28 +155,50 @@ export default async function DashboardPage() {
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         {/* The theme of the year, on the blue the public site opens with. */}
-        <article className="bg-hero relative overflow-hidden rounded-xl p-6 text-white lg:col-span-2">
-          <div aria-hidden className="bg-grid-light pointer-events-none absolute inset-0" />
-          <Logo
-            size={190}
-            className="pointer-events-none absolute -right-10 -bottom-12 opacity-[0.08]"
-          />
-          <div className="relative max-w-xl">
-            <p className="text-brass inline-flex items-center gap-2 text-xs font-semibold tracking-[0.16em] uppercase">
-              <span aria-hidden className="bg-brass size-1.5 rounded-full" />
-              Theme of the year · {themeOfYear.year}
-            </p>
-            <h2 className="mt-3 text-xl font-bold md:text-2xl">{themeOfYear.title}</h2>
-            <blockquote className="mt-4">
-              <p className="font-serif text-lg leading-snug font-medium text-white/90 italic">
-                &ldquo;{themeOfYear.verseText}&rdquo;
+        {theme ? (
+          <article className="bg-hero relative overflow-hidden rounded-xl p-6 text-white lg:col-span-2">
+            <div aria-hidden className="bg-grid-light pointer-events-none absolute inset-0" />
+            <Logo
+              size={190}
+              className="pointer-events-none absolute -right-10 -bottom-12 opacity-[0.08]"
+            />
+            <div className="relative max-w-xl">
+              <p className="text-brass inline-flex items-center gap-2 text-xs font-semibold tracking-[0.16em] uppercase">
+                <span aria-hidden className="bg-brass size-1.5 rounded-full" />
+                Theme of the year · {theme.year}
               </p>
-            </blockquote>
-            <p className="text-brass mt-2 text-xs font-semibold tracking-[0.14em] uppercase">
-              {themeOfYear.scripture}
+              <h2 className="mt-3 text-xl font-bold md:text-2xl">{theme.title}</h2>
+              <blockquote className="mt-4">
+                <p className="font-serif text-lg leading-snug font-medium text-white/90 italic">
+                  &ldquo;{theme.verseText}&rdquo;
+                </p>
+              </blockquote>
+              <p className="text-brass mt-2 text-xs font-semibold tracking-[0.14em] uppercase">
+                {theme.scriptureRef}
+              </p>
+              <p className="mt-4 text-xs text-white/50">
+                {lastUpdatedLine(theme.updatedBy, theme.updatedAt)}
+              </p>
+            </div>
+          </article>
+        ) : (
+          <Panel title="Theme of the year" className="lg:col-span-2">
+            <p className="text-muted-foreground text-sm">
+              No theme has been set yet.
+              {can(user, "settings.manage") && (
+                <>
+                  {" "}
+                  <Link
+                    href="/settings/theme"
+                    className="text-primary font-semibold hover:underline"
+                  >
+                    Set this year&apos;s theme
+                  </Link>
+                </>
+              )}
             </p>
-          </div>
-        </article>
+          </Panel>
+        )}
 
         <Panel title="This week" description="In church time, Harare.">
           <NextGatheringLine />

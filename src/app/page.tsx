@@ -9,6 +9,7 @@ import { Sermons } from "@/components/landing/sermons";
 import { SiteNav } from "@/components/landing/site-nav";
 import { ThemeConnect } from "@/components/landing/theme-connect";
 import { getSession } from "@/lib/auth/dal";
+import { getChurchInfo, getPublicGroups, getThemes, getVisibleSocialLinks } from "@/lib/settings";
 
 /**
  * The KMMI landing page, in the portal's order:
@@ -21,6 +22,10 @@ import { getSession } from "@/lib/auth/dal";
  *   devotion      today's devotion, opened and faded
  *   sermons       the latest messages
  *   visit         service times, and the form that tells the door you're coming
+ *
+ * The church's details, theme, social links and groups come from Settings —
+ * cached, and expired the moment an Apostle saves, so a change is on this page
+ * at the next load. Devotion and sermons are still static until Phase 4.
  *
  * The wrapper clips horizontally (`clip`, not `hidden`): reveals that arrive
  * from the side sit 32px outside their column while they travel, which is
@@ -36,23 +41,28 @@ export default async function Home() {
    * returns a DTO: passing the row itself would ship a password hash and
    * lockout counters to the browser of anyone who viewed the home page.
    */
-  const user = await getSession();
+  const [user, church, { current: theme }, socials, groups] = await Promise.all([
+    getSession(),
+    getChurchInfo(),
+    getThemes(),
+    getVisibleSocialLinks(),
+    getPublicGroups(),
+  ]);
+  const contact = { phone: church.phone, address: church.address, mapUrl: church.mapUrl };
 
   return (
     <div className="bg-background relative min-h-screen overflow-x-clip">
-      <SiteNav
-        session={user ? { firstName: user.firstName } : null}
-      />
+      <SiteNav session={user ? { firstName: user.firstName } : null} contact={contact} />
 
       <main>
-        <Hero />
+        <Hero theme={theme} tagline={church.tagline} groupCount={groups.length} />
         <ScriptureBanner />
-        <ThemeConnect />
+        <ThemeConnect theme={theme} socials={socials} />
         <Features />
-        <Groups />
+        <Groups groups={groups} />
         <Devotion />
         <Sermons />
-        <PlanVisit />
+        <PlanVisit contact={contact} />
       </main>
 
       <Closing />

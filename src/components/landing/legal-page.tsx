@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { church } from "@/lib/church";
+import { churchIdentity } from "@/lib/church";
 
 import { Closing } from "./closing";
 
@@ -35,7 +35,7 @@ export function LegalPage({
               strokeLinejoin="round"
             />
           </svg>
-          {church.shortName}
+          {churchIdentity.shortName}
         </Link>
 
         <h1 className="mt-10 text-4xl leading-tight text-balance sm:text-5xl">{title}</h1>

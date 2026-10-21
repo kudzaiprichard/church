@@ -21,7 +21,7 @@ const modules = [
   { name: "Events", detail: "General and group-specific, with reminders" },
   { name: "Prayer Requests", detail: "Posted inside groups, pinnable" },
   { name: "Attendance", detail: "Per service or event, per member over time" },
-  { name: "Tithes & Offerings", detail: "Recorded per member, admin and personal views" },
+  { name: "Tithes & Giving", detail: "Recorded per member, with church-wide and personal views" },
   { name: "Partnerships & Promises", detail: "Pledges and follow-through tracking" },
   { name: "Sermons", detail: "Admin-uploaded audio and video" },
   { name: "Personal Notes", detail: "Private notes per sermon" },

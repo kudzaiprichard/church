@@ -1,14 +1,23 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 
 import { LegalPage } from "@/components/landing/legal-page";
-import { church } from "@/lib/church";
+import { churchIdentity } from "@/lib/church";
+import { getChurchInfo } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Terms",
-  description: `Terms of use for the ${church.name} website.`,
+  description: `Terms of use for the ${churchIdentity.name} website.`,
 };
 
-export default function Terms() {
+/**
+ * Rendered per request (from the cached settings) so the office's contact
+ * details here are always the ones in Settings, not those at build time.
+ */
+export default async function Terms() {
+  await connection();
+  const church = await getChurchInfo();
+
   return (
     <LegalPage title="Terms of use" updated="August 2026">
       <section>
@@ -24,17 +33,24 @@ export default function Terms() {
         <p>
           We keep the service times and the calendar on this page as current as we can, but a
           funeral, a burst pipe or a public holiday can move things at short notice. If you are
-          travelling any distance to a specific event, call the office on{" "}
-          <a href={`tel:${church.phone.replace(/\s/g, "")}`}>{church.phone}</a> first and we will
-          confirm it.
+          travelling any distance to a specific event,{" "}
+          {church.phone ? (
+            <>
+              call the office on{" "}
+              <a href={`tel:${church.phone.replace(/\s/g, "")}`}>{church.phone}</a> first
+            </>
+          ) : (
+            "contact the office first"
+          )}{" "}
+          and we will confirm it.
         </p>
       </section>
 
       <section>
         <h2>What you send us</h2>
         <p>
-          Please use the forms on this site for what they are for. Do not send anything unlawful, and
-          do not submit somebody else&apos;s details as though they were your own. We may stop
+          Please use the forms on this site for what they are for. Do not send anything unlawful,
+          and do not submit somebody else&apos;s details as though they were your own. We may stop
           responding to a sender who abuses the forms.
         </p>
       </section>
