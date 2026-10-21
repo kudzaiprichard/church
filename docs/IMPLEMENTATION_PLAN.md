@@ -497,25 +497,25 @@ squash-merge flow.
 - [x] Migration `phase0_people`: `User` gains `address`, `dateOfBirth`, `gender`;
       `BaptismalRecord`; `Group` reshaped (`slug`, `audience`, `leaderId`; drop `isLeader`);
       new `AuditAction` values used in this phase.
-- [ ] `src/lib/data/members.ts` (directory, detail, own profile — scoped by `memberScope`).
-- [ ] `/members/new` enrolment form (required baptism, groups multi-select) + `enrollMember`
+- [x] `src/lib/data/members.ts` (directory, detail, own profile — scoped by `memberScope`).
+- [x] `/members/new` enrolment form (required baptism, groups multi-select) + `enrollMember`
       (transaction: user + baptismal record + memberships + audit, then invite email reusing the
       existing invite path and copy-link fallback).
-- [ ] `/members` directory: search, group/role/active filters, pagination.
-- [ ] `/members/[id]` detail (Profile, Groups, Baptism tabs live; Attendance/Giving/Pledges tabs
+- [x] `/members` directory: search, group/role/active filters, pagination.
+- [x] `/members/[id]` detail (Profile, Groups, Baptism tabs live; Attendance/Giving/Pledges tabs
       appear in their phases) and `/members/[id]/edit` + `updateMember`.
-- [ ] `/profile` + `updateOwnProfile` (phone, address, DOB, gender).
-- [ ] Unit test: enrolment schema rejects missing/future baptism date with the exact message.
+- [x] `/profile` + `updateOwnProfile` (phone, address, DOB, gender).
+- [x] Unit test: enrolment schema rejects missing/future baptism date with the exact message.
 
 **Settings & public site**
-- [ ] Migration `phase0_settings`: `ChurchSettings`, `ThemeOfYear`, `SocialLink`.
-- [ ] `prisma/seed.ts` + `db:seed` script: settings, themes 2023–2026, socials, 7 groups.
-- [ ] `src/lib/settings.ts`: cached getters tagged `church-settings`.
-- [ ] `/settings`, `/settings/theme` (with history table), `/settings/social` + actions + audit.
-- [ ] Landing page, footer and dashboard theme card read from settings; groups section reads
+- [x] Migration `phase0_settings`: `ChurchSettings`, `ThemeOfYear`, `SocialLink`.
+- [x] `prisma/seed.ts` + `db:seed` script: settings, themes 2023–2026, socials, 7 groups.
+- [x] `src/lib/settings.ts`: cached getters tagged `church-settings`.
+- [x] `/settings`, `/settings/theme` (with history table), `/settings/social` + actions + audit.
+- [x] Landing page, footer and dashboard theme card read from settings; groups section reads
       `Group` (leader name or "Vacant"); `/about` page; "Tithes & Offerings" copy fixed.
-- [ ] `src/lib/church.ts` reduced to the static timetable/services.
-- [ ] Nav: Members, Profile, Settings, Audit live.
+- [x] `src/lib/church.ts` reduced to the static timetable/services. *Also kept, as static copy: the anchor verse, bulletin blurb, portal feature cards and `churchIdentity` (name for pages that must render without a database). `devotion` and `recentSermons` stay until Phase 4, whose deliverables already move them to the database.*
+- [x] Nav: Members, Profile, Settings, Audit live.
 
 **Plan**
 - [ ] `docs(plan): complete phase 0`.
