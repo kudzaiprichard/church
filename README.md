@@ -21,7 +21,10 @@ Membership, groups, giving and communication for the local church. Requirements 
    cp .env.example .env
    ```
 
-   - `DATABASE_URL` — a reachable Postgres instance.
+   - `DATABASE_URL` — a reachable Postgres instance. For a local one in Docker, run
+     `docker compose up -d` and use
+     `postgresql://church:church@localhost:5433/church?schema=public` (host port 5433, so it
+     does not clash with a natively installed Postgres).
    - `RESEND_API_KEY` / `EMAIL_FROM` — from https://resend.com. `onboarding@resend.dev` works for
      testing before a domain is verified.
 
