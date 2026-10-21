@@ -74,6 +74,8 @@ model User {
   groupMemberships GroupMembership[]
   ledGroups        Group[]            @relation("GroupLeader")
   baptismalRecord  BaptismalRecord?
+  settingsUpdates  ChurchSettings[]   @relation("SettingsUpdater")
+  themeUpdates     ThemeOfYear[]      @relation("ThemeUpdater")
   sentMessages     Message[]          @relation("MessageSender")
   receivedMessages MessageRecipient[]
   messageReplies   MessageReply[]
@@ -530,4 +532,59 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, readAt])
+}
+
+// ---------------------------------------------------------------------------
+// Settings — church information, Theme of the Year, social links
+// (docs/SCOPE.md §9.17–9.19). Read through src/lib/settings.ts, cached under
+// the "church-settings" tag and invalidated on every save.
+// ---------------------------------------------------------------------------
+
+/// The church's own details. A single row whose id is always "church".
+model ChurchSettings {
+  id          String   @id @default("church")
+  name        String
+  shortName   String
+  tagline     String?
+  mission     String?
+  vision      String?
+  doctrine    String?
+  address     String?
+  phone       String?
+  email       String?
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+
+  updatedBy User? @relation("SettingsUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+}
+
+/// One year's theme. The current theme is the one with the highest year;
+/// earlier years are the history shown under it.
+model ThemeOfYear {
+  id           String   @id @default(cuid())
+  year         Int      @unique
+  title        String
+  scriptureRef String
+  verseText    String
+  description  String?
+  updatedById  String?
+  updatedAt    DateTime @updatedAt
+
+  updatedBy User? @relation("ThemeUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+}
+
+/// Twitter/X is deliberately not offered (SCOPE §9.18).
+enum SocialPlatform {
+  FACEBOOK
+  INSTAGRAM
+  YOUTUBE
+  WHATSAPP
+}
+
+model SocialLink {
+  platform  SocialPlatform @id
+  handle    String
+  url       String
+  isVisible Boolean        @default(true)
+  updatedAt DateTime       @updatedAt
 }
