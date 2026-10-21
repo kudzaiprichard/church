@@ -27,6 +27,10 @@ const DESCRIPTIONS: Record<AuditAction, { label: string; weight: "high" | "norma
   USER_INVITED: { label: "Member invited", weight: "normal" },
   INVITE_RESENT: { label: "Invitation resent", weight: "normal" },
   PASSWORD_RESET_SENT: { label: "Password reset sent", weight: "normal" },
+  MEMBER_ENROLLED: { label: "Member enrolled", weight: "normal" },
+  MEMBER_UPDATED: { label: "Member record edited", weight: "normal" },
+  THEME_UPDATED: { label: "Theme of the Year changed", weight: "normal" },
+  SETTINGS_UPDATED: { label: "Church settings changed", weight: "normal" },
 };
 
 /**
