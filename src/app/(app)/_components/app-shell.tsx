@@ -101,7 +101,7 @@ export function AppShell({
   }, []);
 
   return (
-    <div className="bg-background relative h-svh w-full overflow-hidden">
+    <div className="bg-canvas relative h-svh w-full overflow-hidden">
       <div className="flex h-full">
         {/* Zone 1 — the rail. Hidden below md, where the drawer takes over. */}
         <div className="hidden h-full md:block">
@@ -121,7 +121,7 @@ export function AppShell({
           className={cn(
             "hidden h-full flex-col overflow-hidden lg:flex",
             "transition-[width] duration-200 ease-out motion-reduce:transition-none",
-            panelCollapsed ? "pointer-events-none w-0" : "w-[13.5rem]",
+            panelCollapsed ? "pointer-events-none w-0" : "w-60",
           )}
         >
           <ContextPanel
@@ -146,7 +146,7 @@ export function AppShell({
 
           <main className="min-h-0 min-w-0 flex-1">
             <ScrollArea className="h-full w-full">
-              <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:py-10">{children}</div>
+              <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</div>
             </ScrollArea>
           </main>
         </div>

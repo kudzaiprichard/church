@@ -32,30 +32,49 @@ export function MemberRow({ member, isSelf }: { member: Member; isSelf: boolean 
         ? `Last signed in ${joined.format(member.lastLoginAt)}`
         : "Never signed in";
 
+  const initials = `${member.firstName.charAt(0)}${member.lastName.charAt(0)}`.toUpperCase();
+  const tone = !member.isActive
+    ? "bg-destructive/10 text-destructive"
+    : !member.activated
+      ? "bg-accent text-accent-foreground"
+      : "bg-success/10 text-success";
+
   return (
-    <li className="border-foreground/12 grid gap-x-6 gap-y-3 border-t py-5 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-      <div className="min-w-0">
-        <p className="flex flex-wrap items-baseline gap-x-3">
-          <span className="font-heading text-lg leading-snug">
-            {member.firstName} {member.lastName}
-          </span>
-          {member.role === "ADMIN" && (
-            <span className="text-accent-foreground font-mono text-[0.6rem] tracking-[0.18em] uppercase">
-              Admin
+    <li className="grid gap-x-6 gap-y-3 px-5 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+      <div className="flex min-w-0 items-start gap-3">
+        <span
+          aria-hidden
+          className={`grid size-9 shrink-0 place-items-center rounded-full text-xs font-bold ${
+            member.isActive ? "bg-secondary text-primary" : "bg-muted text-muted-foreground"
+          }`}
+        >
+          {initials}
+        </span>
+
+        <div className="min-w-0">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span className="text-foreground text-sm font-semibold">
+              {member.firstName} {member.lastName}
             </span>
-          )}
-          {isSelf && <span className="text-muted-foreground text-xs">(you)</span>}
-        </p>
-        <p className="text-muted-foreground mt-1 text-sm break-all">{member.email}</p>
-        <p className="text-muted-foreground/80 mt-1 font-mono text-[0.65rem] tracking-wide">
-          {status} · joined {joined.format(member.joinedAt)}
-        </p>
+            {member.role === "ADMIN" && (
+              <span className="bg-secondary text-primary rounded-md px-1.5 py-0.5 text-[0.65rem] font-semibold">
+                Admin
+              </span>
+            )}
+            {isSelf && <span className="text-muted-foreground text-xs">(you)</span>}
+          </p>
+          <p className="text-muted-foreground mt-0.5 text-sm break-all">{member.email}</p>
+          <p className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
+            <span className={`rounded-md px-1.5 py-0.5 font-medium ${tone}`}>{status}</span>
+            <span className="text-muted-foreground">Joined {joined.format(member.joinedAt)}</span>
+          </p>
+        </div>
       </div>
 
       {/* An admin cannot demote or deactivate themselves — that is the fastest
           route to a church with no administrator and no way back in. */}
       {!isSelf && (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:justify-end">
           {!member.activated && member.isActive && (
             <RowAction action={resendInvitation.bind(null, member.id)}>Resend invitation</RowAction>
           )}
@@ -92,8 +111,10 @@ function RowAction({
     <form action={action}>
       <button
         type="submit"
-        className={`focus-visible:ring-ring rounded-sm text-xs underline-offset-4 transition-colors hover:underline focus-visible:ring-2 focus-visible:outline-none ${
-          destructive ? "text-destructive" : "text-muted-foreground hover:text-foreground"
+        className={`focus-visible:ring-ring h-7 cursor-pointer rounded-md border px-2.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none ${
+          destructive
+            ? "border-destructive/25 text-destructive hover:bg-destructive/10"
+            : "border-border text-foreground/80 hover:bg-muted hover:text-foreground"
         }`}
       >
         {children}

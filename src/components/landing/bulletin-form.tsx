@@ -34,7 +34,7 @@ export function BulletinForm() {
         Email address for the weekly bulletin
       </label>
 
-      <div className="flex items-end gap-3">
+      <div className="flex gap-2">
         <input
           id={fieldId}
           name="email"
@@ -45,19 +45,18 @@ export function BulletinForm() {
           aria-invalid={error ? true : undefined}
           aria-describedby={error ? `${fieldId}-error` : undefined}
           className={cn(
-            "min-w-0 flex-1 rounded-none border-0 border-b bg-transparent px-0 pb-2 text-sm text-white",
-            "placeholder:text-white/35 transition-[border-color] duration-200 outline-none",
-            "focus:border-b-2 focus:pb-1.5",
-            error ? "border-red-300" : "border-white/30 focus:border-white",
+            "h-10 min-w-0 flex-1 rounded-lg border bg-white/10 px-3 text-sm text-white",
+            "placeholder:text-white/40 transition-[border-color,background-color] duration-200 outline-none",
+            "focus:bg-white/15",
+            error ? "border-red-300" : "border-white/15 focus:border-white/50",
           )}
         />
         <button
           type="submit"
           disabled={pending}
           className={cn(
-            "shrink-0 rounded-md border border-white/25 px-4 py-2 text-sm text-white/85",
-            "transition-[background-color,border-color,color] duration-200",
-            "hover:border-white/50 hover:bg-white/10 hover:text-white",
+            "action-gold h-10 shrink-0 rounded-lg px-4 text-sm font-semibold",
+            "transition-colors duration-200",
             "focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ink)] focus-visible:outline-none",
             "disabled:pointer-events-none disabled:opacity-55",
           )}

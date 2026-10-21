@@ -37,28 +37,28 @@ export function UserMenu({
       <DropdownMenuTrigger
         aria-label="Account menu"
         className={cn(
-          "hover:bg-secondary focus-visible:ring-ring flex cursor-pointer items-center gap-2 rounded-none py-0.5 pr-1.5 pl-0.5",
+          "hover:bg-muted focus-visible:ring-ring flex h-9 cursor-pointer items-center gap-2.5 rounded-lg pr-2 pl-1",
           "transition-colors focus-visible:ring-2 focus-visible:outline-none",
         )}
       >
         <span
           aria-hidden
-          className="bg-primary text-primary-foreground grid size-[26px] shrink-0 place-items-center rounded-full text-[0.65rem] font-semibold"
+          className="bg-primary text-primary-foreground grid size-7 shrink-0 place-items-center rounded-full text-[0.65rem] font-bold"
         >
           {initials}
         </span>
         <span className="hidden text-left leading-tight md:block">
-          <span className="block text-xs font-medium">
+          <span className="block text-sm font-semibold">
             {user.firstName} {user.lastName}
           </span>
-          <span className="text-muted-foreground block font-mono text-[0.55rem] tracking-[0.14em] uppercase">
+          <span className="text-muted-foreground block text-xs">
             {user.role === "ADMIN" ? "Administrator" : "Member"}
           </span>
         </span>
         <ChevronDownIcon className="text-muted-foreground size-3.5 shrink-0" aria-hidden />
       </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end" sideOffset={10} className="w-60">
+      <DropdownMenuContent align="end" sideOffset={10} className="w-64 rounded-xl">
         <DropdownMenuLabel className="font-normal">
           <span className="block text-sm font-medium">
             {user.firstName} {user.lastName}

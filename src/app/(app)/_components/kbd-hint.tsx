@@ -11,14 +11,14 @@ export function KbdHint({ keys, always = false }: { keys: string[]; always?: boo
   return (
     <span
       className={cn(
-        "text-muted-foreground items-center gap-0.5 text-xs",
+        "text-muted-foreground items-center gap-0.5",
         always ? "inline-flex" : "hidden sm:inline-flex",
       )}
     >
       {keys.map((key) => (
         <kbd
           key={key}
-          className="border-border/70 bg-background text-muted-foreground inline-flex h-4 min-w-[16px] items-center justify-center rounded-none border px-1 font-mono text-xs"
+          className="border-border bg-card text-muted-foreground inline-flex h-5 min-w-5 items-center justify-center rounded-md border px-1 font-sans text-[0.65rem] font-medium"
         >
           {key}
         </kbd>

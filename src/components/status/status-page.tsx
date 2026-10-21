@@ -52,7 +52,7 @@ export function StatusPage({
 
       <p className="numeric text-muted-foreground mt-9 text-[0.7rem] tracking-[0.3em]">{code}</p>
 
-      <h1 className="font-heading mt-4 max-w-xl text-3xl leading-tight text-balance sm:text-4xl">
+      <h1 className="text-navy mt-4 max-w-xl text-3xl leading-tight font-bold text-balance sm:text-4xl">
         {title}
       </h1>
 

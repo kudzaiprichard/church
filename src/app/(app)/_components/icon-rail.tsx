@@ -3,6 +3,7 @@
 import { PanelLeftCloseIcon, PanelLeftOpenIcon } from "lucide-react";
 import Link from "next/link";
 
+import { Logo } from "@/components/brand/logo";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -10,16 +11,18 @@ import type { RailSection } from "./nav";
 import { NavIcon } from "./nav-icon";
 
 /**
- * Zone one: the sections of the system, as icons.
+ * Zone one: the sections of the system, as icons, on the crest's royal blue —
+ * the same band as the public nav, so signing in never feels like leaving the
+ * church for a different product.
  *
- * Square buttons rather than rounded pills, and the current section is marked
- * by a brass bar flush to the rail's outer edge — one accent colour doing all
- * the wayfinding, the same figure the public site uses for its section rules.
- * The rail is 48px and the button 34px, so the 7px offset lands the bar exactly
- * on x=0.
+ * The current section is an inverted chip: white, with the icon in royal blue.
+ * One flat shape carries the state on its own, so there is no edge bar or
+ * glow to keep in step with it.
  *
  * Every icon carries a tooltip, because an icon on its own is a guess.
  */
+const ROYAL = "text-[oklch(0.450_0.220_265.6)]";
+
 export function IconRail({
   sections,
   activeId,
@@ -34,16 +37,16 @@ export function IconRail({
   return (
     <nav
       aria-label="Sections"
-      className="border-border/60 flex h-full w-12 shrink-0 flex-col items-center gap-1 border-r py-2.5"
+      className="bg-rail text-rail-foreground flex h-full w-16 shrink-0 flex-col items-center gap-1 py-3"
     >
       <Link
         href="/dashboard"
-        aria-label="Cornerstone — church system"
-        className="focus-visible:ring-ring grid h-9 w-9 place-items-center focus-visible:ring-2 focus-visible:outline-none"
+        aria-label="KMMI — church system"
+        className="grid size-10 place-items-center rounded-lg focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
       >
-        <RoseMark className="text-primary size-6" />
+        <Logo size={34} />
       </Link>
-      <span aria-hidden className="bg-border mt-1 mb-2 h-px w-5" />
+      <span aria-hidden className="my-2 h-px w-6 bg-white/15" />
 
       <TooltipProvider delayDuration={120}>
         <ul className="flex flex-col items-center gap-1.5">
@@ -68,9 +71,9 @@ export function IconRail({
                 aria-pressed={panelCollapsed}
                 aria-controls="context-panel"
                 className={cn(
-                  "text-muted-foreground hover:bg-secondary hover:text-foreground",
-                  "focus-visible:ring-ring grid h-[34px] w-[34px] cursor-pointer place-items-center rounded-none",
-                  "transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none",
+                  "grid size-10 cursor-pointer place-items-center rounded-lg text-white/60",
+                  "transition-colors duration-150 hover:bg-white/10 hover:text-white",
+                  "focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none",
                 )}
               >
                 {panelCollapsed ? (
@@ -99,12 +102,9 @@ function RailButton({ section, active }: { section: RailSection; active: boolean
           aria-label={section.label}
           aria-current={active ? "page" : undefined}
           className={cn(
-            "group relative grid h-[34px] w-[34px] place-items-center rounded-none",
-            "focus-visible:ring-ring transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none",
-            "after:pointer-events-none after:absolute after:top-1/2 after:-left-[7px] after:h-5 after:w-[2px] after:-translate-y-1/2 after:transition-opacity after:duration-200",
-            active
-              ? "bg-primary/10 text-primary after:bg-[var(--brass)] after:opacity-100"
-              : "text-muted-foreground hover:bg-secondary hover:text-foreground after:opacity-0",
+            "grid size-10 place-items-center rounded-lg transition-colors duration-150",
+            "focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none",
+            active ? cn("bg-white", ROYAL) : "text-white/65 hover:bg-white/10 hover:text-white",
           )}
         >
           <NavIcon name={section.icon} className="size-[18px]" />
@@ -114,28 +114,5 @@ function RailButton({ section, active }: { section: RailSection; active: boolean
         {section.label}
       </TooltipContent>
     </Tooltip>
-  );
-}
-
-/** Twelve spokes — the same mark the public site uses. */
-function RoseMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" className={className} aria-hidden focusable="false">
-      <circle cx="16" cy="16" r="14.5" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      <circle cx="16" cy="16" r="4" fill="none" stroke="currentColor" strokeWidth="1.5" />
-      {Array.from({ length: 12 }, (_, spoke) => (
-        <line
-          key={spoke}
-          x1="16"
-          y1="4"
-          x2="16"
-          y2="12"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          transform={`rotate(${spoke * 30} 16 16)`}
-        />
-      ))}
-    </svg>
   );
 }
