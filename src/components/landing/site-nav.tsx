@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+import { Logo } from "@/components/brand/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import {
   Sheet,
@@ -15,24 +16,13 @@ import {
 import { church } from "@/lib/church";
 import { cn } from "@/lib/utils";
 
-import { ActionLink } from "./action";
-
-/**
- * The order of service. Every section on the page is listed here so the current
- * position can be tracked across all of them; `inBar` marks the four that are
- * short enough to sit in the bar without crowding it, and the rest appear in
- * the sheet on small screens.
- */
-const order = [
-  { numeral: "I", label: "Welcome", href: "#welcome", inBar: false },
-  { numeral: "II", label: "Times", href: "#times", inBar: true },
-  { numeral: "III", label: "What to expect", href: "#visit", inBar: true },
-  { numeral: "IV", label: "Why we gather", href: "#mission", inBar: true },
-  { numeral: "V", label: "Teaching", href: "#teaching", inBar: true },
-  { numeral: "VI", label: "Plan your visit", href: "#plan", inBar: false },
+const links = [
+  { label: "Theme", href: "#theme" },
+  { label: "Portal", href: "#portal" },
+  { label: "Groups", href: "#groups" },
+  { label: "Sermons", href: "#sermons" },
+  { label: "Visit", href: "#visit" },
 ];
-
-const barEntries = order.filter((entry) => entry.inBar);
 
 /**
  * What the bar is allowed to know about whoever is reading it.
@@ -43,34 +33,41 @@ const barEntries = order.filter((entry) => entry.inBar);
  */
 export type NavSession = { firstName: string; isAdmin: boolean } | null;
 
+/**
+ * The KMMI bar. Solid royal blue over the hero; once the page moves under it,
+ * it turns to frosted glass so the section beneath still shows through.
+ *
+ * Two things follow the reader down the page: the link for the section in view
+ * is marked, and a gold hairline along the bottom fills as they read. The
+ * hairline is driven by the scroll position in CSS (`.scroll-progress`), so it
+ * costs no JavaScript at all.
+ */
 export function SiteNav({ session }: { session: NavSession }) {
-  const [condensed, setCondensed] = useState(false);
-  const [current, setCurrent] = useState("welcome");
+  const [scrolled, setScrolled] = useState(false);
+  const [current, setCurrent] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setCondensed(window.scrollY > 24);
+    const onScroll = () => setScrolled(window.scrollY > 24);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Marks the current item in the order of service as the reader moves down.
+  // Marks the section in the middle band of the viewport as current.
   useEffect(() => {
-    const sections = order
-      .map((entry) => document.getElementById(entry.href.slice(1)))
+    const sections = links
+      .map((link) => document.getElementById(link.href.slice(1)))
       .filter((element): element is HTMLElement => element !== null);
 
     if (sections.length === 0) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        const visible = entries.find((entry) => entry.isIntersecting);
         if (visible) setCurrent(visible.target.id);
       },
-      { rootMargin: "-45% 0px -45% 0px" },
+      { rootMargin: "-45% 0px -50% 0px" },
     );
 
     sections.forEach((section) => observer.observe(section));
@@ -80,127 +77,120 @@ export function SiteNav({ session }: { session: NavSession }) {
   return (
     <header
       className={cn(
-        "sticky top-0 z-40 transition-[padding,background-color,border-color] duration-300",
-        condensed
-          ? "bg-background/85 border-border border-b py-3 backdrop-blur-md"
-          : "border-b border-transparent py-6",
+        "fixed inset-x-0 top-0 z-50 transition-[background-color,border-color] duration-300",
+        scrolled
+          ? "bg-ink/85 border-b border-white/10 backdrop-blur-xl"
+          : "border-b border-transparent bg-transparent",
       )}
     >
       <nav
         aria-label="Main"
-        className="mx-auto flex w-full max-w-7xl items-center gap-6 px-6 sm:px-8 lg:px-12"
+        className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between gap-6 px-4 sm:px-6 lg:px-8"
       >
         <Link
-          href="#welcome"
-          className="focus-visible:ring-ring flex shrink-0 items-center gap-3 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+          href="/"
+          className="flex shrink-0 items-center gap-2.5 rounded-sm focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
         >
-          <RoseMark className="text-accent-foreground size-7" />
-          <span className="font-heading text-sm leading-none">
-            {church.shortName}
-            <span className="text-muted-foreground mt-1 block font-mono text-[0.6rem] tracking-[0.18em] uppercase">
-              Chapel · {church.address.city}
+          <Logo size={34} />
+          <span className="leading-none">
+            <span className="font-display block text-[0.8rem] font-bold tracking-[0.06em] text-white">
+              Kingdom Manifest
+            </span>
+            <span className="text-brass mt-1 block text-[0.65rem] font-medium tracking-[0.14em] uppercase">
+              Ministries International
             </span>
           </span>
         </Link>
 
-        <ol className="mx-auto hidden items-center gap-7 lg:flex">
-          {barEntries.map((entry) => {
-            const active = current === entry.href.slice(1);
+        <ul className="hidden items-center gap-1 md:flex">
+          {links.map((link) => {
+            const active = current === link.href.slice(1);
             return (
-              <li key={entry.href}>
+              <li key={link.href}>
                 <Link
-                  href={entry.href}
+                  href={link.href}
                   aria-current={active ? "true" : undefined}
                   className={cn(
-                    "group focus-visible:ring-ring flex items-baseline gap-2 rounded-sm text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none",
-                    active ? "text-foreground" : "text-muted-foreground hover:text-foreground",
+                    "relative rounded-md px-3 py-2 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none",
+                    active ? "text-white" : "text-white/70 hover:text-white",
                   )}
                 >
-                  <span className="numeric text-[0.62rem] opacity-70">{entry.numeral}</span>
+                  {link.label}
                   <span
+                    aria-hidden
                     className={cn(
-                      "decoration-accent-foreground underline-offset-[6px]",
-                      active ? "underline" : "group-hover:underline",
+                      "bg-brass absolute inset-x-3 -bottom-px h-0.5 rounded-full transition-transform duration-300 motion-reduce:transition-none",
+                      active ? "scale-x-100" : "scale-x-0",
                     )}
-                  >
-                    {entry.label}
-                  </span>
+                  />
                 </Link>
               </li>
             );
           })}
-        </ol>
+        </ul>
 
-        <div className="ml-auto flex items-center gap-2 lg:ml-0">
-          <SessionLink session={session} />
+        <div className="flex items-center gap-2">
+          <PortalLink session={session} className="hidden sm:inline-flex" />
 
-          {/* Hairline, so the member door reads as separate from the visitor CTA. */}
-          <span aria-hidden className="bg-border mx-1 hidden h-5 w-px sm:block" />
+          <ThemeToggle tone="onBlue" className="hidden sm:inline-flex" />
 
-          <ActionLink href="#plan" className="hidden px-5 py-2.5 text-[0.8rem] sm:inline-flex">
-            Plan your visit
-          </ActionLink>
-
-          <ThemeToggle />
-
-          {/* Everything the bar cannot hold, on small screens. */}
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
-              className="focus-visible:ring-ring text-foreground hover:bg-muted -mr-1.5 inline-flex size-9 items-center justify-center rounded-md transition-colors focus-visible:ring-2 focus-visible:outline-none lg:hidden"
-              aria-label="Open the order of service"
+              className="inline-flex size-9 items-center justify-center rounded-lg text-white transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none md:hidden"
+              aria-label="Open menu"
             >
-              <svg viewBox="0 0 20 20" aria-hidden focusable="false" className="size-5">
+              <svg viewBox="0 0 24 24" aria-hidden focusable="false" className="size-5">
                 <path
-                  d="M3 6h14M3 10h14M3 14h14"
+                  d="M4 7h16M4 12h16M4 17h16"
                   fill="none"
                   stroke="currentColor"
-                  strokeWidth="1.5"
+                  strokeWidth="1.75"
                   strokeLinecap="round"
                 />
               </svg>
             </SheetTrigger>
 
-            <SheetContent side="right" className="gap-0 px-6 py-8">
-              <SheetTitle className="font-heading text-lg">{church.name}</SheetTitle>
-              <SheetDescription className="text-muted-foreground font-mono text-[0.6rem] tracking-[0.18em] uppercase">
-                The order of service
-              </SheetDescription>
+            <SheetContent side="right" className="bg-ink gap-0 border-white/10 px-6 py-8 text-white">
+              <div className="flex items-center gap-3">
+                <Logo size={38} />
+                <div>
+                  <SheetTitle className="font-display text-sm font-bold text-white">
+                    Kingdom Manifest
+                  </SheetTitle>
+                  <SheetDescription className="text-brass text-[0.65rem] tracking-[0.14em] uppercase">
+                    Ministries International
+                  </SheetDescription>
+                </div>
+              </div>
 
-              <ol className="mt-8 grid">
-                {order.map((entry) => (
-                  <li key={entry.href} className="border-border border-b">
+              <ul className="mt-8 grid gap-1">
+                {links.map((link) => (
+                  <li key={link.href}>
                     <SheetClose asChild>
                       <Link
-                        href={entry.href}
-                        className="focus-visible:ring-ring flex items-baseline gap-4 rounded-sm py-3.5 text-base transition-colors focus-visible:ring-2 focus-visible:outline-none"
+                        href={link.href}
+                        className="block rounded-lg px-3 py-2.5 text-[0.95rem] font-medium text-white/85 transition-colors hover:bg-white/10 hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                       >
-                        <span className="numeric text-accent-foreground w-6 shrink-0 text-[0.7rem]">
-                          {entry.numeral}
-                        </span>
-                        {entry.label}
+                        {link.label}
                       </Link>
                     </SheetClose>
                   </li>
                 ))}
-              </ol>
+              </ul>
 
-              {/* The bar hides the session link below `sm`, so it lives here too. */}
               <SheetClose asChild>
-                <Link
-                  href={session ? "/dashboard" : "/login"}
-                  className="focus-visible:ring-ring border-border mt-8 flex items-center justify-between rounded-md border px-4 py-3 text-sm transition-colors focus-visible:ring-2 focus-visible:outline-none"
-                >
-                  <span>{session ? `Signed in as ${session.firstName}` : "Sign in"}</span>
-                  <span className="text-muted-foreground font-mono text-[0.6rem] tracking-[0.18em] uppercase">
-                    {session ? "Dashboard" : "Members"}
-                  </span>
-                </Link>
+                <PortalLink session={session} className="mt-6 w-full" />
               </SheetClose>
 
-              <div className="mt-8 grid gap-2">
+              <div className="mt-6 flex items-center justify-between">
+                <span className="text-sm text-white/70">Theme</span>
+                <ThemeToggle tone="onBlue" />
+              </div>
+
+              <div className="mt-auto grid gap-1.5 pt-8 text-sm text-white/60">
                 <a
                   href={`tel:${church.phone.replace(/\s/g, "")}`}
-                  className="focus-visible:ring-ring text-muted-foreground rounded-sm text-sm focus-visible:ring-2 focus-visible:outline-none"
+                  className="rounded-sm hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                 >
                   {church.phone}
                 </a>
@@ -208,7 +198,7 @@ export function SiteNav({ session }: { session: NavSession }) {
                   href={church.mapUrl}
                   target="_blank"
                   rel="noreferrer noopener"
-                  className="focus-visible:ring-ring text-muted-foreground rounded-sm text-sm focus-visible:ring-2 focus-visible:outline-none"
+                  className="rounded-sm hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
                 >
                   {church.address.line1}, {church.address.city}
                 </a>
@@ -217,68 +207,41 @@ export function SiteNav({ session }: { session: NavSession }) {
           </Sheet>
         </div>
       </nav>
+
+      {/* Reading progress. */}
+      <div aria-hidden className="scroll-progress bg-brass absolute inset-x-0 bottom-0 h-0.5" />
     </header>
   );
 }
 
 /**
  * The one place on the public site that knows whether you are signed in.
- *
- * Signed out it is a quiet text link, not a second button: the page already has
- * one call to action ("Plan your visit"), and for a first-time visitor — who
- * most of this page is written for — signing in is not the thing to do. Signed
- * in it becomes the way back to your own area, marked with an initial so the
- * change of state is visible at a glance rather than only on reading it.
+ * Signed out it is the gold "Sign in"; signed in it becomes the way back to
+ * your own area, marked with your initial so the change is visible at a glance.
  */
-function SessionLink({ session }: { session: NavSession }) {
-  if (!session) {
-    return (
-      <Link
-        href="/login"
-        className="focus-visible:ring-ring text-muted-foreground hover:text-foreground hidden cursor-pointer rounded-sm px-2 py-1.5 font-mono text-[0.62rem] tracking-[0.18em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none sm:inline-flex"
-      >
-        Sign in
-      </Link>
-    );
-  }
-
+function PortalLink({ session, className }: { session: NavSession; className?: string }) {
   return (
     <Link
-      href="/dashboard"
-      className="group focus-visible:ring-ring hover:bg-muted hidden cursor-pointer items-center gap-2 rounded-full py-1 pr-3 pl-1 transition-colors focus-visible:ring-2 focus-visible:outline-none sm:inline-flex"
+      href={session ? "/dashboard" : "/login"}
+      className={cn(
+        "action-gold inline-flex h-9 items-center justify-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors",
+        "focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ink)] focus-visible:outline-none",
+        className,
+      )}
     >
-      <span
-        aria-hidden
-        className="bg-accent text-accent-foreground border-border/60 numeric grid size-7 place-items-center rounded-full border text-[0.7rem]"
-      >
-        {session.firstName.charAt(0).toUpperCase()}
-      </span>
-      <span className="text-muted-foreground group-hover:text-foreground font-mono text-[0.62rem] tracking-[0.18em] uppercase transition-colors">
-        {session.isAdmin ? "Admin" : session.firstName}
-      </span>
+      {session ? (
+        <>
+          <span
+            aria-hidden
+            className="bg-ink grid size-5 place-items-center rounded-full text-[0.65rem] text-white"
+          >
+            {session.firstName.charAt(0).toUpperCase()}
+          </span>
+          {session.isAdmin ? "Admin" : "Dashboard"}
+        </>
+      ) : (
+        "Sign in"
+      )}
     </Link>
-  );
-}
-
-/** Twelve spokes — the same window, reduced to a mark. */
-function RoseMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" className={className} aria-hidden focusable="false">
-      <circle cx="16" cy="16" r="14.5" fill="none" stroke="currentColor" strokeWidth="1.25" />
-      <circle cx="16" cy="16" r="4" fill="none" stroke="currentColor" strokeWidth="1.25" />
-      {Array.from({ length: 12 }, (_, index) => (
-        <line
-          key={index}
-          x1="16"
-          y1="4"
-          x2="16"
-          y2="12"
-          stroke="currentColor"
-          strokeWidth="1.25"
-          strokeLinecap="round"
-          transform={`rotate(${index * 30} 16 16)`}
-        />
-      ))}
-    </svg>
   );
 }

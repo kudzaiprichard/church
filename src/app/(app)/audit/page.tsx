@@ -1,8 +1,11 @@
+import { ScrollTextIcon } from "lucide-react";
 import type { Metadata } from "next";
 
 import type { AuditAction } from "@/generated/prisma/enums";
 import { requireAdmin } from "@/lib/auth/dal";
 import { prisma } from "@/lib/prisma";
+
+import { EmptyState, PageHeader, Panel } from "../_components/page-parts";
 
 export const metadata: Metadata = { title: "Audit log" };
 
@@ -46,58 +49,73 @@ export default async function AuditPage() {
 
   return (
     <>
-      <h1 className="text-3xl leading-tight">Audit log</h1>
-      <p className="text-muted-foreground mt-3 max-w-xl text-pretty">
-        Every privileged act on the system: who did it, to whom, and when. Nothing here can be
-        edited or removed from inside the application.
-      </p>
+      <PageHeader
+        eyebrow="People"
+        title="Audit log"
+        description="Every privileged act on the system: who did it, to whom, and when. Nothing here can be edited or removed from inside the application."
+      />
 
-      {entries.length === 0 ? (
-        <p className="text-muted-foreground mt-10 text-sm">Nothing recorded yet.</p>
-      ) : (
-        <ol className="mt-9">
-          {entries.map((entry) => {
-            const described = DESCRIPTIONS[entry.action];
-            return (
-              <li key={entry.id} className="border-border/60 border-t py-4">
-                <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+      <Panel
+        title={`${entries.length} ${entries.length === 1 ? "entry" : "entries"}`}
+        description="Newest first, up to the latest 200."
+        bodyClassName="p-0"
+      >
+        {entries.length === 0 ? (
+          <EmptyState icon={<ScrollTextIcon className="size-5" aria-hidden />} title="Nothing recorded yet">
+            Invitations, role changes and password resets will be listed here as they happen.
+          </EmptyState>
+        ) : (
+          <ol className="divide-border divide-y">
+            {entries.map((entry) => {
+              const described = DESCRIPTIONS[entry.action];
+              const high = described.weight === "high";
+              return (
+                <li key={entry.id} className="flex gap-3 px-5 py-3.5">
                   <span
-                    className={
-                      described.weight === "high"
-                        ? "text-foreground text-sm font-medium"
-                        : "text-foreground/80 text-sm"
-                    }
-                  >
-                    {described.label}
-                  </span>
-                  {entry.detail && (
-                    <span className="text-muted-foreground text-xs">{entry.detail}</span>
-                  )}
-                  <time
-                    dateTime={entry.createdAt.toISOString()}
-                    className="text-muted-foreground/70 ml-auto font-mono text-[0.65rem] tracking-wide"
-                  >
-                    {stamp.format(entry.createdAt)}
-                  </time>
-                </div>
+                    aria-hidden
+                    className={`mt-1.5 size-2 shrink-0 rounded-full ${high ? "bg-brass" : "bg-border"}`}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
+                      <span
+                        className={
+                          high ? "text-foreground text-sm font-semibold" : "text-foreground/85 text-sm"
+                        }
+                      >
+                        {described.label}
+                      </span>
+                      {entry.detail && (
+                        <span className="text-muted-foreground text-xs">{entry.detail}</span>
+                      )}
+                      <time
+                        dateTime={entry.createdAt.toISOString()}
+                        className="numeric text-muted-foreground ml-auto text-xs"
+                      >
+                        {stamp.format(entry.createdAt)}
+                      </time>
+                    </div>
 
-                <p className="text-muted-foreground mt-1.5 text-xs">
-                  {/* The emails are the copies stored on the row, so a deleted
-                      account does not turn its history into a set of blanks. */}
-                  <span className="font-medium">{entry.actorEmail ?? "the system"}</span>
-                  {entry.targetEmail && (
-                    <>
-                      {" → "}
-                      <span>{entry.targetEmail}</span>
-                    </>
-                  )}
-                  {entry.ip && <span className="text-muted-foreground/60"> · {entry.ip}</span>}
-                </p>
-              </li>
-            );
-          })}
-        </ol>
-      )}
+                    <p className="text-muted-foreground mt-1 text-xs">
+                      {/* The emails are the copies stored on the row, so a deleted
+                          account does not turn its history into a set of blanks. */}
+                      <span className="text-foreground/80 font-medium">
+                        {entry.actorEmail ?? "the system"}
+                      </span>
+                      {entry.targetEmail && (
+                        <>
+                          {" → "}
+                          <span>{entry.targetEmail}</span>
+                        </>
+                      )}
+                      {entry.ip && <span className="opacity-70"> · {entry.ip}</span>}
+                    </p>
+                  </div>
+                </li>
+              );
+            })}
+          </ol>
+        )}
+      </Panel>
     </>
   );
 }

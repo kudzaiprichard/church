@@ -84,7 +84,7 @@ function SigningOutOverlay() {
     >
       <div className="flex flex-col items-center gap-5">
         <RoseCross mode="orbit" className="text-brass size-12" />
-        <span className="text-muted-foreground font-mono text-[0.6rem] tracking-[0.18em] uppercase">
+        <span className="text-muted-foreground text-sm font-medium">
           Signing out
         </span>
       </div>

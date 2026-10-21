@@ -29,7 +29,7 @@ export function NextGatheringLine() {
 
   return (
     <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
-      <span className="text-muted-foreground font-mono text-[0.65rem] tracking-[0.2em] uppercase">
+      <span className="text-accent-foreground text-xs font-semibold tracking-[0.14em] uppercase">
         {next ? "Next gathering" : "Sundays"}
       </span>
 

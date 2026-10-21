@@ -20,7 +20,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
 
   return (
     <>
-      <h1 className="text-3xl leading-tight">Sign in</h1>
+      <h1 className="text-navy text-2xl leading-tight font-bold">Sign in</h1>
       <p className="text-muted-foreground mt-3 mb-9 text-sm text-pretty">
         Accounts are created by the church office. If you do not have one yet, speak to them and an
         invitation will be sent to your email.
@@ -40,7 +40,7 @@ export default async function LoginPage({ searchParams }: PageProps<"/login">) {
       */}
       <Link
         href="/"
-        className="focus-visible:ring-ring text-muted-foreground hover:text-foreground border-border mt-9 flex items-center gap-2 border-t pt-6 font-mono text-[0.62rem] tracking-[0.18em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
+        className="focus-visible:ring-ring text-muted-foreground hover:text-foreground border-border mt-8 flex items-center gap-2 border-t pt-5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
       >
         <span aria-hidden>&larr;</span>
         Back to the site

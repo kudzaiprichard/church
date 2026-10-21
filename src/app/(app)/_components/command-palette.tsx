@@ -90,11 +90,11 @@ export function CommandPalette({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
         showCloseButton={false}
-        className="gap-0 overflow-hidden rounded-none p-0 sm:max-w-lg"
+        className="gap-0 overflow-hidden rounded-xl p-0 sm:max-w-lg"
       >
         <DialogTitle className="sr-only">Search the system</DialogTitle>
 
-        <div className="border-border/60 flex items-center gap-3 border-b px-4">
+        <div className="border-border flex items-center gap-3 border-b px-4">
           <SearchIcon className="text-muted-foreground size-4 shrink-0" aria-hidden />
           <input
             autoFocus
@@ -111,7 +111,7 @@ export function CommandPalette({
           <KbdHint keys={["Esc"]} />
         </div>
 
-        <ul className="max-h-80 overflow-y-auto p-1.5">
+        <ul className="max-h-80 overflow-y-auto p-2">
           {results.length === 0 && (
             <li className="text-muted-foreground px-3 py-8 text-center text-sm">
               Nothing matches “{query}”.
@@ -126,18 +126,18 @@ export function CommandPalette({
                 onMouseEnter={() => setActive(index)}
                 onClick={() => choose(index)}
                 className={cn(
-                  "flex w-full items-center gap-3 rounded-none px-3 py-2 text-left text-sm",
+                  "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm",
                   "cursor-pointer transition-colors duration-150 disabled:cursor-default",
                   item.soon
                     ? "text-muted-foreground/45"
                     : index === active
-                      ? "bg-primary/10 text-primary"
-                      : "text-foreground hover:bg-secondary",
+                      ? "bg-secondary text-primary font-medium"
+                      : "text-foreground hover:bg-muted",
                 )}
               >
                 <NavIcon name={item.icon} className="size-4 shrink-0" />
                 <span className="truncate">{item.label}</span>
-                <span className="text-muted-foreground/60 ml-auto font-mono text-[0.6rem] tracking-[0.14em] uppercase">
+                <span className="text-muted-foreground ml-auto text-xs">
                   {item.soon ? "Soon" : item.section}
                 </span>
               </button>

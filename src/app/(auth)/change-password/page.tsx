@@ -16,7 +16,7 @@ export default async function ChangePasswordPage() {
 
   return (
     <>
-      <h1 className="text-3xl leading-tight">
+      <h1 className="text-navy text-2xl leading-tight font-bold">
         {forced ? "Choose a new password" : "Change your password"}
       </h1>
       <p className="text-muted-foreground mt-3 mb-9 text-sm text-pretty">

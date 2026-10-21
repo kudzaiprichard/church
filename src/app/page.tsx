@@ -1,47 +1,31 @@
-import { Ambient } from "@/components/landing/ambient";
 import { Closing } from "@/components/landing/closing";
+import { Devotion } from "@/components/landing/devotion";
+import { Features } from "@/components/landing/features";
+import { Groups } from "@/components/landing/groups";
 import { Hero } from "@/components/landing/hero";
-import { LancetClipDef } from "@/components/landing/lancet-clip";
-import { Mission } from "@/components/landing/mission";
 import { PlanVisit } from "@/components/landing/plan-visit";
+import { ScriptureBanner } from "@/components/landing/scripture-banner";
+import { Sermons } from "@/components/landing/sermons";
 import { SiteNav } from "@/components/landing/site-nav";
-import { Teaching } from "@/components/landing/teaching";
-import { Times } from "@/components/landing/times";
-import { Welcome } from "@/components/landing/welcome";
+import { ThemeConnect } from "@/components/landing/theme-connect";
 import { getSession } from "@/lib/auth/dal";
 
 /**
- * Six sections, and each one takes a different shape.
+ * The KMMI landing page, in the portal's order:
  *
- *   I    hero        type across the measure, three lights standing beneath it
- *   II   times       two lanes — the timetable, with the address sticky beside it
- *   III  expect      narrow prose held RIGHT, the ninety-minute dial beside it
- *   IV   why         centred over a photograph, the one dark moment
- *   V    teaching    two lanes divided by a hairline — sermons and dates
- *   VI   visit       two lanes — the invitation, and the form that answers it
- *
- * Each section owns its container; there is no shared column, because a shared
- * column is what made every section feel like the same slab. What holds them
- * together instead is the wash — one gradient across the whole page, so the
- * seams between sections are never edges — and the ambient light above it.
+ *   hero          the blue band — theme, crest, name, the way in
+ *   scripture     Matthew 6:10 on parchment
+ *   theme         the theme of the year, and the channels to follow
+ *   features      what the member portal offers
+ *   groups        the connect groups
+ *   devotion      today's devotion, opened and faded
+ *   sermons       the latest messages
+ *   visit         service times, and the form that tells the door you're coming
  *
  * The wrapper clips horizontally (`clip`, not `hidden`): reveals that arrive
- * from the right sit 32px outside their column while they travel, which is
- * wider than the 24px gutter on a phone and otherwise puts a scrollbar on the
- * body. `clip` trims it without creating a scroll container, so the sticky
- * panels inside still stick.
+ * from the side sit 32px outside their column while they travel, which is
+ * wider than the gutter on a phone and otherwise puts a scrollbar on the body.
  */
-/**
- * Every section is at least one screen tall and centres what it holds, so
- * arriving at one — by scrolling or by following a link in the nav — puts the
- * whole of it in view rather than half of it. The 5.5rem is the sticky nav,
- * which takes its own space at the top of the flow.
- *
- * `min-h` rather than `h`: on a short window a section grows past the screen
- * instead of clipping what is inside it.
- */
-const screen = "flex min-h-[calc(100svh-5.5rem)] scroll-mt-[5.5rem] flex-col justify-center";
-
 export default async function Home() {
   /**
    * Read here rather than inside the nav, because the nav is a Client Component
@@ -51,40 +35,24 @@ export default async function Home() {
    * and to label where the link goes. This is the whole reason `getSession`
    * returns a DTO: passing the row itself would ship a password hash and
    * lockout counters to the browser of anyone who viewed the home page.
-   *
-   * The cookie read makes this route dynamic, which for a page that must tell
-   * two visitors apart is the correct trade rather than a regression.
    */
   const user = await getSession();
 
   return (
-    <div className="page-wash relative overflow-x-clip">
-      <LancetClipDef />
-      <Ambient />
+    <div className="bg-background relative min-h-screen overflow-x-clip">
       <SiteNav
         session={user ? { firstName: user.firstName, isAdmin: user.role === "ADMIN" } : null}
       />
 
-      <main className="relative z-10">
+      <main>
         <Hero />
-
-        <section id="times" className={screen}>
-          <Times />
-        </section>
-
-        <section id="visit" className={screen}>
-          <Welcome />
-        </section>
-
-        <Mission className={screen} />
-
-        <section id="teaching" className={screen}>
-          <Teaching />
-        </section>
-
-        <section id="plan" className={screen}>
-          <PlanVisit />
-        </section>
+        <ScriptureBanner />
+        <ThemeConnect />
+        <Features />
+        <Groups />
+        <Devotion />
+        <Sermons />
+        <PlanVisit />
       </main>
 
       <Closing />

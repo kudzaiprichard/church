@@ -21,7 +21,7 @@ export default async function AcceptInvitePage({ params }: PageProps<"/accept-in
   if (!checked.ok) {
     return (
       <>
-        <h1 className="text-3xl leading-tight">This link is no longer valid</h1>
+        <h1 className="text-navy text-2xl leading-tight font-bold">This link is no longer valid</h1>
         <p className="text-muted-foreground mt-3 text-sm text-pretty">
           {checked.reason === "expired"
             ? "Invitations last seven days, and this one has passed that."
@@ -44,7 +44,7 @@ export default async function AcceptInvitePage({ params }: PageProps<"/accept-in
 
   return (
     <>
-      <h1 className="text-3xl leading-tight">Set up your account</h1>
+      <h1 className="text-navy text-2xl leading-tight font-bold">Set up your account</h1>
       <p className="text-muted-foreground mt-3 mb-9 text-sm text-pretty">
         Choose a password and you are in. Nobody at the church can see it — if you forget it, you
         will be sent a link to set a new one.

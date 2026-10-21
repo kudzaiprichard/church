@@ -6,43 +6,47 @@ import type { ComponentProps, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /**
- * The landing page's call to action.
+ * The public site's call to action.
  *
  * Separate from `ui/button` on purpose: that component is sized for an admin
  * interface (32px tall, tight padding) and is shared with the rest of the
  * system, so it should not grow a one-off marketing variant.
  *
- * These are flat. No shelf, no shadow, no lift — nothing that suggests the
- * button is a physical object sitting on top of the page. What is left has to
- * carry the states on its own, so hover and press are a single deliberate step
- * down into the fill each, and the arrow leans forward to say the thing is
- * live. A quiet action draws its brass underline in from the left.
+ * Flat, all of them — no shadow, no lift. The fill carries every state on its
+ * own, and the arrow leaning forward is the only movement.
+ *
+ *   gold     the primary action — crown gold, navy lettering
+ *   solid    royal blue, for a second action on paper
+ *   outline  a hairline in blue that fills on hover
+ *   light    frosted glass, for the blue bands
+ *   quiet    a text link whose gold underline draws in from the left
  */
 const actionVariants = cva(
   cn(
-    "group/action relative inline-flex shrink-0 items-center justify-center gap-2.5",
-    "text-sm font-medium tracking-wide whitespace-nowrap",
+    "group/action relative inline-flex h-11 shrink-0 items-center justify-center gap-2",
+    "text-sm font-semibold whitespace-nowrap",
     "transition-colors duration-200 ease-out",
-    // Focus rings use --ring, not brass: brass sits at roughly 2.9:1 on sand,
-    // which is under the 3:1 a focus indicator has to clear. Brass stays
-    // decorative — it draws underlines, it never carries state.
     "outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--background)]",
     "disabled:pointer-events-none disabled:opacity-55 motion-reduce:transition-none",
   ),
   {
     variants: {
       tone: {
-        solid: "action-solid rounded-md px-6 py-3.5",
-        quiet: cn("text-foreground rounded-md px-1 py-3.5", "focus-visible:ring-offset-4"),
-        /* For the dark bands, where the page's ink colours have nothing to sit on. */
+        gold: "action-gold rounded-lg px-5",
+        solid: "action-solid rounded-lg px-5",
+        outline: cn(
+          "border-primary/30 text-primary rounded-lg border px-5",
+          "hover:border-primary hover:bg-secondary",
+        ),
+        quiet: cn("text-foreground h-auto rounded-md px-1 py-2", "focus-visible:ring-offset-4"),
         light: cn(
-          "rounded-md px-6 py-3.5 text-white",
-          "border border-white/25 hover:border-white/55 hover:bg-white/10 active:bg-white/[0.16]",
-          "focus-visible:ring-offset-[var(--ink)]",
+          "rounded-lg border border-white/20 bg-white/10 px-5 text-white backdrop-blur-sm",
+          "hover:border-white/35 hover:bg-white/15",
+          "focus-visible:ring-white focus-visible:ring-offset-[var(--ink)]",
         ),
       },
     },
-    defaultVariants: { tone: "solid" },
+    defaultVariants: { tone: "gold" },
   },
 );
 

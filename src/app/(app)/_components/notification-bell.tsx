@@ -50,14 +50,14 @@ export function NotificationBell({
       <PopoverTrigger
         aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
         className={cn(
-          "border-border/70 text-muted-foreground hover:bg-secondary hover:text-foreground",
-          "focus-visible:ring-ring relative grid h-7 w-7 cursor-pointer place-items-center rounded-none border",
+          "border-border text-muted-foreground hover:bg-muted hover:text-foreground",
+          "focus-visible:ring-ring relative grid size-9 cursor-pointer place-items-center rounded-lg border",
           "transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none",
         )}
       >
-        <BellIcon className="size-3.5" strokeWidth={1.75} aria-hidden />
+        <BellIcon className="size-4" strokeWidth={1.75} aria-hidden />
         {unreadCount > 0 && (
-          <span className="bg-primary text-primary-foreground absolute -top-1 -right-1 flex h-3.5 min-w-[14px] items-center justify-center rounded-full px-1 text-[0.6rem] leading-none font-semibold">
+          <span className="bg-brass ring-background absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[0.6rem] leading-none font-bold text-[oklch(0.255_0.093_277.5)] ring-2">
             {display}
           </span>
         )}
@@ -66,12 +66,12 @@ export function NotificationBell({
       <PopoverContent
         align="end"
         sideOffset={10}
-        className="w-[22rem] overflow-hidden rounded-none p-0"
+        className="w-[22rem] overflow-hidden rounded-xl p-0"
       >
-        <div className="border-border/60 flex items-center justify-between border-b px-3 py-2.5">
+        <div className="border-border flex items-center justify-between border-b px-4 py-3">
           <h3 className="text-sm font-semibold">Notifications</h3>
           {unreadCount > 0 && (
-            <span className="text-muted-foreground font-mono text-[0.65rem] tracking-[0.14em] uppercase">
+            <span className="bg-secondary text-primary rounded-md px-1.5 py-0.5 text-xs font-semibold">
               {unreadCount} unread
             </span>
           )}
@@ -79,8 +79,10 @@ export function NotificationBell({
 
         {items.length === 0 ? (
           <div className="text-muted-foreground flex flex-col items-center justify-center px-4 py-10">
-            <InboxIcon className="mb-3 size-8 opacity-40" aria-hidden />
-            <p className="text-sm font-medium">Nothing yet</p>
+            <span className="bg-secondary text-primary mb-3 grid size-11 place-items-center rounded-xl">
+              <InboxIcon className="size-5" aria-hidden />
+            </span>
+            <p className="text-foreground text-sm font-semibold">Nothing yet</p>
             <p className="mt-1 text-xs opacity-70">
               Messages, events and group activity will appear here.
             </p>
@@ -94,8 +96,8 @@ export function NotificationBell({
                     href={item.linkUrl ?? "/notifications"}
                     onClick={() => setOpen(false)}
                     className={cn(
-                      "hover:bg-secondary/60 block px-3 py-2.5 transition-colors",
-                      !item.read && "bg-primary/[0.04]",
+                      "hover:bg-muted block px-4 py-3 transition-colors",
+                      !item.read && "bg-secondary/50",
                     )}
                   >
                     <p className="flex items-baseline gap-2 text-sm leading-snug">
@@ -109,7 +111,7 @@ export function NotificationBell({
                     {item.body && (
                       <p className="text-muted-foreground mt-1 line-clamp-2 text-xs">{item.body}</p>
                     )}
-                    <p className="text-muted-foreground/70 mt-1 font-mono text-[0.6rem] tracking-wide">
+                    <p className="text-muted-foreground mt-1 text-xs">
                       {when.format(new Date(item.createdAt))}
                     </p>
                   </Link>

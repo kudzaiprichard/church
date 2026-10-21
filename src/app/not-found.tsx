@@ -39,7 +39,7 @@ export default function NotFound() {
 
         <Link
           href={`mailto:${church.email}`}
-          className="focus-visible:ring-ring text-muted-foreground hover:text-foreground rounded-sm px-2 py-1.5 font-mono text-[0.62rem] tracking-[0.18em] uppercase transition-colors focus-visible:ring-2 focus-visible:outline-none"
+          className="focus-visible:ring-ring text-muted-foreground hover:text-foreground rounded-sm px-2 py-1.5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
         >
           Tell the office
         </Link>

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, Instrument_Sans, JetBrains_Mono } from "next/font/google";
+import { Cinzel, Cormorant_Garamond, Inter, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
 import { SiteLoader } from "@/components/loader/site-loader";
@@ -7,21 +7,38 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { church } from "@/lib/church";
 
-// Three roles: Fraunces sets headings, Instrument Sans carries the interface,
-// and JetBrains Mono handles figures (times, dates, giving, attendance).
-//
-// Instrument Sans rather than Inter on purpose — it is a humanist grotesque
-// with a little warmth in the a and g, which keeps the running text on the
-// same side of the line as Fraunces instead of reading as a dashboard.
-const fraunces = Fraunces({
-  variable: "--font-fraunces",
+// Each face has one job:
+//   Plus Jakarta Sans  headings — modern, compact, holds tight tracking well
+//   Inter              everything you read and click
+//   Cinzel             the KMMI wordmark only; it is a display face of
+//                      inscriptional capitals and turns to noise at body sizes
+//   Cormorant Garamond scripture, in italic — the one place the page speaks
+//                      in a voice other than its own
+//   JetBrains Mono     figures (times, dates, giving, attendance)
+const jakarta = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
   subsets: ["latin"],
   display: "swap",
 });
 
-const instrumentSans = Instrument_Sans({
-  variable: "--font-instrument-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const cinzel = Cinzel({
+  variable: "--font-cinzel",
+  subsets: ["latin"],
+  weight: ["600", "700"],
+  display: "swap",
+});
+
+const cormorant = Cormorant_Garamond({
+  variable: "--font-cormorant",
+  subsets: ["latin"],
+  weight: ["500", "600"],
+  style: ["italic"],
   display: "swap",
 });
 
@@ -33,7 +50,7 @@ const jetBrainsMono = JetBrains_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: `${church.name} — ${church.address.city}`,
+    default: `${church.shortName} — ${church.name}`,
     template: `%s — ${church.name}`,
   },
   description: church.tagline,
@@ -43,7 +60,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${instrumentSans.variable} ${fraunces.variable} ${jetBrainsMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${jakarta.variable} ${cinzel.variable} ${cormorant.variable} ${jetBrainsMono.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">

@@ -1,52 +1,43 @@
 import Link from "next/link";
 
+import { Logo } from "@/components/brand/logo";
+import { ThemeToggle } from "@/components/theme-toggle";
+
 /**
- * The shell every sign-in screen sits in: one centred column on the page's own
- * paper, no navigation. Somebody on these screens has exactly one thing to do,
- * and offering them the rest of the site is only a way to lose them.
+ * The shell every sign-in screen sits in: one card centred on the canvas, the
+ * hairline grid from the public site fading out behind it, and no navigation.
+ * Somebody on these screens has exactly one thing to do, and offering them the
+ * rest of the site is only a way to lose them. The theme switch is the one
+ * exception, in the corner, because a bright white form at night is its own
+ * reason to give up.
  */
 export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center px-6 py-12">
-      <div className="w-full max-w-sm">
+    <div className="bg-canvas relative flex min-h-svh flex-col items-center justify-center overflow-hidden px-4 py-12">
+      <div aria-hidden className="bg-grid pointer-events-none absolute inset-0" />
+
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
+
+      <div className="relative w-full max-w-sm">
         <Link
           href="/"
-          className="focus-visible:ring-ring mb-10 flex items-center gap-3 rounded-sm focus-visible:ring-2 focus-visible:outline-none"
+          className="focus-visible:ring-ring mx-auto mb-6 flex w-fit items-center gap-3 rounded-md focus-visible:ring-2 focus-visible:outline-none"
         >
-          <RoseMark className="text-accent-foreground size-8 shrink-0" />
-          <span className="font-heading text-base leading-none">
-            Church
-            <span className="text-muted-foreground mt-1.5 block font-mono text-[0.6rem] tracking-[0.18em] uppercase">
-              Member area
+          <Logo size={40} className="shrink-0" />
+          <span className="leading-none">
+            <span className="font-display text-navy block text-sm font-bold tracking-[0.06em]">
+              Kingdom Manifest
+            </span>
+            <span className="text-accent-foreground mt-1.5 block text-[0.65rem] font-medium tracking-[0.14em] uppercase">
+              Member Portal
             </span>
           </span>
         </Link>
 
-        {children}
+        <div className="bg-card border-border rounded-2xl border p-6 sm:p-8">{children}</div>
       </div>
     </div>
-  );
-}
-
-/** Twelve spokes — the same mark the public site uses. */
-function RoseMark({ className }: { className?: string }) {
-  return (
-    <svg viewBox="0 0 32 32" className={className} aria-hidden focusable="false">
-      <circle cx="16" cy="16" r="14.5" fill="none" stroke="currentColor" strokeWidth="1.25" />
-      <circle cx="16" cy="16" r="4" fill="none" stroke="currentColor" strokeWidth="1.25" />
-      {Array.from({ length: 12 }, (_, spoke) => (
-        <line
-          key={spoke}
-          x1="16"
-          y1="4"
-          x2="16"
-          y2="12"
-          stroke="currentColor"
-          strokeWidth="1.25"
-          strokeLinecap="round"
-          transform={`rotate(${spoke * 30} 16 16)`}
-        />
-      ))}
-    </svg>
   );
 }
