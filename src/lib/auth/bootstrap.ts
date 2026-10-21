@@ -7,16 +7,16 @@ import { recordAuditIn } from "./audit";
 import { hashPassword } from "./password";
 
 /**
- * Create the first administrator.
+ * Create the first Apostle — the office that holds every permission.
  *
  * A fresh install has an empty users table and no way to sign in, and the spec
- * has no public registration — members are added by admins. Something has to
+ * has no public registration — members are enrolled by leadership. Something has to
  * break that circle, so on server start, and only when the table contains no
- * administrator at all, one is created from the environment.
+ * Apostle at all, one is created from the environment.
  *
  * Four things keep this safe to run on every boot:
  *
- *   it is a no-op the moment any admin exists, so it cannot resurrect an
+ *   it is a no-op the moment any Apostle exists, so it cannot resurrect an
  *   account that was deliberately removed or quietly re-grant a role;
  *
  *   it never touches an existing row — if the email is already taken by a
@@ -29,20 +29,20 @@ import { hashPassword } from "./password";
  *   the environment stops being a working credential the first time anyone
  *   signs in with it.
  */
-export async function bootstrapFirstAdmin() {
-  const existingAdmin = await prisma.user.findFirst({
-    where: { role: "ADMIN" },
+export async function bootstrapFirstApostle() {
+  const existingApostle = await prisma.user.findFirst({
+    where: { role: "APOSTLE" },
     select: { id: true },
   });
 
-  if (existingAdmin) return { created: false, reason: "an administrator already exists" } as const;
+  if (existingApostle) return { created: false, reason: "an Apostle already exists" } as const;
 
   const email = env.BOOTSTRAP_ADMIN_EMAIL?.toLowerCase().trim();
   const password = env.BOOTSTRAP_ADMIN_PASSWORD;
 
   if (!email || !password) {
     console.warn(
-      "[bootstrap] No administrator exists and BOOTSTRAP_ADMIN_EMAIL / " +
+      "[bootstrap] No Apostle exists and BOOTSTRAP_ADMIN_EMAIL / " +
         "BOOTSTRAP_ADMIN_PASSWORD are not set — nobody can sign in. " +
         "Set both and restart. See .env.example.",
     );
@@ -52,9 +52,9 @@ export async function bootstrapFirstAdmin() {
   const taken = await prisma.user.findUnique({ where: { email }, select: { id: true } });
   if (taken) {
     console.warn(
-      `[bootstrap] ${email} already exists as a non-admin. Refusing to change ` +
+      `[bootstrap] ${email} already exists as a non-Apostle. Refusing to change ` +
         "an existing account's role. Use a different address, or promote them " +
-        "from the admin area once an administrator exists.",
+        "from the members area once an Apostle exists.",
     );
     return { created: false, reason: "email already in use" } as const;
   }
@@ -71,29 +71,29 @@ export async function bootstrapFirstAdmin() {
           passwordHash,
           firstName,
           lastName: rest.join(" ") || "Admin",
-          role: "ADMIN",
+          role: "APOSTLE",
           mustChangePassword: true,
           passwordChangedAt: new Date(),
         },
       });
 
       // No actor: nobody was signed in, the server did this at boot. Recorded
-      // all the same — an administrator appearing from nowhere is precisely
+      // all the same — an Apostle appearing from nowhere is precisely
       // the event an auditor would want to find an explanation for.
       await recordAuditIn(tx, {
         action: "ADMIN_BOOTSTRAPPED",
         target: created,
-        detail: "created from the environment because no administrator existed",
+        detail: "created from the environment because no Apostle existed",
       });
     });
   } catch {
     // Almost certainly the unique index firing because another instance won
-    // the race. Either way an admin now exists, which is the point.
+    // the race. Either way an Apostle now exists, which is the point.
     return { created: false, reason: "another instance created it first" } as const;
   }
 
   console.info(
-    `[bootstrap] Created the first administrator: ${email}. ` +
+    `[bootstrap] Created the first Apostle: ${email}. ` +
       "You will be asked to change this password at first sign-in. " +
       "Remove BOOTSTRAP_ADMIN_* from the environment afterwards.",
   );

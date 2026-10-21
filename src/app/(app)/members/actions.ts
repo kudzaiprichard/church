@@ -5,8 +5,9 @@ import { z } from "zod";
 
 import { recordAudit, recordAuditIn } from "@/lib/auth/audit";
 import { issueAuthToken } from "@/lib/auth/auth-tokens";
-import { requireAdmin } from "@/lib/auth/dal";
+import { requirePermission } from "@/lib/auth/dal";
 import { inviteEmail, passwordResetEmail } from "@/lib/auth/emails";
+import { ROLES, ROLE_LABELS, can } from "@/lib/auth/permissions";
 import { destroyAllSessions } from "@/lib/auth/session";
 import { prisma } from "@/lib/prisma";
 
@@ -15,10 +16,10 @@ import type { MemberFormState } from "./form-state";
 /**
  * Administration of the roll.
  *
- * Every action here begins with `requireAdmin()`. That is not a formality: a
- * Server Action is a POST endpoint that anybody can call directly with a
- * session cookie, whether or not the button that normally calls it was ever
- * rendered for them. Hiding the admin nav from members protects nothing on its
+ * Every action here begins with `requirePermission()`. That is not a
+ * formality: a Server Action is a POST endpoint that anybody can call directly
+ * with a session cookie, whether or not the button that normally calls it was
+ * ever rendered for them. Hiding the nav from members protects nothing on its
  * own — this line is what does it.
  */
 
@@ -26,14 +27,16 @@ const invitation = z.object({
   email: z.email("Enter a valid email address."),
   firstName: z.string().trim().min(1, "Enter a first name.").max(80),
   lastName: z.string().trim().min(1, "Enter a last name.").max(80),
-  role: z.enum(["ADMIN", "MEMBER"]),
+  role: z.enum(ROLES),
 });
+
+const office = z.enum(ROLES);
 
 export async function inviteMember(
   _previous: MemberFormState,
   formData: FormData,
 ): Promise<MemberFormState> {
-  const admin = await requireAdmin();
+  const admin = await requirePermission("members.enroll");
 
   const parsed = invitation.safeParse({
     email: String(formData.get("email") ?? "").toLowerCase().trim(),
@@ -51,6 +54,12 @@ export async function inviteMember(
       }
     }
     return { fieldErrors };
+  }
+
+  // Only an Apostle may create anything but a Member. The Matron enrols; she
+  // does not appoint.
+  if (parsed.data.role !== "MEMBER" && !can(admin, "members.setRole")) {
+    return { fieldErrors: { role: "Only an Apostle can enrol someone into an office." } };
   }
 
   const existing = await prisma.user.findUnique({ where: { email: parsed.data.email } });
@@ -112,7 +121,7 @@ export async function inviteMember(
 }
 
 export async function resendInvitation(userId: string) {
-  const admin = await requireAdmin();
+  const admin = await requirePermission("members.enroll");
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   // Only for accounts that have never been activated — a live account gets a
@@ -146,7 +155,7 @@ export async function resendInvitation(userId: string) {
  * plaintext — they choose their own, exactly as they did at the start.
  */
 export async function sendPasswordReset(userId: string) {
-  const admin = await requireAdmin();
+  const admin = await requirePermission("members.edit");
 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   // An account that never activated needs its invitation resending instead.
@@ -167,10 +176,14 @@ export async function sendPasswordReset(userId: string) {
   revalidatePath("/members");
 }
 
-export async function setRole(userId: string, role: "ADMIN" | "MEMBER") {
-  const admin = await requireAdmin();
+export async function setRole(userId: string, formData: FormData) {
+  const admin = await requirePermission("members.setRole");
 
-  // Demoting yourself is how a church ends up with no administrator at all.
+  const parsed = office.safeParse(formData.get("role"));
+  if (!parsed.success) return;
+  const role = parsed.data;
+
+  // Demoting yourself is how a church ends up with no Apostle at all.
   if (userId === admin.id) return;
 
   const target = await prisma.user.findUnique({ where: { id: userId } });
@@ -185,7 +198,7 @@ export async function setRole(userId: string, role: "ADMIN" | "MEMBER") {
       action: "ROLE_CHANGED",
       actor: admin,
       target,
-      detail: `${target.role} → ${role}`,
+      detail: `${ROLE_LABELS[target.role]} → ${ROLE_LABELS[role]}`,
     });
   });
 
@@ -197,9 +210,9 @@ export async function setRole(userId: string, role: "ADMIN" | "MEMBER") {
 }
 
 export async function setActive(userId: string, isActive: boolean) {
-  const admin = await requireAdmin();
+  const admin = await requirePermission("members.setActive");
 
-  // Same reasoning as above: do not let an admin lock themselves out.
+  // Same reasoning as above: do not let an Apostle lock themselves out.
   if (userId === admin.id) return;
 
   const target = await prisma.user.findUnique({ where: { id: userId } });

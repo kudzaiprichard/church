@@ -3,12 +3,14 @@
 import { useActionState } from "react";
 
 import { Field, FormError, Submit } from "@/app/(auth)/_components/form-parts";
+import { ROLES, ROLE_LABELS } from "@/lib/auth/permissions";
 import { cn } from "@/lib/utils";
 
 import { inviteMember } from "./actions";
 import { memberIdleState } from "./form-state";
 
-export function InviteForm() {
+/** `canAppoint` shows the office picker; the action enforces it regardless. */
+export function InviteForm({ canAppoint }: { canAppoint: boolean }) {
   const [state, action] = useActionState(inviteMember, memberIdleState);
 
   return (
@@ -26,10 +28,7 @@ export function InviteForm() {
       )}
 
       {state.warning && (
-        <div
-          role="alert"
-          className="bg-destructive/10 rounded-lg px-3.5 py-3 text-sm"
-        >
+        <div role="alert" className="bg-destructive/10 rounded-lg px-3.5 py-3 text-sm">
           <p className="text-pretty">{state.warning}</p>
 
           {state.inviteUrl && (
@@ -69,31 +68,38 @@ export function InviteForm() {
           error={state.fieldErrors?.email}
         />
 
-        <div>
-          <label
-            htmlFor="role"
-            className="text-foreground text-sm font-medium"
-          >
-            Role
-          </label>
-          <select
-            id="role"
-            name="role"
-            defaultValue="MEMBER"
-            className={cn(
-              "border-input bg-background mt-1.5 h-10 w-full rounded-lg border px-3 text-sm",
-              "transition-[border-color,box-shadow] duration-200 outline-none",
-              "focus:border-[var(--ring)] focus:ring-4 focus:ring-[color-mix(in_oklab,var(--ring)_18%,transparent)]",
+        {canAppoint ? (
+          <div>
+            <label htmlFor="role" className="text-foreground text-sm font-medium">
+              Office
+            </label>
+            <select
+              id="role"
+              name="role"
+              defaultValue="MEMBER"
+              className={cn(
+                "border-input bg-background mt-1.5 h-10 w-full rounded-lg border px-3 text-sm",
+                "transition-[border-color,box-shadow] duration-200 outline-none",
+                "focus:border-[var(--ring)] focus:ring-4 focus:ring-[color-mix(in_oklab,var(--ring)_18%,transparent)]",
+              )}
+            >
+              {ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {ROLE_LABELS[role]}
+                </option>
+              ))}
+            </select>
+            <p className="text-muted-foreground mt-1.5 text-xs text-pretty">
+              Apostles see everything; the Matron enrols and keeps baptismal records; the Elder
+              oversees church finance. Most people are Members.
+            </p>
+            {state.fieldErrors?.role && (
+              <p className="text-destructive mt-1.5 text-xs">{state.fieldErrors.role}</p>
             )}
-          >
-            <option value="MEMBER">Member — sees only their own records</option>
-            <option value="ADMIN">Administrator — sees everything</option>
-          </select>
-          <p className="text-muted-foreground mt-1.5 text-xs text-pretty">
-            Administrators can see every member&apos;s giving, attendance and messages. Give it out
-            sparingly.
-          </p>
-        </div>
+          </div>
+        ) : (
+          <input type="hidden" name="role" value="MEMBER" />
+        )}
 
         <Submit pendingLabel="Sending…">Send invitation</Submit>
       </form>

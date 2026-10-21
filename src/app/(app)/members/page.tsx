@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
-import { requireAdmin } from "@/lib/auth/dal";
+import { requirePermission } from "@/lib/auth/dal";
+import { can } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/prisma";
 
 import { PageHeader, Panel } from "../_components/page-parts";
@@ -11,15 +12,20 @@ import { MemberRow } from "./member-row";
 export const metadata: Metadata = { title: "Members" };
 
 /**
- * The member directory — admin only, per the spec ("Member directory, visible
- * only to admins").
+ * The member roll, for the offices that enrol.
  *
- * The guard is `requireAdmin`, not a check on the rendered output: a member who
- * guesses this URL is sent to their own dashboard before a single row is read
- * out of the database.
+ * The guard is `requirePermission`, not a check on the rendered output: a
+ * member who guesses this URL is sent to their own dashboard before a single
+ * row is read out of the database.
  */
 export default async function MembersPage() {
-  const admin = await requireAdmin();
+  const admin = await requirePermission("members.enroll");
+  const abilities = {
+    enroll: can(admin, "members.enroll"),
+    edit: can(admin, "members.edit"),
+    setRole: can(admin, "members.setRole"),
+    setActive: can(admin, "members.setActive"),
+  };
 
   /**
    * Two queries rather than one, on purpose.
@@ -76,7 +82,12 @@ export default async function MembersPage() {
         >
           <ul className="divide-border divide-y">
             {rows.map((member) => (
-              <MemberRow key={member.id} member={member} isSelf={member.id === admin.id} />
+              <MemberRow
+                key={member.id}
+                member={member}
+                isSelf={member.id === admin.id}
+                can={abilities}
+              />
             ))}
           </ul>
         </Panel>
@@ -86,7 +97,7 @@ export default async function MembersPage() {
           description="They will get an email with a link to choose their own password. No password is ever sent to them."
           className="lg:sticky lg:top-0"
         >
-          <InviteForm />
+          <InviteForm canAppoint={abilities.setRole} />
         </Panel>
       </div>
     </>

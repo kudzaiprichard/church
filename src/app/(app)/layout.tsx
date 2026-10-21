@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 
 import { signOut } from "@/app/(auth)/actions";
-import { ownerScope, requireSession } from "@/lib/auth/dal";
+import { requireSession, selfScope } from "@/lib/auth/dal";
 import { prisma } from "@/lib/prisma";
 
 import { AppShell } from "./_components/app-shell";
@@ -33,7 +33,8 @@ function safeInternalPath(value: string | null): string | null {
  * again. That is where the decision that matters is made.
  *
  * Notifications are read here rather than in the bell so the query stays on
- * the server and stays scoped: `ownerScope` pins it to the signed-in person,
+ * the server and stays scoped: `selfScope` pins it to the signed-in person —
+ * an Apostle included, since a notification is addressed to one person —
  * and only the fields the popover draws are handed to the client.
  */
 export default async function AppLayout({ children }: LayoutProps<"/">) {
@@ -42,18 +43,18 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
 
   const [notifications, unreadCount] = await Promise.all([
     prisma.notification.findMany({
-      where: ownerScope(user),
+      where: selfScope(user),
       orderBy: { createdAt: "desc" },
       take: 8,
       select: { id: true, title: true, body: true, linkUrl: true, createdAt: true, readAt: true },
     }),
-    prisma.notification.count({ where: { ...ownerScope(user), readAt: null } }),
+    prisma.notification.count({ where: { ...selfScope(user), readAt: null } }),
   ]);
 
   return (
     <AppShell
       user={user}
-      rail={railFor(user.role)}
+      rail={railFor(user)}
       signOut={signOut}
       notifications={notifications.map(({ readAt, createdAt, linkUrl, ...rest }) => ({
         ...rest,

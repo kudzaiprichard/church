@@ -31,8 +31,8 @@ export default async function Home() {
    * Read here rather than inside the nav, because the nav is a Client Component
    * and the session lives behind an httpOnly cookie and a database lookup.
    *
-   * Only a first name and a role cross the boundary — enough to greet someone
-   * and to label where the link goes. This is the whole reason `getSession`
+   * Only a first name crosses the boundary — enough to greet someone on the
+   * way back into the portal. This is the whole reason `getSession`
    * returns a DTO: passing the row itself would ship a password hash and
    * lockout counters to the browser of anyone who viewed the home page.
    */
@@ -41,7 +41,7 @@ export default async function Home() {
   return (
     <div className="bg-background relative min-h-screen overflow-x-clip">
       <SiteNav
-        session={user ? { firstName: user.firstName, isAdmin: user.role === "ADMIN" } : null}
+        session={user ? { firstName: user.firstName } : null}
       />
 
       <main>

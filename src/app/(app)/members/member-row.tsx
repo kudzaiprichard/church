@@ -1,8 +1,13 @@
 import type { Role } from "@/generated/prisma/enums";
+import { ROLES, ROLE_LABELS } from "@/lib/auth/permissions";
 
 import { resendInvitation, sendPasswordReset, setActive, setRole } from "./actions";
 
-const joined = new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+const joined = new Intl.DateTimeFormat("en-GB", {
+  day: "2-digit",
+  month: "short",
+  year: "numeric",
+});
 
 type Member = {
   id: string;
@@ -16,14 +21,30 @@ type Member = {
   activated: boolean;
 };
 
+/** Which row controls the viewer's office allows. Presentation only. */
+export type RowAbilities = {
+  enroll: boolean;
+  edit: boolean;
+  setRole: boolean;
+  setActive: boolean;
+};
+
 /**
- * One person on the roll, with the three things an admin can do to them.
+ * One person on the roll, with what the viewer's office lets them do to them.
  *
  * Each control is a form posting to a Server Action rather than a link, because
- * every one of them changes something — and because the action re-checks that
- * the caller is an admin regardless of what this row renders.
+ * every one of them changes something — and because the action re-checks the
+ * caller's permission regardless of what this row renders.
  */
-export function MemberRow({ member, isSelf }: { member: Member; isSelf: boolean }) {
+export function MemberRow({
+  member,
+  isSelf,
+  can,
+}: {
+  member: Member;
+  isSelf: boolean;
+  can: RowAbilities;
+}) {
   const status = !member.isActive
     ? "Deactivated"
     : !member.activated
@@ -56,9 +77,9 @@ export function MemberRow({ member, isSelf }: { member: Member; isSelf: boolean 
             <span className="text-foreground text-sm font-semibold">
               {member.firstName} {member.lastName}
             </span>
-            {member.role === "ADMIN" && (
+            {member.role !== "MEMBER" && (
               <span className="bg-secondary text-primary rounded-md px-1.5 py-0.5 text-[0.65rem] font-semibold">
-                Admin
+                {ROLE_LABELS[member.role]}
               </span>
             )}
             {isSelf && <span className="text-muted-foreground text-xs">(you)</span>}
@@ -71,27 +92,46 @@ export function MemberRow({ member, isSelf }: { member: Member; isSelf: boolean 
         </div>
       </div>
 
-      {/* An admin cannot demote or deactivate themselves — that is the fastest
-          route to a church with no administrator and no way back in. */}
+      {/* An Apostle cannot demote or deactivate themselves — that is the
+          fastest route to a church with no Apostle and no way back in. */}
       {!isSelf && (
         <div className="flex flex-wrap items-center gap-1.5 sm:justify-end">
-          {!member.activated && member.isActive && (
+          {can.enroll && !member.activated && member.isActive && (
             <RowAction action={resendInvitation.bind(null, member.id)}>Resend invitation</RowAction>
           )}
 
-          {member.activated && member.isActive && (
-            <RowAction action={sendPasswordReset.bind(null, member.id)}>Send password reset</RowAction>
+          {can.edit && member.activated && member.isActive && (
+            <RowAction action={sendPasswordReset.bind(null, member.id)}>
+              Send password reset
+            </RowAction>
           )}
 
-          <RowAction
-            action={setRole.bind(null, member.id, member.role === "ADMIN" ? "MEMBER" : "ADMIN")}
-          >
-            {member.role === "ADMIN" ? "Make a member" : "Make an admin"}
-          </RowAction>
+          {can.setRole && (
+            <form action={setRole.bind(null, member.id)} className="flex items-center gap-1">
+              <label htmlFor={`role-${member.id}`} className="sr-only">
+                Office for {member.firstName} {member.lastName}
+              </label>
+              <select
+                id={`role-${member.id}`}
+                name="role"
+                defaultValue={member.role}
+                className="border-border bg-background focus-visible:ring-ring h-7 rounded-md border px-1.5 text-xs focus-visible:ring-2 focus-visible:outline-none"
+              >
+                {ROLES.map((role) => (
+                  <option key={role} value={role}>
+                    {ROLE_LABELS[role]}
+                  </option>
+                ))}
+              </select>
+              <RowButton>Set office</RowButton>
+            </form>
+          )}
 
-          <RowAction action={setActive.bind(null, member.id, !member.isActive)} destructive>
-            {member.isActive ? "Deactivate" : "Reactivate"}
-          </RowAction>
+          {can.setActive && (
+            <RowAction action={setActive.bind(null, member.id, !member.isActive)} destructive>
+              {member.isActive ? "Deactivate" : "Reactivate"}
+            </RowAction>
+          )}
         </div>
       )}
     </li>
@@ -109,16 +149,22 @@ function RowAction({
 }) {
   return (
     <form action={action}>
-      <button
-        type="submit"
-        className={`focus-visible:ring-ring h-7 cursor-pointer rounded-md border px-2.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none ${
-          destructive
-            ? "border-destructive/25 text-destructive hover:bg-destructive/10"
-            : "border-border text-foreground/80 hover:bg-muted hover:text-foreground"
-        }`}
-      >
-        {children}
-      </button>
+      <RowButton destructive={destructive}>{children}</RowButton>
     </form>
+  );
+}
+
+function RowButton({ children, destructive }: { children: string; destructive?: boolean }) {
+  return (
+    <button
+      type="submit"
+      className={`focus-visible:ring-ring h-7 cursor-pointer rounded-md border px-2.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none ${
+        destructive
+          ? "border-destructive/25 text-destructive hover:bg-destructive/10"
+          : "border-border text-foreground/80 hover:bg-muted hover:text-foreground"
+      }`}
+    >
+      {children}
+    </button>
   );
 }

@@ -39,16 +39,16 @@ export async function register() {
     );
   }
 
-  const { bootstrapFirstAdmin } = await import("@/lib/auth/bootstrap");
+  const { bootstrapFirstApostle } = await import("@/lib/auth/bootstrap");
 
   try {
-    await bootstrapFirstAdmin();
+    await bootstrapFirstApostle();
   } catch (error) {
     // A database that is down at boot must not stop the server from starting —
     // the public site does not need one, and an operator restarting after an
     // outage should get a running app with a loud log rather than a crash loop.
     // Note the difference from the env check above: bad configuration cannot
     // fix itself, but a database usually comes back.
-    console.error("[bootstrap] Could not check for an administrator:", error);
+    console.error("[bootstrap] Could not check for an Apostle:", error);
   }
 }

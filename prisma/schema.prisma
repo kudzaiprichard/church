@@ -17,8 +17,13 @@ datasource db {
 // Modules 1 & 2 — Authentication, Users & Members
 // ---------------------------------------------------------------------------
 
+/// The office a person holds. Group leadership is not an office — it is
+/// `Group.leaderId`, so a leader's powers are always tied to one group.
+/// See docs/SCOPE.md §4.
 enum Role {
-  ADMIN
+  APOSTLE
+  MATRON
+  ELDER
   MEMBER
 }
 

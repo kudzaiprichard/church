@@ -31,7 +31,7 @@ const links = [
  * their link goes, and nothing else about a user should be in a Client
  * Component on a public page — see the read in `app/page.tsx`.
  */
-export type NavSession = { firstName: string; isAdmin: boolean } | null;
+export type NavSession = { firstName: string } | null;
 
 /**
  * The KMMI bar. Solid royal blue over the hero; once the page moves under it,
@@ -237,7 +237,7 @@ function PortalLink({ session, className }: { session: NavSession; className?: s
           >
             {session.firstName.charAt(0).toUpperCase()}
           </span>
-          {session.isAdmin ? "Admin" : "Dashboard"}
+          Dashboard
         </>
       ) : (
         "Sign in"

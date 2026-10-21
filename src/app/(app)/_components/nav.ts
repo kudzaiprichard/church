@@ -1,21 +1,22 @@
-import type { Role } from "@/generated/prisma/enums";
+import { can, type Permission } from "@/lib/auth/permissions";
 
 /**
- * The shape of the internal system, in one place.
+ * The shape of the internal system, in one place (docs/SCOPE.md §8).
  *
  * Two levels, because the shell has two zones. The icon rail shows *sections*;
  * choosing one opens a context panel listing that section's *pages*. The
  * breadcrumb and the command palette both read from here too, so a page can
  * never be called one thing in the rail and another at the top of the screen.
  *
- * `adminOnly` decides what a member is even shown. It is presentation only —
- * the actual gate is `requireAdmin()` inside the page and inside every action
- * it can reach. Hiding a link protects nothing on its own.
+ * `access` decides what a person is even shown. It is presentation only — the
+ * actual gate is `requirePermission()` / `requireGroupLeader()` inside the page
+ * and inside every action it can reach. Hiding a link protects nothing on its
+ * own.
  *
  * `soon` marks the modules from the specification that are not built yet. They
- * appear, greyed and unclickable, because an empty panel tells a new
- * administrator nothing about where this is going — and a link that 404s tells
- * them something worse.
+ * appear, greyed and unclickable, because an empty panel tells a new leader
+ * nothing about where this is going — and a link that 404s tells them
+ * something worse. Each phase flips its own items live.
  */
 export type IconName =
   | "overview"
@@ -23,25 +24,48 @@ export type IconName =
   | "life"
   | "records"
   | "you"
+  | "admin"
   | "dashboard"
   | "users"
   | "groups"
+  | "birthday"
+  | "baptism"
   | "inbox"
   | "calendar"
   | "prayer"
+  | "sermons"
+  | "devotion"
   | "attendance"
   | "giving"
+  | "finance"
+  | "chema"
+  | "review"
   | "partnership"
-  | "sermons"
+  | "profile"
+  | "notes"
   | "bell"
   | "account"
+  | "settings"
   | "audit";
+
+/**
+ * Who may see an entry. Absent means everyone signed in.
+ *
+ * Visible when the person holds *any* of `permissions`, or — with `leaders` —
+ * leads at least one group. Leadership is passed in from the database on every
+ * request rather than read from the session, so a newly assigned leader sees
+ * their tools on the next page load.
+ */
+export type NavAccess = {
+  permissions?: readonly Permission[];
+  leaders?: boolean;
+};
 
 export type PanelItem = {
   href: string;
   label: string;
   icon: IconName;
-  adminOnly?: boolean;
+  access?: NavAccess;
   soon?: boolean;
 };
 
@@ -51,7 +75,6 @@ export type RailSection = {
   icon: IconName;
   /** Where the rail icon itself goes — always the section's first real page. */
   href: string;
-  adminOnly?: boolean;
   items: PanelItem[];
 };
 
@@ -69,9 +92,21 @@ export const RAIL: RailSection[] = [
     icon: "people",
     href: "/members",
     items: [
-      { href: "/members", label: "Members", icon: "users", adminOnly: true },
-      { href: "/audit", label: "Audit log", icon: "audit", adminOnly: true },
+      {
+        href: "/members",
+        label: "Members",
+        icon: "users",
+        access: { permissions: ["members.viewAll", "members.enroll"], leaders: true },
+      },
       { href: "/groups", label: "Connect groups", icon: "groups", soon: true },
+      { href: "/birthdays", label: "Birthdays", icon: "birthday", soon: true },
+      {
+        href: "/baptism",
+        label: "Baptism records",
+        icon: "baptism",
+        access: { permissions: ["baptism.manage"] },
+        soon: true,
+      },
     ],
   },
   {
@@ -84,6 +119,7 @@ export const RAIL: RailSection[] = [
       { href: "/events", label: "Events", icon: "calendar", soon: true },
       { href: "/prayer", label: "Prayer requests", icon: "prayer", soon: true },
       { href: "/sermons", label: "Sermons", icon: "sermons", soon: true },
+      { href: "/devotions", label: "Devotions", icon: "devotion", soon: true },
     ],
   },
   {
@@ -93,7 +129,28 @@ export const RAIL: RailSection[] = [
     href: "/attendance",
     items: [
       { href: "/attendance", label: "Attendance", icon: "attendance", soon: true },
-      { href: "/giving", label: "Tithes & offerings", icon: "giving", soon: true },
+      { href: "/finance", label: "My giving", icon: "giving", soon: true },
+      {
+        href: "/finance/church",
+        label: "Church finance",
+        icon: "finance",
+        access: { permissions: ["finance.viewAll"] },
+        soon: true,
+      },
+      {
+        href: "/finance/chema",
+        label: "Chema compliance",
+        icon: "chema",
+        access: { permissions: ["finance.viewAll"], leaders: true },
+        soon: true,
+      },
+      {
+        href: "/finance/review",
+        label: "Payment review",
+        icon: "review",
+        access: { permissions: ["finance.confirm"] },
+        soon: true,
+      },
       { href: "/partnerships", label: "Partnerships", icon: "partnership", soon: true },
     ],
   },
@@ -101,10 +158,32 @@ export const RAIL: RailSection[] = [
     id: "you",
     label: "You",
     icon: "you",
-    href: "/account",
+    href: "/profile",
     items: [
+      { href: "/profile", label: "Profile", icon: "profile" },
+      { href: "/notes", label: "My sermon notes", icon: "notes", soon: true },
       { href: "/notifications", label: "Notifications", icon: "bell", soon: true },
-      { href: "/account", label: "Your account", icon: "account" },
+      { href: "/account", label: "Account", icon: "account" },
+    ],
+  },
+  {
+    id: "admin",
+    label: "Admin",
+    icon: "admin",
+    href: "/settings",
+    items: [
+      {
+        href: "/settings",
+        label: "Settings",
+        icon: "settings",
+        access: { permissions: ["settings.manage"] },
+      },
+      {
+        href: "/audit",
+        label: "Audit log",
+        icon: "audit",
+        access: { permissions: ["audit.view"] },
+      },
     ],
   },
 ];
@@ -119,14 +198,29 @@ export const RAIL: RailSection[] = [
  */
 export const PANEL_COOKIE = "panel_collapsed";
 
-/** The rail a given role may see, with sections that emptied out removed. */
-export function railFor(role: Role): RailSection[] {
+type NavUser = Parameters<typeof can>[0];
+
+/** True when the entry's `access` admits this person. */
+export function canSee(user: NavUser, access: NavAccess | undefined, leadsAGroup: boolean) {
+  if (!access) return true;
+  if (access.leaders && leadsAGroup) return true;
+  return (access.permissions ?? []).some((permission) => can(user, permission));
+}
+
+/**
+ * The rail a given person may see, with sections that emptied out removed.
+ *
+ * `ledGroupIds` comes from the Data Access Layer on every request; only
+ * whether it is empty matters here.
+ */
+export function railFor(user: NavUser, ledGroupIds: readonly string[] = []): RailSection[] {
+  const leadsAGroup = ledGroupIds.length > 0;
+
   return RAIL.map((section) => ({
     ...section,
-    items: section.items.filter((item) => !item.adminOnly || role === "ADMIN"),
+    items: section.items.filter((item) => canSee(user, item.access, leadsAGroup)),
   }))
     .filter((section) => section.items.length > 0)
-    .filter((section) => !section.adminOnly || role === "ADMIN")
     .map((section) => ({
       // A section's rail icon must land somewhere the person can actually go,
       // so it follows its first visible page rather than a fixed href.
@@ -137,13 +231,19 @@ export function railFor(role: Role): RailSection[] {
 
 /** The section a path belongs to, for the rail highlight and the breadcrumb. */
 export function sectionFor(pathname: string, rail: RailSection[]) {
-  return rail.find((section) =>
-    section.items.some((item) => pathname === item.href || pathname.startsWith(`${item.href}/`)),
-  );
+  // Longest match first, so `/finance/church` is not claimed by `/finance`.
+  const items = rail
+    .flatMap((section) => section.items.map((item) => ({ section, href: item.href })))
+    .sort((a, b) => b.href.length - a.href.length);
+
+  return items.find(({ href }) => pathname === href || pathname.startsWith(`${href}/`))?.section;
 }
 
 /** Every page label, including ones with no panel entry of their own. */
 export const LABELS: Record<string, string> = {
   ...Object.fromEntries(RAIL.flatMap((s) => s.items).map((item) => [item.href, item.label])),
+  "/members/new": "Enrol a member",
+  "/settings/theme": "Theme of the Year",
+  "/settings/social": "Social media",
   "/change-password": "Change password",
 };

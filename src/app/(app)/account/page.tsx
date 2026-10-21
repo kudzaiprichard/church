@@ -3,6 +3,7 @@ import { KeyRoundIcon, MonitorSmartphoneIcon } from "lucide-react";
 import Link from "next/link";
 
 import { requireSession } from "@/lib/auth/dal";
+import { ROLE_LABELS } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/prisma";
 
 import { PageHeader, Panel } from "../_components/page-parts";
@@ -64,7 +65,7 @@ export default async function AccountPage() {
   const details = [
     { label: "Name", value: `${user.firstName} ${user.lastName}` },
     { label: "Email", value: user.email },
-    { label: "Role", value: user.role === "ADMIN" ? "Administrator" : "Member" },
+    { label: "Office", value: ROLE_LABELS[user.role] },
   ];
 
   return (
