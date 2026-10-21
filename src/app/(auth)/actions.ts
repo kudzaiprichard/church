@@ -56,16 +56,28 @@ const LOCK_MS = 15 * 60 * 1000;
 /**
  * A real Argon2id hash of a random string nobody has.
  *
- * When the email is unknown we verify against this instead of returning early,
- * so a wrong address and a wrong password take the same time. Without it, the
- * sign-in form quietly answers the question "does this person attend here?" —
- * which for a church register is a disclosure worth avoiding.
+ * Verified against whenever there is no real hash to check, so every failed
+ * sign-in costs the same Argon2 work. Leadership has chosen to say plainly when
+ * an address is not enrolled (below), so this no longer hides that — but it
+ * keeps an unknown address from being a cheaper guess than a known one, which
+ * still matters to the rate limit.
  */
 const DECOY_HASH =
   "$argon2id$v=19$m=19456,t=2,p=1$8uZKtMEZ+5cyJh3+ukh8NA$BGa1UB2ZB1wlLEWGpa4zzFs9gDjcpff4l3RKC9reNa8";
 
-/** One message for every failure, for the same reason. */
+/** A wrong password, or an account that has not accepted its invitation. */
 const SIGN_IN_FAILED = "That email and password combination is not correct.";
+
+/**
+ * The two messages leadership asked for (docs/SCOPE.md §9.1).
+ *
+ * "Email not found" tells whoever asks whether an address is on the roll. That
+ * was weighed and accepted (SCOPE §11 Q8): members forget which address they
+ * were enrolled with far more often than anyone probes the form, and the
+ * per-address throttle and account lockout bound how fast it can be asked.
+ */
+const EMAIL_NOT_FOUND = "Email not found — please contact Minister Winnie.";
+const ACCESS_DENIED = "Access denied for this portal.";
 
 const credentials = z.object({
   email: z.email("Enter the email address you were invited with."),
@@ -135,7 +147,7 @@ export async function signIn(_previous: AuthFormState, formData: FormData): Prom
 
   if (!user) {
     await verifyPassword(DECOY_HASH, parsed.data.password);
-    return { error: SIGN_IN_FAILED };
+    return { error: EMAIL_NOT_FOUND };
   }
 
   if (user.lockedUntil && user.lockedUntil.getTime() > Date.now()) {
@@ -143,11 +155,19 @@ export async function signIn(_previous: AuthFormState, formData: FormData): Prom
     return { error: `Too many attempts. Try again in ${minutes} minute${minutes === 1 ? "" : "s"}.` };
   }
 
-  // Deactivated and never-activated accounts are told the same thing as a bad
-  // password, so the form cannot be used to map who is on the roll.
-  if (!user.isActive || !user.passwordHash) {
+  // An account that never accepted its invitation has no password to match.
+  if (!user.passwordHash) {
     await verifyPassword(DECOY_HASH, parsed.data.password);
     return { error: SIGN_IN_FAILED };
+  }
+
+  // A deactivated account is told so — but only once the password is right, so
+  // the form does not announce to anyone holding an address that its owner has
+  // been switched off. A wrong password gets the ordinary answer and does not
+  // count towards a lockout on an account that cannot sign in anyway.
+  if (!user.isActive) {
+    const correct = await verifyPassword(user.passwordHash, parsed.data.password);
+    return { error: correct ? ACCESS_DENIED : SIGN_IN_FAILED };
   }
 
   if (!(await verifyPassword(user.passwordHash, parsed.data.password))) {
