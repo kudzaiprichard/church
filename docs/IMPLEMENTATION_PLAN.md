@@ -20,7 +20,7 @@ The single place to see where the build stands. Update it as described in
 
 | Phase | Name | Branch | Status | PR | Started | Finished |
 |:-:|---|---|:-:|:-:|---|---|
-| — | Pre-flight | `docs/implementation-plan` | ✅ Done | #13, #PRNUM | 2026-10-21 | 2026-10-21 |
+| — | Pre-flight | `docs/implementation-plan` | ✅ Done | #13, #14 | 2026-10-21 | 2026-10-21 |
 | 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | ⬜ Not started | — | — | — |
 | 1 | Groups & communication | `feat/phase-1-groups-messaging` | ⬜ Not started | — | — | — |
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ⬜ Not started | — | — | — |
@@ -261,10 +261,13 @@ Exact message shape:
 
 ```
 type(scope): short summary of what was done
+
 - path/to/file.ts: specific change in this file
 - path/to/other.tsx: specific change in this file
 ```
 
+- **A blank line separates the summary from the bullets** (as in `CONTRIBUTING.md` and the
+  repo's history). Without it git treats the whole message as the subject line.
 - `type`: `feat`, `fix`, `refactor`, `chore`, `style`, `docs`, `test`.
 - `scope`: the feature/domain — `auth`, `members`, `groups`, `messages`, `events`, `attendance`,
   `prayer`, `finance`, `partnerships`, `sermons`, `notes`, `devotions`, `baptism`, `birthdays`,
