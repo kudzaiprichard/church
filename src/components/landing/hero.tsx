@@ -1,16 +1,13 @@
 import { Logo } from "@/components/brand/logo";
-import { church, connectGroups, services, themeOfYear } from "@/lib/church";
+import { services } from "@/lib/church";
+import type { Theme } from "@/lib/settings";
+
+import { cn } from "@/lib/utils";
 
 import { ActionLink } from "./action";
 import { Reveal } from "./reveal";
 
 const sundays = services.filter((service) => service.day === "Sunday");
-
-const stats = [
-  { value: String(connectGroups.length), label: "Connect groups" },
-  { value: "Daily", label: "Devotions" },
-  { value: sundays.map((service) => service.time).join(" · "), label: "Sunday services", mono: true },
-];
 
 /**
  * The opening. Royal blue lit from above, a hairline grid fading out behind
@@ -26,20 +23,43 @@ const stats = [
  * nothing above the fold to scroll into view, and waiting on hydration would
  * mean opening on a blank page.
  */
-export function Hero() {
+export function Hero({
+  theme,
+  tagline,
+  groupCount,
+}: {
+  theme: Theme | null;
+  tagline: string | null;
+  groupCount: number;
+}) {
+  const stats = [
+    ...(groupCount > 0 ? [{ value: String(groupCount), label: "Connect groups" }] : []),
+    { value: "Daily", label: "Devotions" },
+    {
+      value: sundays.map((service) => service.time).join(" · "),
+      label: "Sunday services",
+      mono: true,
+    },
+  ];
+
   return (
     <section id="welcome" className="bg-hero relative overflow-hidden text-white">
       <div aria-hidden className="bg-grid-light pointer-events-none absolute inset-0" />
 
       <div className="hero-recede relative mx-auto flex max-w-6xl flex-col items-center px-4 pt-32 pb-16 text-center sm:px-6 md:pt-40 md:pb-20 lg:px-8">
-        <Reveal onLoad>
-          <p className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 py-1 pr-3.5 pl-1 text-xs font-medium text-white/85 backdrop-blur-sm">
-            <span className="bg-brass rounded-full px-2 py-0.5 text-[0.65rem] font-bold tracking-wide text-[oklch(0.255_0.093_277.5)]">
-              {themeOfYear.year}
-            </span>
-            {themeOfYear.title}
-          </p>
-        </Reveal>
+        {theme && (
+          <Reveal onLoad>
+            <a
+              href="#theme"
+              className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 py-1 pr-3.5 pl-1 text-xs font-medium text-white/85 backdrop-blur-sm transition-colors hover:bg-white/15 focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+            >
+              <span className="bg-brass rounded-full px-2 py-0.5 text-[0.65rem] font-bold tracking-wide text-[oklch(0.255_0.093_277.5)]">
+                {theme.year}
+              </span>
+              {theme.title}
+            </a>
+          </Reveal>
+        )}
 
         <Reveal onLoad delay={80}>
           <Logo size={76} className="mt-9" />
@@ -54,11 +74,13 @@ export function Hero() {
           </h1>
         </Reveal>
 
-        <Reveal onLoad delay={240}>
-          <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-pretty text-white/75 md:text-lg">
-            {church.tagline}
-          </p>
-        </Reveal>
+        {tagline && (
+          <Reveal onLoad delay={240}>
+            <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-pretty text-white/75 md:text-lg">
+              {tagline}
+            </p>
+          </Reveal>
+        )}
 
         <Reveal onLoad delay={320}>
           <div className="mt-9 flex flex-col items-center gap-3 sm:flex-row">
@@ -72,7 +94,12 @@ export function Hero() {
         </Reveal>
 
         <Reveal onLoad delay={400} className="w-full max-w-2xl">
-          <dl className="mt-16 grid grid-cols-3 divide-x divide-white/10 border-t border-white/10 pt-7">
+          <dl
+            className={cn(
+              "mt-16 grid divide-x divide-white/10 border-t border-white/10 pt-7",
+              stats.length === 3 ? "grid-cols-3" : "grid-cols-2",
+            )}
+          >
             {stats.map((stat) => (
               <div key={stat.label} className="flex flex-col-reverse gap-1 px-2">
                 <dt className="text-[0.7rem] font-medium tracking-wide text-white/55 uppercase sm:text-xs">

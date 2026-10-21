@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import type { SessionUser } from "@/lib/auth/dal";
+import { ROLE_LABELS } from "@/lib/auth/permissions";
 import { cn } from "@/lib/utils";
 
 import { SignOutItem } from "./sign-out-item";
@@ -52,7 +53,7 @@ export function UserMenu({
             {user.firstName} {user.lastName}
           </span>
           <span className="text-muted-foreground block text-xs">
-            {user.role === "ADMIN" ? "Administrator" : "Member"}
+            {ROLE_LABELS[user.role]}
           </span>
         </span>
         <ChevronDownIcon className="text-muted-foreground size-3.5 shrink-0" aria-hidden />

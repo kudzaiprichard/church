@@ -2,7 +2,7 @@ import { ScrollTextIcon } from "lucide-react";
 import type { Metadata } from "next";
 
 import type { AuditAction } from "@/generated/prisma/enums";
-import { requireAdmin } from "@/lib/auth/dal";
+import { requirePermission } from "@/lib/auth/dal";
 import { prisma } from "@/lib/prisma";
 
 import { EmptyState, PageHeader, Panel } from "../_components/page-parts";
@@ -27,20 +27,24 @@ const DESCRIPTIONS: Record<AuditAction, { label: string; weight: "high" | "norma
   USER_INVITED: { label: "Member invited", weight: "normal" },
   INVITE_RESENT: { label: "Invitation resent", weight: "normal" },
   PASSWORD_RESET_SENT: { label: "Password reset sent", weight: "normal" },
+  MEMBER_ENROLLED: { label: "Member enrolled", weight: "normal" },
+  MEMBER_UPDATED: { label: "Member record edited", weight: "normal" },
+  THEME_UPDATED: { label: "Theme of the Year changed", weight: "normal" },
+  SETTINGS_UPDATED: { label: "Church settings changed", weight: "normal" },
 };
 
 /**
  * The record of privileged acts, newest first.
  *
- * Admin-only, and guarded by `requireAdmin()` before a row is read — a member
- * who guesses this URL is sent to their own dashboard.
+ * Guarded by `requirePermission("audit.view")` before a row is read — anyone
+ * else who guesses this URL is sent to their own dashboard.
  *
  * There is no delete and no edit here, deliberately: an audit log an
  * administrator can tidy up is not evidence of anything. The only way to remove
  * a line is at the database.
  */
 export default async function AuditPage() {
-  await requireAdmin();
+  await requirePermission("audit.view");
 
   const entries = await prisma.auditLog.findMany({
     orderBy: { createdAt: "desc" },

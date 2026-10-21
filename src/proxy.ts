@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import { SESSION_COOKIE, SESSION_TTL_MS } from "@/lib/auth/session";
+import { isProtectedPath } from "@/lib/routes";
 
 /**
  * Optimistic routing only. This is not the security boundary.
@@ -22,45 +23,16 @@ import { SESSION_COOKIE, SESSION_TTL_MS } from "@/lib/auth/session";
  *
  * A forged or stale cookie sails straight through here and is rejected by the
  * Data Access Layer a moment later, which is the intended division of labour.
+ *
+ * Which paths count as the member area is decided in `src/lib/routes.ts`,
+ * shared with the no-store headers in `next.config.ts`.
  */
-
-/**
- * The member area. Everything else is public.
- *
- * Named as a list of what is *protected* rather than a list of what is public,
- * which is the opposite of how this started. An allowlist of public paths made
- * every unknown URL private by default, so a visitor who mistyped an address on
- * the public site was redirected to the sign-in page instead of being shown a
- * 404 — and each new public page silently became private until somebody
- * remembered to add it here.
- *
- * Inverting it costs nothing in safety, because this file was never the
- * boundary: a private route missing from this list simply renders and is then
- * refused by the Data Access Layer, exactly as a forged cookie already is. The
- * only thing lost is the courtesy redirect.
- *
- * Keep in step with the `Cache-Control: private, no-store` sources in
- * `next.config.ts`, which cover the same segments for the same reason.
- */
-const PROTECTED_PREFIXES = [
-  "/dashboard",
-  "/members",
-  "/account",
-  "/audit",
-  "/change-password",
-];
-
-function isProtected(pathname: string) {
-  return PROTECTED_PREFIXES.some(
-    (path) => pathname === path || pathname.startsWith(`${path}/`),
-  );
-}
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get(SESSION_COOKIE)?.value;
 
-  if (!token && isProtected(pathname)) {
+  if (!token && isProtectedPath(pathname)) {
     const signIn = new URL("/login", request.url);
     // Come back here once they are through the door.
     if (pathname !== "/") signIn.searchParams.set("next", pathname);

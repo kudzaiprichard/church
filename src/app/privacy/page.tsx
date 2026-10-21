@@ -1,14 +1,24 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 
 import { LegalPage } from "@/components/landing/legal-page";
-import { church } from "@/lib/church";
+import { churchIdentity } from "@/lib/church";
+import { getChurchInfo } from "@/lib/settings";
 
 export const metadata: Metadata = {
   title: "Privacy",
-  description: `How ${church.name} handles the details you give us.`,
+  description: `How ${churchIdentity.name} handles the details you give us.`,
 };
 
-export default function Privacy() {
+/**
+ * Rendered per request (from the cached settings) so the office's contact
+ * details here are always the ones in Settings, not those at build time.
+ */
+export default async function Privacy() {
+  await connection();
+  const church = await getChurchInfo();
+  const email = church.email ? <a href={`mailto:${church.email}`}>{church.email}</a> : null;
+
   return (
     <LegalPage title="Privacy" updated="August 2026">
       <section>
@@ -31,10 +41,10 @@ export default function Privacy() {
       <section>
         <h2>What we do with it</h2>
         <p>
-          Both forms send an email to the church office at{" "}
-          <a href={`mailto:${church.email}`}>{church.email}</a>. Someone reads it, looks out for you
-          on Sunday, or adds you to the bulletin list. That is the whole of it. We do not sell it, we
-          do not trade it, and we do not use it to advertise anything to you.
+          Both forms send an email to the church office{email && <> at {email}</>}. Someone reads
+          it, looks out for you on Sunday, or adds you to the bulletin list. That is the whole of
+          it. We do not sell it, we do not trade it, and we do not use it to advertise anything to
+          you.
         </p>
       </section>
 
@@ -67,9 +77,16 @@ export default function Privacy() {
       <section>
         <h2>Asking us to change or delete something</h2>
         <p>
-          Write to <a href={`mailto:${church.email}`}>{church.email}</a> or call the office on{" "}
-          <a href={`tel:${church.phone.replace(/\s/g, "")}`}>{church.phone}</a> and we will find what
-          we hold about you, correct it, or delete it. You do not have to give a reason.
+          {email ? <>Write to {email}</> : "Write to the church office"}
+          {church.phone && (
+            <>
+              {" "}
+              or call the office on{" "}
+              <a href={`tel:${church.phone.replace(/\s/g, "")}`}>{church.phone}</a>
+            </>
+          )}{" "}
+          and we will find what we hold about you, correct it, or delete it. You do not have to give
+          a reason.
         </p>
       </section>
     </LegalPage>

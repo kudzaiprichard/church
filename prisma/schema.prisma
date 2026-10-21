@@ -17,15 +17,25 @@ datasource db {
 // Modules 1 & 2 — Authentication, Users & Members
 // ---------------------------------------------------------------------------
 
+/// The office a person holds. Group leadership is not an office — it is
+/// `Group.leaderId`, so a leader's powers are always tied to one group.
+/// See docs/SCOPE.md §4.
 enum Role {
-  ADMIN
+  APOSTLE
+  MATRON
+  ELDER
   MEMBER
+}
+
+enum Gender {
+  MALE
+  FEMALE
 }
 
 model User {
   id String @id @default(cuid())
 
-  email String @unique
+  email        String    @unique
   // Null until the member accepts their invite and chooses a password. Login
   // treats a null hash as "invited, not yet activated" rather than as a
   // credential failure.
@@ -33,7 +43,12 @@ model User {
   firstName    String
   lastName     String
   phone        String?
-  role         Role    @default(MEMBER)
+  address      String?
+  /// Date only — a birthday has no time zone. Birthday logic reads it in
+  /// Harare time (docs/SCOPE.md §9.15).
+  dateOfBirth  DateTime? @db.Date
+  gender       Gender?
+  role         Role      @default(MEMBER)
   avatarUrl    String?
 
   // Set when an admin resets someone's password by hand. The invite flow does
@@ -54,9 +69,13 @@ model User {
 
   sessions         Session[]
   authTokens       AuthToken[]
-  auditActions     AuditLog[]        @relation("AuditActor")
-  auditSubjects    AuditLog[]        @relation("AuditTarget")
+  auditActions     AuditLog[]         @relation("AuditActor")
+  auditSubjects    AuditLog[]         @relation("AuditTarget")
   groupMemberships GroupMembership[]
+  ledGroups        Group[]            @relation("GroupLeader")
+  baptismalRecord  BaptismalRecord?
+  settingsUpdates  ChurchSettings[]   @relation("SettingsUpdater")
+  themeUpdates     ThemeOfYear[]      @relation("ThemeUpdater")
   sentMessages     Message[]          @relation("MessageSender")
   receivedMessages MessageRecipient[]
   messageReplies   MessageReply[]
@@ -67,10 +86,31 @@ model User {
   sermonNotes      SermonNote[]
   notifications    Notification[]
   createdEvents    Event[]            @relation("EventCreator")
-  createdGroups    Group[]            @relation("GroupCreator")
   uploadedSermons  Sermon[]           @relation("SermonUploader")
 
   @@index([role])
+  @@index([isActive])
+}
+
+/// Proof of baptism, created with the member at enrolment.
+///
+/// Only the baptized may be enrolled, so every member enrolled through the
+/// portal has exactly one. Accounts that predate enrolment (the bootstrapped
+/// Apostle, people invited before Phase 0) may not, which is why the relation
+/// is optional on `User` rather than enforced by the database. Certificate
+/// fields arrive with the baptism module (Phase 5).
+model BaptismalRecord {
+  id               String    @id @default(cuid())
+  userId           String    @unique
+  baptismDate      DateTime  @db.Date
+  location         String
+  conductedBy      String
+  classCompletedOn DateTime? @db.Date
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 /// A signed-in browser.
@@ -130,6 +170,10 @@ enum AuditAction {
   USER_DEACTIVATED
   USER_REACTIVATED
   ACCOUNT_LOCKED
+  MEMBER_ENROLLED
+  MEMBER_UPDATED
+  THEME_UPDATED
+  SETTINGS_UPDATED
 }
 
 /// Who did what to whom.
@@ -174,27 +218,35 @@ model AuditLog {
 // Module 4 — Connect Groups
 // ---------------------------------------------------------------------------
 
+/// One of the seven connect groups.
+///
+/// Leadership is `leaderId`, not a flag on the membership: a group has one
+/// leader, and "who leads Youth Alive?" must have one answer. Null is shown as
+/// Vacant. Changing it changes that person's powers on their next request,
+/// because nothing about leadership is cached on the session.
 model Group {
   id          String   @id @default(cuid())
-  name        String
+  slug        String   @unique
+  name        String   @unique
+  audience    String?
   description String?
-  isActive    Boolean  @default(true)
-  createdById String
+  leaderId    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  createdBy      User              @relation("GroupCreator", fields: [createdById], references: [id])
+  leader         User?             @relation("GroupLeader", fields: [leaderId], references: [id], onDelete: SetNull)
   members        GroupMembership[]
   messages       Message[]
   events         EventAudience[]
   prayerRequests PrayerRequest[]
+
+  @@index([leaderId])
 }
 
 model GroupMembership {
   id       String   @id @default(cuid())
   userId   String
   groupId  String
-  isLeader Boolean  @default(false)
   joinedAt DateTime @default(now())
 
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -480,4 +532,59 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, readAt])
+}
+
+// ---------------------------------------------------------------------------
+// Settings — church information, Theme of the Year, social links
+// (docs/SCOPE.md §9.17–9.19). Read through src/lib/settings.ts, cached under
+// the "church-settings" tag and invalidated on every save.
+// ---------------------------------------------------------------------------
+
+/// The church's own details. A single row whose id is always "church".
+model ChurchSettings {
+  id          String   @id @default("church")
+  name        String
+  shortName   String
+  tagline     String?
+  mission     String?
+  vision      String?
+  doctrine    String?
+  address     String?
+  phone       String?
+  email       String?
+  updatedById String?
+  updatedAt   DateTime @updatedAt
+
+  updatedBy User? @relation("SettingsUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+}
+
+/// One year's theme. The current theme is the one with the highest year;
+/// earlier years are the history shown under it.
+model ThemeOfYear {
+  id           String   @id @default(cuid())
+  year         Int      @unique
+  title        String
+  scriptureRef String
+  verseText    String
+  description  String?
+  updatedById  String?
+  updatedAt    DateTime @updatedAt
+
+  updatedBy User? @relation("ThemeUpdater", fields: [updatedById], references: [id], onDelete: SetNull)
+}
+
+/// Twitter/X is deliberately not offered (SCOPE §9.18).
+enum SocialPlatform {
+  FACEBOOK
+  INSTAGRAM
+  YOUTUBE
+  WHATSAPP
+}
+
+model SocialLink {
+  platform  SocialPlatform @id
+  handle    String
+  url       String
+  isVisible Boolean        @default(true)
+  updatedAt DateTime       @updatedAt
 }

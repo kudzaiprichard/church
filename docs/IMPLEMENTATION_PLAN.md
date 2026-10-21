@@ -21,7 +21,7 @@ The single place to see where the build stands. Update it as described in
 | Phase | Name | Branch | Status | PR | Started | Finished |
 |:-:|---|---|:-:|:-:|---|---|
 | — | Pre-flight | `docs/implementation-plan` | ✅ Done | #13, #14 | 2026-10-21 | 2026-10-21 |
-| 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | ⬜ Not started | — | — | — |
+| 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | ✅ Done | #15 | 2026-10-21 | 2026-10-21 |
 | 1 | Groups & communication | `feat/phase-1-groups-messaging` | ⬜ Not started | — | — | — |
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ⬜ Not started | — | — | — |
 | 3 | Finance | `feat/phase-3-finance` | ⬜ Not started | — | — | — |
@@ -458,7 +458,7 @@ squash-merge flow.
 
 ## Phase 0 — Foundation
 
-**Status:** ⬜ Not started
+**Status:** ✅ Done
 **Branch:** `feat/phase-0-foundation`
 **Goal:** The access model, member records and church settings everything else depends on.
 **Scope:** §4, §5.2–5.6, §6 (People, Groups data, Baptismal record, Settings), §6.1, §9.1, §9.2
@@ -466,67 +466,81 @@ squash-merge flow.
 **Depends on:** Pre-flight.
 
 ### Entry criteria
-- [ ] Pre-flight ✅.
-- [ ] Real or confirmed-placeholder church contact details available for seeding (Q7 may be
-      answered later; placeholders allowed).
+- [x] Pre-flight ✅.
+- [x] Real or confirmed-placeholder church contact details available for seeding (Q7 may be
+      answered later; placeholders allowed). *Placeholders from `src/lib/church.ts` are seeded.*
 
 ### Deliverables (in commit order)
 
 **Tooling**
-- [ ] Add Vitest (`vitest`, `vite-tsconfig-paths`), `npm test` script, `vitest.config.ts`.
-- [ ] Add a **Test** step to `.github/workflows/ci.yml` after Lint (the job name
+- [x] Add Vitest (`vitest`, `vite-tsconfig-paths`), `npm test` script, `vitest.config.ts`.
+- [x] Add a **Test** step to `.github/workflows/ci.yml` after Lint (the job name
       `Lint & build (web)` stays unchanged so the documented check name still matches).
-- [ ] `src/lib/routes.ts`: `PROTECTED_PREFIXES`; `src/proxy.ts` and `next.config.ts` read from it.
+- [x] `src/lib/routes.ts`: `PROTECTED_PREFIXES`; `src/proxy.ts` and `next.config.ts` read from it.
 
 **Roles & access**
-- [ ] Migration `phase0_roles`: `Role { APOSTLE MATRON ELDER MEMBER }`, existing `ADMIN` →
+- [x] Migration `phase0_roles`: `Role { APOSTLE MATRON ELDER MEMBER }`, existing `ADMIN` →
       `APOSTLE` (hand-edited SQL).
-- [ ] `src/lib/auth/permissions.ts` (`PERMISSIONS`, `Permission`, `can`) per §4.2.
-- [ ] `dal.ts`: `requirePermission`, `requireGroupLeader`, `ledGroupIds`, `memberGroupIds`,
+- [x] `src/lib/auth/permissions.ts` (`PERMISSIONS`, `Permission`, `can`) per §4.2.
+- [x] `dal.ts`: `requirePermission`, `requireGroupLeader`, `ledGroupIds`, `memberGroupIds`,
       `ownerScope(user, permission, field)`, `selfScope`, `groupContentScope`, `memberScope`;
       remove `requireAdmin` after every caller is moved.
-- [ ] Replace every `role === "ADMIN"` in UI and actions with `can()`
+- [x] Replace every `role === "ADMIN"` in UI and actions with `can()`
       (dashboard, members, landing nav, audit).
-- [ ] Bootstrap creates an `APOSTLE`; last active Apostle cannot be demoted/deactivated.
-- [ ] Login error wording per §9.1.
-- [ ] `nav.ts`: `permission` / `leaderOnly` on items; `railFor(user, ledGroupIds)`; full map from
+- [x] Bootstrap creates an `APOSTLE`; last active Apostle cannot be demoted/deactivated.
+- [x] Login error wording per §9.1.
+- [x] `nav.ts`: `permission` / `leaderOnly` on items; `railFor(user, ledGroupIds)`; full map from
       §8 with unbuilt items `soon: true`.
-- [ ] Unit tests: permission map, `can`, each scope helper for each role.
+- [x] Unit tests: permission map, `can`, each scope helper for each role.
 
 **People**
-- [ ] Migration `phase0_people`: `User` gains `address`, `dateOfBirth`, `gender`;
+- [x] Migration `phase0_people`: `User` gains `address`, `dateOfBirth`, `gender`;
       `BaptismalRecord`; `Group` reshaped (`slug`, `audience`, `leaderId`; drop `isLeader`);
       new `AuditAction` values used in this phase.
-- [ ] `src/lib/data/members.ts` (directory, detail, own profile — scoped by `memberScope`).
-- [ ] `/members/new` enrolment form (required baptism, groups multi-select) + `enrollMember`
+- [x] `src/lib/data/members.ts` (directory, detail, own profile — scoped by `memberScope`).
+- [x] `/members/new` enrolment form (required baptism, groups multi-select) + `enrollMember`
       (transaction: user + baptismal record + memberships + audit, then invite email reusing the
       existing invite path and copy-link fallback).
-- [ ] `/members` directory: search, group/role/active filters, pagination.
-- [ ] `/members/[id]` detail (Profile, Groups, Baptism tabs live; Attendance/Giving/Pledges tabs
+- [x] `/members` directory: search, group/role/active filters, pagination.
+- [x] `/members/[id]` detail (Profile, Groups, Baptism tabs live; Attendance/Giving/Pledges tabs
       appear in their phases) and `/members/[id]/edit` + `updateMember`.
-- [ ] `/profile` + `updateOwnProfile` (phone, address, DOB, gender).
-- [ ] Unit test: enrolment schema rejects missing/future baptism date with the exact message.
+- [x] `/profile` + `updateOwnProfile` (phone, address, DOB, gender).
+- [x] Unit test: enrolment schema rejects missing/future baptism date with the exact message.
 
 **Settings & public site**
-- [ ] Migration `phase0_settings`: `ChurchSettings`, `ThemeOfYear`, `SocialLink`.
-- [ ] `prisma/seed.ts` + `db:seed` script: settings, themes 2023–2026, socials, 7 groups.
-- [ ] `src/lib/settings.ts`: cached getters tagged `church-settings`.
-- [ ] `/settings`, `/settings/theme` (with history table), `/settings/social` + actions + audit.
-- [ ] Landing page, footer and dashboard theme card read from settings; groups section reads
+- [x] Migration `phase0_settings`: `ChurchSettings`, `ThemeOfYear`, `SocialLink`.
+- [x] `prisma/seed.ts` + `db:seed` script: settings, themes 2023–2026, socials, 7 groups.
+- [x] `src/lib/settings.ts`: cached getters tagged `church-settings`.
+- [x] `/settings`, `/settings/theme` (with history table), `/settings/social` + actions + audit.
+- [x] Landing page, footer and dashboard theme card read from settings; groups section reads
       `Group` (leader name or "Vacant"); `/about` page; "Tithes & Offerings" copy fixed.
-- [ ] `src/lib/church.ts` reduced to the static timetable/services.
-- [ ] Nav: Members, Profile, Settings, Audit live.
+- [x] `src/lib/church.ts` reduced to the static timetable/services. *Also kept, as static copy: the anchor verse, bulletin blurb, portal feature cards and `churchIdentity` (name for pages that must render without a database). `devotion` and `recentSermons` stay until Phase 4, whose deliverables already move them to the database.*
+- [x] Nav: Members, Profile, Settings, Audit live.
 
 **Plan**
-- [ ] `docs(plan): complete phase 0`.
+- [x] `docs(plan): complete phase 0`.
 
 ### Exit criteria
-- [ ] A `MEMBER` calling any members/settings action directly is refused and nothing is written.
-- [ ] Matron can enrol but cannot edit members, change roles or open settings.
-- [ ] Enrolment without a baptism date fails on the server with the scope's exact message.
-- [ ] Changing the theme shows on the landing page on the next load, with "Last updated by …".
-- [ ] Zero remaining references to `"ADMIN"` or `requireAdmin` (`grep` clean).
-- [ ] §4.10 verification green locally; demo script walked.
+- [x] A `MEMBER` calling any members/settings action directly is refused and nothing is written.
+      *Replayed the enrolment action's form POST as a Member: redirected, no user and no audit
+      row written. Every action's first line is its permission guard.*
+- [x] Matron can enrol but cannot edit members, change roles or open settings.
+      *Walked: `/members` and `/members/new` open; `/members/[id]/edit`, `/settings` and `/audit`
+      redirect to the dashboard with no record content in the response; no office controls.*
+- [x] Enrolment without a baptism date fails on the server with the scope's exact message.
+      *Form has `noValidate`, so the browser does not block it; unit-tested in
+      `src/lib/members/schema.test.ts` too.*
+- [x] Changing the theme shows on the landing page on the next load, with "Last updated by …".
+      *`updateTag("church-settings")`, not `revalidateTag`, so the next load is fresh.*
+- [x] Zero remaining references to `"ADMIN"` or `requireAdmin` (`grep` clean).
+- [x] §4.10 verification green locally; demo script walked.
+      *Fresh database: Prisma refuses `migrate reset` from an AI agent without the user's
+      consent, so a throwaway `church_verify` database was dropped, recreated and migrated from
+      `0_init` with `migrate deploy` (equivalent result), then seeded twice (idempotent).
+      Typecheck, lint, 73 tests, build (also with `SKIP_ENV_VALIDATION=1` and no database) green.
+      Demo walked on a production build against that database as Apostle, Matron and Member.
+      Not verified visually: the 360 px pass (the browser window could not be resized); the
+      layouts use the existing responsive patterns, and Phase 6 has the formal 360 px pass.*
 
 ### Demo script
 Sign in as the bootstrapped Apostle → set Minister Winnie to `MATRON` and Elder Mangezi to

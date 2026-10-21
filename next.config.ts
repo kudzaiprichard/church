@@ -1,5 +1,7 @@
 import type { NextConfig } from "next";
 
+import { protectedSegmentPattern } from "./src/lib/routes";
+
 const isDev = process.env.NODE_ENV !== "production";
 
 /**
@@ -78,13 +80,13 @@ const nextConfig: NextConfig = {
          * same cache. This says: not on disk, not in a shared cache, not on a
          * back-button restore.
          */
-        source: "/(dashboard|members|account|audit|change-password)/:path*",
+        source: `${protectedSegmentPattern()}/:path*`,
         headers: [
           { key: "Cache-Control", value: "private, no-store, max-age=0, must-revalidate" },
         ],
       },
       {
-        source: "/(dashboard|members|account|audit|change-password)",
+        source: protectedSegmentPattern(),
         headers: [
           { key: "Cache-Control", value: "private, no-store, max-age=0, must-revalidate" },
         ],

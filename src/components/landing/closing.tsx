@@ -1,15 +1,17 @@
 import Link from "next/link";
 
 import { Logo } from "@/components/brand/logo";
-import { bulletin, church } from "@/lib/church";
+import { bulletin } from "@/lib/church";
+import { getChurchInfo, getVisibleSocialLinks } from "@/lib/settings";
 
 import { BulletinForm } from "./bulletin-form";
 import { SocialIcons } from "./social-icons";
 
-const columns = [
+const columnsFor = (email: string | null) => [
   {
     heading: "Church",
     links: [
+      { label: "About us", href: "/about" },
       { label: "Theme of the year", href: "/#theme" },
       { label: "Connect groups", href: "/#groups" },
       { label: "Sermons", href: "/#sermons" },
@@ -21,7 +23,7 @@ const columns = [
     links: [
       { label: "Sign in", href: "/login" },
       { label: "Forgot password", href: "/forgot-password" },
-      { label: "Contact the office", href: `mailto:${church.email}` },
+      ...(email ? [{ label: "Contact the office", href: `mailto:${email}` }] : []),
     ],
   },
 ];
@@ -29,8 +31,17 @@ const columns = [
 const linkClass =
   "rounded-sm text-sm text-white/65 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ink)] focus-visible:outline-none";
 
-/** The KMMI footer: the crest and name, two columns of links, and the bulletin. */
-export function Closing() {
+/**
+ * The KMMI footer: the crest and name, two columns of links, and the bulletin.
+ *
+ * Reads its own church details and social links from Settings (cached), so
+ * every page that ends with it shows the same, current contacts without each
+ * one having to pass them down.
+ */
+export async function Closing() {
+  const [church, socials] = await Promise.all([getChurchInfo(), getVisibleSocialLinks()]);
+  const columns = columnsFor(church.email);
+
   return (
     <footer className="bg-hero relative overflow-hidden text-white">
       <div className="relative mx-auto max-w-6xl px-4 pt-16 pb-8 sm:px-6 lg:px-8">
@@ -45,8 +56,12 @@ export function Closing() {
                 </p>
               </div>
             </div>
-            <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/60">{church.tagline}</p>
-            <SocialIcons className="mt-6" />
+            {church.tagline && (
+              <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/60">
+                {church.tagline}
+              </p>
+            )}
+            <SocialIcons links={socials} className="mt-6" />
           </div>
 
           {columns.map((column) => (
@@ -79,12 +94,17 @@ export function Closing() {
           <p>
             &copy; {new Date().getFullYear()} {church.name}
           </p>
-          <address className="not-italic">
-            {church.address.line1}, {church.address.city} ·{" "}
-            <a href={`tel:${church.phone.replace(/\s/g, "")}`} className="hover:text-white/80">
-              {church.phone}
-            </a>
-          </address>
+          {(church.address || church.phone) && (
+            <address className="not-italic">
+              {church.address}
+              {church.address && church.phone && " · "}
+              {church.phone && (
+                <a href={`tel:${church.phone.replace(/\s/g, "")}`} className="hover:text-white/80">
+                  {church.phone}
+                </a>
+              )}
+            </address>
+          )}
           <nav aria-label="Legal" className="flex gap-5">
             <Link
               href="/privacy"

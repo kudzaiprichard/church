@@ -13,16 +13,25 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import { church } from "@/lib/church";
 import { cn } from "@/lib/utils";
 
+/**
+ * The home page's sections, addressed from the root so the same bar works on
+ * the About page too — there they navigate home, on the home page they scroll.
+ */
 const links = [
-  { label: "Theme", href: "#theme" },
-  { label: "Portal", href: "#portal" },
-  { label: "Groups", href: "#groups" },
-  { label: "Sermons", href: "#sermons" },
-  { label: "Visit", href: "#visit" },
+  { label: "About", href: "/about" },
+  { label: "Theme", href: "/#theme" },
+  { label: "Portal", href: "/#portal" },
+  { label: "Groups", href: "/#groups" },
+  { label: "Visit", href: "/#visit" },
 ];
+
+/** The element id a link scrolls to, or null for a link to another page. */
+const sectionOf = (href: string) => (href.startsWith("/#") ? href.slice(2) : null);
+
+/** The office's details, from Settings — read by the page, as the bar is a Client Component. */
+export type NavContact = { phone: string | null; address: string | null; mapUrl: string | null };
 
 /**
  * What the bar is allowed to know about whoever is reading it.
@@ -31,7 +40,7 @@ const links = [
  * their link goes, and nothing else about a user should be in a Client
  * Component on a public page — see the read in `app/page.tsx`.
  */
-export type NavSession = { firstName: string; isAdmin: boolean } | null;
+export type NavSession = { firstName: string } | null;
 
 /**
  * The KMMI bar. Solid royal blue over the hero; once the page moves under it,
@@ -42,7 +51,7 @@ export type NavSession = { firstName: string; isAdmin: boolean } | null;
  * hairline is driven by the scroll position in CSS (`.scroll-progress`), so it
  * costs no JavaScript at all.
  */
-export function SiteNav({ session }: { session: NavSession }) {
+export function SiteNav({ session, contact }: { session: NavSession; contact: NavContact }) {
   const [scrolled, setScrolled] = useState(false);
   const [current, setCurrent] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
@@ -57,7 +66,8 @@ export function SiteNav({ session }: { session: NavSession }) {
   // Marks the section in the middle band of the viewport as current.
   useEffect(() => {
     const sections = links
-      .map((link) => document.getElementById(link.href.slice(1)))
+      .map((link) => sectionOf(link.href))
+      .map((id) => (id ? document.getElementById(id) : null))
       .filter((element): element is HTMLElement => element !== null);
 
     if (sections.length === 0) return;
@@ -104,7 +114,7 @@ export function SiteNav({ session }: { session: NavSession }) {
 
         <ul className="hidden items-center gap-1 md:flex">
           {links.map((link) => {
-            const active = current === link.href.slice(1);
+            const active = current !== null && current === sectionOf(link.href);
             return (
               <li key={link.href}>
                 <Link
@@ -188,20 +198,24 @@ export function SiteNav({ session }: { session: NavSession }) {
               </div>
 
               <div className="mt-auto grid gap-1.5 pt-8 text-sm text-white/60">
-                <a
-                  href={`tel:${church.phone.replace(/\s/g, "")}`}
-                  className="rounded-sm hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
-                >
-                  {church.phone}
-                </a>
-                <a
-                  href={church.mapUrl}
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="rounded-sm hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
-                >
-                  {church.address.line1}, {church.address.city}
-                </a>
+                {contact.phone && (
+                  <a
+                    href={`tel:${contact.phone.replace(/\s/g, "")}`}
+                    className="rounded-sm hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                  >
+                    {contact.phone}
+                  </a>
+                )}
+                {contact.address && contact.mapUrl && (
+                  <a
+                    href={contact.mapUrl}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="rounded-sm hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
+                  >
+                    {contact.address}
+                  </a>
+                )}
               </div>
             </SheetContent>
           </Sheet>
@@ -237,7 +251,7 @@ function PortalLink({ session, className }: { session: NavSession; className?: s
           >
             {session.firstName.charAt(0).toUpperCase()}
           </span>
-          {session.isAdmin ? "Admin" : "Dashboard"}
+          Dashboard
         </>
       ) : (
         "Sign in"

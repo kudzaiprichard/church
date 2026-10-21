@@ -3,13 +3,14 @@
 import { useActionState, useId } from "react";
 
 import { idleState, planVisit } from "@/app/actions";
-import { church, services } from "@/lib/church";
+import { services } from "@/lib/church";
 import { cn } from "@/lib/utils";
 
 import { ActionButton } from "./action";
 import { NextGatheringLine } from "./next-gathering-line";
 import { Reveal } from "./reveal";
 import { Section, SectionHeader } from "./section";
+import type { NavContact } from "./site-nav";
 
 const serviceChoices = [
   ...services.map((service) => ({
@@ -30,7 +31,7 @@ const serviceChoices = [
  * browser's own `required` and `type="email"` catch the same mistakes sooner
  * for everyone else.
  */
-export function PlanVisit() {
+export function PlanVisit({ contact }: { contact: NavContact }) {
   const [state, formAction, pending] = useActionState(planVisit, idleState);
   const fieldId = useId();
 
@@ -78,20 +79,26 @@ export function PlanVisit() {
             </ul>
           </Reveal>
 
-          <Reveal delay={200}>
-          <address className="text-muted-foreground mt-5 text-sm leading-relaxed not-italic">
-            {church.address.line1}, {church.address.city}
-            <span className="mx-2 opacity-40">·</span>
-            <a
-              href={church.mapUrl}
-              target="_blank"
-              rel="noreferrer noopener"
-              className="text-primary rounded-sm font-semibold underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
-            >
-              Open in Maps
-            </a>
-          </address>
-          </Reveal>
+          {contact.address && (
+            <Reveal delay={200}>
+              <address className="text-muted-foreground mt-5 text-sm leading-relaxed not-italic">
+                {contact.address}
+                {contact.mapUrl && (
+                  <>
+                    <span className="mx-2 opacity-40">·</span>
+                    <a
+                      href={contact.mapUrl}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className="text-primary rounded-sm font-semibold underline-offset-4 hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+                    >
+                      Open in Maps
+                    </a>
+                  </>
+                )}
+              </address>
+            </Reveal>
+          )}
         </div>
 
         <Reveal from="right" delay={100}>
@@ -102,8 +109,8 @@ export function PlanVisit() {
                   Thank you — we have it.
                 </p>
                 <p className="text-muted-foreground mx-auto mt-4 max-w-sm text-sm leading-relaxed text-pretty">
-                  Someone will be at the door expecting you. If anything changes, call the office
-                  on {church.phone}.
+                  Someone will be at the door expecting you.
+                  {contact.phone && ` If anything changes, call the office on ${contact.phone}.`}
                 </p>
               </div>
             ) : (

@@ -3,7 +3,6 @@ import Link from "next/link";
 
 import { ActionLink } from "@/components/landing/action";
 import { StatusPage } from "@/components/status/status-page";
-import { church } from "@/lib/church";
 
 export const metadata: Metadata = {
   title: "Page not found",
@@ -38,10 +37,10 @@ export default function NotFound() {
         </ActionLink>
 
         <Link
-          href={`mailto:${church.email}`}
+          href="/about#contact"
           className="focus-visible:ring-ring text-muted-foreground hover:text-foreground rounded-sm px-2 py-1.5 text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:outline-none"
         >
-          Tell the office
+          Contact the office
         </Link>
       </StatusPage>
     </main>
