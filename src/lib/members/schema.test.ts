@@ -1,14 +1,15 @@
 import { describe, expect, it } from "vitest";
 
 import { harareToday } from "@/lib/dates";
+import { fieldErrorsFrom } from "@/lib/forms";
 
 import {
   BAPTISM_REQUIRED,
   enrolmentSchema,
-  fieldErrorsFrom,
   memberUpdateSchema,
   ownProfileSchema,
 } from "./schema";
+
 
 const valid = {
   firstName: "Tendai",

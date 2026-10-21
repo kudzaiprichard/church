@@ -8,6 +8,17 @@
  * in one place so that is a single edit.
  */
 
+/**
+ * The church's name, for the few places that must render with no database:
+ * the root metadata, the boot loader and the 404 page. Everything a visitor
+ * reads about the church — name, contacts, theme — comes from Settings
+ * (`src/lib/settings.ts`). Keep this in step with the seeded ChurchSettings.
+ */
+export const churchIdentity = {
+  name: "Kingdom Manifest Ministries International",
+  shortName: "KMMI",
+};
+
 export const church = {
   name: "Kingdom Manifest Ministries International",
   shortName: "KMMI",

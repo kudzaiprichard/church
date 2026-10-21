@@ -4,7 +4,8 @@ import { revalidatePath } from "next/cache";
 
 import { requireSession } from "@/lib/auth/dal";
 import { toDateOnly } from "@/lib/dates";
-import { fieldErrorsFrom, ownProfileSchema } from "@/lib/members/schema";
+import { fieldErrorsFrom } from "@/lib/forms";
+import { ownProfileSchema } from "@/lib/members/schema";
 import { prisma } from "@/lib/prisma";
 
 import type { ProfileFormState } from "./form-state";

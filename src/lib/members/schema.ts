@@ -161,13 +161,3 @@ export function memberFormValues(formData: FormData) {
     baptismNotes: text("baptismNotes"),
   };
 }
-
-/** The first message for each field, which is all a form has room to show. */
-export function fieldErrorsFrom(issues: readonly z.core.$ZodIssue[]): Record<string, string> {
-  const errors: Record<string, string> = {};
-  for (const issue of issues) {
-    const key = issue.path[0];
-    if (typeof key === "string" && !(key in errors)) errors[key] = issue.message;
-  }
-  return errors;
-}

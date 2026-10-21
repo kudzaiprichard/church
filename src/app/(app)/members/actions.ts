@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -12,15 +12,16 @@ import { inviteEmail, passwordResetEmail } from "@/lib/auth/emails";
 import { ROLES, ROLE_LABELS, can } from "@/lib/auth/permissions";
 import { destroyAllSessions } from "@/lib/auth/session";
 import { toDateOnly } from "@/lib/dates";
+import { fieldErrorsFrom } from "@/lib/forms";
 import {
   BAPTISM_REQUIRED,
   enrolmentSchema,
-  fieldErrorsFrom,
   memberFormValues,
   memberUpdateSchema,
   type MemberFormValues,
 } from "@/lib/members/schema";
 import { prisma } from "@/lib/prisma";
+import { GROUPS_TAG } from "@/lib/settings";
 
 import type { MemberFormState } from "./form-state";
 
@@ -190,6 +191,8 @@ export async function enrollMember(
 
   const { undeliveredUrl } = await sendInvitation(created, actor);
 
+  // Office holders' names are on the About page; group leaders' on the home page.
+  updateTag(GROUPS_TAG);
   revalidatePath("/members", "layout");
 
   return {
@@ -322,6 +325,8 @@ export async function updateMember(
     throw error;
   }
 
+  // Office holders' names are on the About page; group leaders' on the home page.
+  updateTag(GROUPS_TAG);
   revalidatePath("/members", "layout");
   redirect(`/members/${memberId}`);
 }
@@ -408,6 +413,8 @@ export async function setRole(userId: string, formData: FormData) {
   // allowed to see, so it goes. They sign in again with the access they now have.
   await destroyAllSessions(userId);
 
+  // Office holders' names are on the About page; group leaders' on the home page.
+  updateTag(GROUPS_TAG);
   revalidatePath("/members", "layout");
 }
 
@@ -443,5 +450,7 @@ export async function setActive(userId: string, isActive: boolean) {
   // This is the reason sessions live in the database at all.
   if (!isActive) await destroyAllSessions(userId);
 
+  // Office holders' names are on the About page; group leaders' on the home page.
+  updateTag(GROUPS_TAG);
   revalidatePath("/members", "layout");
 }
