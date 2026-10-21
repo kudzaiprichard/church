@@ -21,7 +21,7 @@ The single place to see where the build stands. Update it as described in
 | Phase | Name | Branch | Status | PR | Started | Finished |
 |:-:|---|---|:-:|:-:|---|---|
 | — | Pre-flight | `docs/implementation-plan` | ✅ Done | #13, #14 | 2026-10-21 | 2026-10-21 |
-| 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | 🟡 In progress | — | 2026-10-21 | — |
+| 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | 🟡 In progress | #15 | 2026-10-21 | — |
 | 1 | Groups & communication | `feat/phase-1-groups-messaging` | ⬜ Not started | — | — | — |
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ⬜ Not started | — | — | — |
 | 3 | Finance | `feat/phase-3-finance` | ⬜ Not started | — | — | — |
@@ -473,28 +473,28 @@ squash-merge flow.
 ### Deliverables (in commit order)
 
 **Tooling**
-- [ ] Add Vitest (`vitest`, `vite-tsconfig-paths`), `npm test` script, `vitest.config.ts`.
-- [ ] Add a **Test** step to `.github/workflows/ci.yml` after Lint (the job name
+- [x] Add Vitest (`vitest`, `vite-tsconfig-paths`), `npm test` script, `vitest.config.ts`.
+- [x] Add a **Test** step to `.github/workflows/ci.yml` after Lint (the job name
       `Lint & build (web)` stays unchanged so the documented check name still matches).
-- [ ] `src/lib/routes.ts`: `PROTECTED_PREFIXES`; `src/proxy.ts` and `next.config.ts` read from it.
+- [x] `src/lib/routes.ts`: `PROTECTED_PREFIXES`; `src/proxy.ts` and `next.config.ts` read from it.
 
 **Roles & access**
-- [ ] Migration `phase0_roles`: `Role { APOSTLE MATRON ELDER MEMBER }`, existing `ADMIN` →
+- [x] Migration `phase0_roles`: `Role { APOSTLE MATRON ELDER MEMBER }`, existing `ADMIN` →
       `APOSTLE` (hand-edited SQL).
-- [ ] `src/lib/auth/permissions.ts` (`PERMISSIONS`, `Permission`, `can`) per §4.2.
-- [ ] `dal.ts`: `requirePermission`, `requireGroupLeader`, `ledGroupIds`, `memberGroupIds`,
+- [x] `src/lib/auth/permissions.ts` (`PERMISSIONS`, `Permission`, `can`) per §4.2.
+- [x] `dal.ts`: `requirePermission`, `requireGroupLeader`, `ledGroupIds`, `memberGroupIds`,
       `ownerScope(user, permission, field)`, `selfScope`, `groupContentScope`, `memberScope`;
       remove `requireAdmin` after every caller is moved.
-- [ ] Replace every `role === "ADMIN"` in UI and actions with `can()`
+- [x] Replace every `role === "ADMIN"` in UI and actions with `can()`
       (dashboard, members, landing nav, audit).
-- [ ] Bootstrap creates an `APOSTLE`; last active Apostle cannot be demoted/deactivated.
-- [ ] Login error wording per §9.1.
-- [ ] `nav.ts`: `permission` / `leaderOnly` on items; `railFor(user, ledGroupIds)`; full map from
+- [x] Bootstrap creates an `APOSTLE`; last active Apostle cannot be demoted/deactivated.
+- [x] Login error wording per §9.1.
+- [x] `nav.ts`: `permission` / `leaderOnly` on items; `railFor(user, ledGroupIds)`; full map from
       §8 with unbuilt items `soon: true`.
-- [ ] Unit tests: permission map, `can`, each scope helper for each role.
+- [x] Unit tests: permission map, `can`, each scope helper for each role.
 
 **People**
-- [ ] Migration `phase0_people`: `User` gains `address`, `dateOfBirth`, `gender`;
+- [x] Migration `phase0_people`: `User` gains `address`, `dateOfBirth`, `gender`;
       `BaptismalRecord`; `Group` reshaped (`slug`, `audience`, `leaderId`; drop `isLeader`);
       new `AuditAction` values used in this phase.
 - [ ] `src/lib/data/members.ts` (directory, detail, own profile — scoped by `memberScope`).
