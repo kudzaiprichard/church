@@ -1,5 +1,5 @@
 // Church Management System — data model
-// Draft translation of "Church Management System.pdf" (see docs/).
+// Draft translation of the requirements; the target model is docs/SCOPE.md §6.
 // Key system rule: admins see everything; members see only their own data
 // plus data explicitly targeted at them. Every model below is designed so
 // that rule can be enforced with a scope filter on the query.
