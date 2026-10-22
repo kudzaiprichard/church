@@ -1,7 +1,7 @@
 import { recordAudit } from "@/lib/auth/audit";
 import { requirePermission } from "@/lib/auth/dal";
 import { toCsv } from "@/lib/csv";
-import { churchFinance, defaultPeriod } from "@/lib/data/finance";
+import { churchFinanceExport, defaultPeriod } from "@/lib/data/finance";
 import { groupOptions } from "@/lib/data/members";
 import { harareToday, isDateOnly } from "@/lib/dates";
 import { fromCents } from "@/lib/finance/money";
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
 
   const groups = await groupOptions();
   const group = groups.find((entry) => entry.id === params.get("group"));
-  const result = (await churchFinance(user, { from, to, groupId: group?.id }))!;
+  const rows = (await churchFinanceExport(user, { from, to, groupId: group?.id }))!;
 
   const csv = toCsv([
     [
@@ -43,7 +43,7 @@ export async function GET(request: Request) {
       "recorded_by",
       "reviewed_by",
     ],
-    ...result.rows.map((row) => [
+    ...rows.map((row) => [
       row.paidAt,
       row.member.name,
       row.member.email,
@@ -63,7 +63,7 @@ export async function GET(request: Request) {
   await recordAudit({
     action: "FINANCE_EXPORTED",
     actor: user,
-    detail: `${result.rows.length} rows, ${from} to ${to}${group ? `, ${group.name}` : ""}`,
+    detail: `${rows.length} rows, ${from} to ${to}${group ? `, ${group.name}` : ""}`,
   });
 
   // The byte-order mark makes spreadsheet programs read the file as UTF-8,

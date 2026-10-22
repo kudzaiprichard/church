@@ -182,35 +182,89 @@ export function defaultPeriod(now: Date = new Date()): { from: string; to: strin
   return { from: `${today.slice(0, 4)}-01-01`, to: today };
 }
 
+export const CHURCH_PAGE_SIZE = 50;
+
+function churchWhere(filters: ChurchFilters): Prisma.ContributionWhereInput {
+  return {
+    status: { in: ["CONFIRMED", "PENDING"] },
+    paidAt: { gte: toDateOnly(filters.from), lte: toDateOnly(filters.to) },
+    ...(filters.groupId
+      ? { user: { groupMemberships: { some: { groupId: filters.groupId } } } }
+      : {}),
+  };
+}
+
 /**
- * Every confirmed and pending contribution in a period, optionally for one
- * group's members — and the KPIs and both charts computed from that same
- * list, so their totals agree with the table by construction.
+ * Church-wide giving for a period, optionally for one group's members.
+ *
+ * The KPIs and both charts are computed from one lean read of *every*
+ * matching contribution — type, status, amount, date and groups only — so
+ * their totals agree with each other and with the table's total by
+ * construction. The table itself is a page of the same rows, newest first.
+ * A year of a church's giving is tens of thousands of rows; reading them all
+ * with every relation, and drawing them all, is what this split avoids.
  * `null` without `finance.viewAll`.
  */
-export async function churchFinance(user: SessionUser, filters: ChurchFilters) {
+export async function churchFinance(
+  user: SessionUser,
+  filters: ChurchFilters & { page?: number },
+) {
   if (!can(user, "finance.viewAll")) return null;
+  const where = churchWhere(filters);
+  const page = Math.max(1, Math.floor(filters.page ?? 1));
 
-  const rows = (
-    await prisma.contribution.findMany({
-      where: {
-        status: { in: ["CONFIRMED", "PENDING"] },
-        paidAt: { gte: toDateOnly(filters.from), lte: toDateOnly(filters.to) },
-        ...(filters.groupId
-          ? { user: { groupMemberships: { some: { groupId: filters.groupId } } } }
-          : {}),
-      },
+  const [all, rows] = await Promise.all([
+    prisma.contribution.findMany({
+      where,
+      select: { type: true, status: true, amount: true, paidAt: true, userId: true },
+    }),
+    prisma.contribution.findMany({
+      where,
       orderBy: [{ paidAt: "desc" }, { createdAt: "desc" }],
+      skip: (page - 1) * CHURCH_PAGE_SIZE,
+      take: CHURCH_PAGE_SIZE,
       select: rowSelect,
-    })
-  ).map(toRow);
+    }),
+  ]);
+
+  // Each giver's groups once, rather than once per contribution.
+  const memberships = await prisma.groupMembership.findMany({
+    where: { userId: { in: [...new Set(all.map((row) => row.userId))] } },
+    select: { userId: true, group: { select: { name: true } } },
+  });
+  const groupsOf = new Map<string, string[]>();
+  for (const { userId, group } of memberships) {
+    groupsOf.set(userId, [...(groupsOf.get(userId) ?? []), group.name]);
+  }
+
+  const lean = all.map((row) => ({
+    type: row.type,
+    status: row.status,
+    cents: toCents(row.amount),
+    paidAt: fromDateOnly(row.paidAt),
+    groups: groupsOf.get(row.userId) ?? [],
+  }));
 
   return {
-    rows,
-    totals: summarise(rows),
-    byGroup: byGroup(rows),
-    byMonth: byMonth(rows),
+    rows: rows.map(toRow),
+    total: lean.length,
+    page,
+    pageCount: Math.max(1, Math.ceil(lean.length / CHURCH_PAGE_SIZE)),
+    totals: summarise(lean),
+    byGroup: byGroup(lean),
+    byMonth: byMonth(lean),
   };
+}
+
+/** Every row for the CSV export, with all its columns. `null` without `finance.export`. */
+export async function churchFinanceExport(user: SessionUser, filters: ChurchFilters) {
+  if (!can(user, "finance.export")) return null;
+  const rows = await prisma.contribution.findMany({
+    where: churchWhere(filters),
+    orderBy: [{ paidAt: "desc" }, { createdAt: "desc" }],
+    select: rowSelect,
+  });
+  return rows.map(toRow);
 }
 
 /**

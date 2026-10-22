@@ -9,6 +9,7 @@ import { isDateOnly } from "@/lib/dates";
 
 import { Money } from "../../_components/money";
 import { EmptyState, PageHeader, Panel } from "../../_components/page-parts";
+import { Pagination } from "../../_components/pagination";
 import { HistoryTable, TypeTotals } from "../finance-parts";
 
 import { GroupBarChart, MonthlyLineChart } from "./charts";
@@ -36,7 +37,12 @@ export default async function ChurchFinancePage(props: PageProps<"/finance/churc
 
   const groups = await groupOptions();
   const groupId = groups.find((group) => group.id === params.group)?.id;
-  const result = (await churchFinance(user, { from, to, groupId }))!;
+  const result = (await churchFinance(user, {
+    from,
+    to,
+    groupId,
+    page: Number(params.page) || 1,
+  }))!;
 
   const query = new URLSearchParams({ from, to, ...(groupId ? { group: groupId } : {}) });
   const control =
@@ -103,7 +109,7 @@ export default async function ChurchFinancePage(props: PageProps<"/finance/churc
       </p>
       <TypeTotals confirmed={result.totals.confirmed} pending={result.totals.pending} />
 
-      {result.rows.length === 0 ? (
+      {result.total === 0 ? (
         <Panel className="mt-4">
           <EmptyState
             icon={<WalletIcon className="size-5" aria-hidden />}
@@ -126,8 +132,22 @@ export default async function ChurchFinancePage(props: PageProps<"/finance/churc
             </Panel>
           </div>
 
-          <Panel title={`${result.rows.length} contributions`} className="mt-4" bodyClassName="p-0">
+          <Panel
+            title={`${result.total} contributions`}
+            description="Newest first. The totals and charts above cover all of them."
+            className="mt-4"
+            bodyClassName="p-0"
+          >
             <HistoryTable rows={result.rows} showMember />
+            <div className="border-border border-t">
+              <Pagination
+                page={result.page}
+                pageCount={result.pageCount}
+                total={result.total}
+                pathname="/finance/church"
+                params={{ from, to, group: groupId }}
+              />
+            </div>
           </Panel>
         </>
       )}

@@ -920,7 +920,13 @@ performance passes, the member import tool and the README — while the services
       `getPublicDevotion`) need Next's cache and are covered by the Phase 4 demo instead.*
 - [ ] Accessibility pass (keyboard, focus, labels, contrast in both themes) and 360 px pass on
       every route.
-- [ ] Performance pass: indexes confirmed against slow queries; dashboard queries batched.
+- [x] Performance pass: indexes confirmed against slow queries; dashboard queries batched.
+      *Against a volume database (1,500 members, 20,000 contributions, 300 events with
+      ~17,600 attendance records, 30,000 message recipients, 40,000 notifications) every data
+      read was timed for an Apostle, the Elder, a leader and a member. All but one took 1–62 ms.
+      Church finance took ~500 ms and drew every row; it now totals one lean read and pages the
+      table at 50 (150–190 ms for a year). EXPLAIN showed the heaviest SQL at 0.1–7 ms with
+      sensible plans, so no index was added. Dashboard reads were already batched.*
 - [ ] Real church details in settings seed; placeholder copy removed.
 - [x] Member import script (`prisma/import-members.ts`) with dry-run mode, validation report and
       audit entries; invites sent in batches.
