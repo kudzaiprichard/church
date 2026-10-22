@@ -37,9 +37,7 @@ export function CommandPalette({
 
   const items = useMemo(
     () =>
-      rail.flatMap((section) =>
-        section.items.map((item) => ({ ...item, section: section.label })),
-      ),
+      rail.flatMap((section) => section.items.map((item) => ({ ...item, section: section.label }))),
     [rail],
   );
 
@@ -48,8 +46,7 @@ export function CommandPalette({
     if (!needle) return items;
     return items.filter(
       (item) =>
-        item.label.toLowerCase().includes(needle) ||
-        item.section.toLowerCase().includes(needle),
+        item.label.toLowerCase().includes(needle) || item.section.toLowerCase().includes(needle),
     );
   }, [items, query]);
 
@@ -90,7 +87,7 @@ export function CommandPalette({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent
         showCloseButton={false}
-        className="gap-0 overflow-hidden rounded-xl p-0 sm:max-w-lg"
+        className="gap-0 overflow-hidden rounded-lg p-0 sm:max-w-lg"
       >
         <DialogTitle className="sr-only">Search the system</DialogTitle>
 

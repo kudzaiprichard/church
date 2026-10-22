@@ -104,7 +104,7 @@ export function DeleteDevotionButton({ devotionId }: { devotionId: string }) {
       <button
         type="button"
         onClick={() => setArmed(false)}
-        className="border-border hover:bg-muted h-9 cursor-pointer rounded-lg border px-4 text-sm"
+        className="border-border hover:bg-muted h-9 cursor-pointer rounded-md border px-4 text-sm"
       >
         Keep it
       </button>

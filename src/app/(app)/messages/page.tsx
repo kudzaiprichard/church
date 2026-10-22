@@ -7,6 +7,7 @@ import { listInbox } from "@/lib/data/messages";
 import { relativeTime } from "@/lib/dates";
 import { mayCompose } from "@/lib/messages/rules";
 import { cn } from "@/lib/utils";
+import { parsePaging } from "@/lib/paging";
 
 import { EmptyState, PageHeader, Panel } from "../_components/page-parts";
 import { Pagination } from "../_components/pagination";
@@ -23,10 +24,10 @@ export const metadata: Metadata = { title: "Messages" };
  */
 export default async function InboxPage(props: PageProps<"/messages">) {
   const user = await requireSession();
-  const { page } = await props.searchParams;
+  const paging = parsePaging(await props.searchParams, 20);
 
   const [inbox, led] = await Promise.all([
-    listInbox(user, { page: Number(page) || 1 }),
+    listInbox(user, paging),
     ledGroupIds(user),
   ]);
   const canSend = mayCompose(user, led);
@@ -119,15 +120,14 @@ export default async function InboxPage(props: PageProps<"/messages">) {
                 );
               })}
             </ul>
-            <div className="border-border border-t">
-              <Pagination
+            <Pagination
                 page={inbox.page}
                 pageCount={inbox.pageCount}
+                size={inbox.size}
                 total={inbox.total}
                 pathname="/messages"
                 params={{}}
               />
-            </div>
           </>
         )}
       </Panel>

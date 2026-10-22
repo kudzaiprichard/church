@@ -15,7 +15,10 @@ export function MailboxTabs({ active, canSend }: { active: "inbox" | "sent"; can
   ] as const;
 
   return (
-    <nav aria-label="Mailbox" className="border-border mb-4 flex gap-1 overflow-x-auto border-b">
+    <nav
+      aria-label="Mailbox"
+      className="border-border mb-4 flex gap-1 scrollbar-none overflow-x-auto overflow-y-hidden border-b"
+    >
       {tabs.map((tab) => (
         <Link
           key={tab.id}
@@ -39,7 +42,7 @@ export function ComposeLink() {
   return (
     <Link
       href="/messages/new"
-      className="action-solid inline-flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
+      className="action-solid inline-flex h-9 items-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
     >
       <PenLineIcon className="size-4" aria-hidden />
       New message

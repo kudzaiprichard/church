@@ -8,8 +8,10 @@ import { eventList, eventsInMonth, type EventRow } from "@/lib/data/events";
 import { formatDateOnly, harareToday, isDateOnly } from "@/lib/dates";
 import { monthGrid, parseMonth, shiftMonth } from "@/lib/events/rules";
 import { cn } from "@/lib/utils";
+import { paginate, parsePaging, type Paged } from "@/lib/paging";
 
 import { EmptyState, PageHeader, Panel } from "../_components/page-parts";
+import { Pagination } from "../_components/pagination";
 
 import { EventListItem } from "./event-parts";
 
@@ -64,7 +66,7 @@ export default async function EventsPage(props: PageProps<"/events">) {
           manages && (
             <Link
               href="/events/new"
-              className="action-solid inline-flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
+              className="action-solid inline-flex h-9 items-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               <PlusIcon className="size-4" aria-hidden />
               New event
@@ -86,25 +88,46 @@ export default async function EventsPage(props: PageProps<"/events">) {
           day={day}
         />
       ) : (
-        <ListView {...await eventList(user)} manages={manages} />
+        <ListView
+          {...pageEvents(await eventList(user), params)}
+          params={params}
+          manages={manages}
+        />
       )}
     </>
   );
 }
 
+const PAST_KEYS = { page: "ppage", size: "psize" };
+
+/** The two lists of the list view, each paged on its own keys. */
+function pageEvents(
+  lists: { upcoming: EventRow[]; past: EventRow[] },
+  params: Record<string, string | string[] | undefined>,
+) {
+  return {
+    upcoming: paginate(lists.upcoming, parsePaging(params, 10)),
+    past: paginate(lists.past, parsePaging(params, 10, PAST_KEYS)),
+  };
+}
+
 function ListView({
   upcoming,
   past,
+  params,
   manages,
 }: {
-  upcoming: EventRow[];
-  past: EventRow[];
+  upcoming: Paged<EventRow>;
+  past: Paged<EventRow>;
+  params: Record<string, string | string[] | undefined>;
   manages: boolean;
 }) {
+  const one = (key: string) =>
+    typeof params[key] === "string" ? (params[key] as string) : undefined;
   return (
     <div className="grid max-w-4xl gap-4">
       <Panel title="Upcoming" bodyClassName="p-0">
-        {upcoming.length === 0 ? (
+        {upcoming.total === 0 ? (
           <EmptyState
             icon={<CalendarDaysIcon className="size-5" aria-hidden />}
             title="Nothing planned"
@@ -112,20 +135,39 @@ function ListView({
             {manages ? "Create the next event." : "New events will appear here."}
           </EmptyState>
         ) : (
-          <ul className="divide-border divide-y">
-            {upcoming.map((event) => (
-              <EventListItem key={event.id} event={event} />
-            ))}
-          </ul>
+          <>
+            <ul className="divide-border divide-y">
+              {upcoming.rows.map((event) => (
+                <EventListItem key={event.id} event={event} />
+              ))}
+            </ul>
+            <Pagination
+              page={upcoming.page}
+              pageCount={upcoming.pageCount}
+              total={upcoming.total}
+              size={upcoming.size}
+              pathname="/events"
+              params={{ view: "list", ppage: one("ppage"), psize: one("psize") }}
+            />
+          </>
         )}
       </Panel>
-      {past.length > 0 && (
+      {past.total > 0 && (
         <Panel title="Past" description="The most recent thirty." bodyClassName="p-0">
           <ul className="divide-border divide-y">
-            {past.map((event) => (
+            {past.rows.map((event) => (
               <EventListItem key={event.id} event={event} muted />
             ))}
           </ul>
+          <Pagination
+            page={past.page}
+            pageCount={past.pageCount}
+            total={past.total}
+            size={past.size}
+            pathname="/events"
+            params={{ view: "list", page: one("page"), size: one("size") }}
+            keys={PAST_KEYS}
+          />
         </Panel>
       )}
     </div>
@@ -158,7 +200,7 @@ function CalendarView({
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
       <section
         aria-labelledby="month"
-        className="bg-card border-border rounded-xl border p-4 sm:p-5"
+        className="bg-card border-border rounded-lg border p-4 sm:p-5"
       >
         <header className="mb-4 flex items-center justify-between gap-3">
           <h2 id="month" className="text-foreground text-base font-bold">

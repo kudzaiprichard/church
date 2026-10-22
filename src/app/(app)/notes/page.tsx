@@ -5,8 +5,10 @@ import Link from "next/link";
 import { requireSession } from "@/lib/auth/dal";
 import { listOwnNotes } from "@/lib/data/notes";
 import { relativeTime } from "@/lib/dates";
+import { paginate, parsePaging } from "@/lib/paging";
 
 import { EmptyState, PageHeader, Panel } from "../_components/page-parts";
+import { Pagination } from "../_components/pagination";
 
 export const metadata: Metadata = { title: "My sermon notes" };
 
@@ -15,9 +17,10 @@ export const metadata: Metadata = { title: "My sermon notes" };
  * pinned to the caller for every office — there is no page anywhere that
  * lists anyone else's.
  */
-export default async function NotesPage() {
+export default async function NotesPage(props: PageProps<"/notes">) {
   const user = await requireSession();
-  const notes = await listOwnNotes(user);
+  const all = await listOwnNotes(user);
+  const notes = paginate(all, parsePaging(await props.searchParams, 10));
   const now = new Date();
 
   return (
@@ -34,13 +37,14 @@ export default async function NotesPage() {
       />
 
       <Panel className="max-w-3xl" bodyClassName="p-0">
-        {notes.length === 0 ? (
+        {notes.total === 0 ? (
           <EmptyState icon={<NotebookPenIcon className="size-5" aria-hidden />} title="No notes yet">
             Open a sermon and write in the note box beneath it.
           </EmptyState>
         ) : (
+          <>
           <ul className="divide-border divide-y">
-            {notes.map((note) => (
+            {notes.rows.map((note) => (
               <li key={note.sermonId}>
                 <Link
                   href={`/sermons/${note.sermonId}`}
@@ -60,6 +64,15 @@ export default async function NotesPage() {
               </li>
             ))}
           </ul>
+          <Pagination
+            page={notes.page}
+            pageCount={notes.pageCount}
+            total={notes.total}
+            size={notes.size}
+            pathname="/notes"
+            params={{}}
+          />
+          </>
         )}
       </Panel>
     </>

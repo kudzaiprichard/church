@@ -83,7 +83,7 @@ export function NoteEditor({
             window.clearTimeout(timer.current);
             void save(body);
           }}
-          className="action-solid h-9 cursor-pointer rounded-lg px-4 text-sm font-semibold"
+          className="action-solid h-9 cursor-pointer rounded-md px-4 text-sm font-semibold"
         >
           Save
         </button>

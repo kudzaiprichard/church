@@ -27,7 +27,7 @@ const COLOURS: Record<(typeof TYPES)[number], string> = {
   CHEMA: "var(--chart-1)",
   WELFARE: "var(--chart-2)",
   TITHE: "var(--chart-3)",
-  PARTNERSHIP: "var(--chart-5)",
+  PARTNERSHIP: "var(--chart-4)",
 };
 
 const axis = { fontSize: 11, fill: "var(--muted-foreground)" };
@@ -53,7 +53,7 @@ export function GroupBarChart({
     <div className="h-72 w-full">
       <ResponsiveContainer>
         <BarChart data={data} margin={{ top: 8, right: 8, bottom: 8, left: 8 }}>
-          <CartesianGrid stroke="var(--border)" vertical={false} />
+          <CartesianGrid stroke="var(--border)" strokeDasharray="0" vertical={false} />
           <XAxis
             dataKey="group"
             tick={axis}
@@ -62,9 +62,9 @@ export function GroupBarChart({
             textAnchor="end"
             height={56}
           />
-          <YAxis tick={axis} tickFormatter={dollars} width={64} />
+          <YAxis tick={axis} tickFormatter={dollars} width={64} axisLine={false} tickLine={false} />
           <Tooltip {...tooltip} cursor={{ fill: "var(--muted)" }} />
-          <Legend wrapperStyle={{ fontSize: 12 }} />
+          <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
           {TYPES.map((type) => (
             <Bar
               key={type}
@@ -72,6 +72,11 @@ export function GroupBarChart({
               name={TYPE_LABELS[type]}
               stackId="type"
               fill={COLOURS[type]}
+              // Thin marks, and a 2 px surface gap between stacked segments, so
+              // touching colours never have to be told apart by hue alone.
+              maxBarSize={40}
+              stroke="var(--card)"
+              strokeWidth={2}
             />
           ))}
         </BarChart>
@@ -85,9 +90,9 @@ export function MonthlyLineChart({ data }: { data: { month: string; cents: Cents
     <div className="h-64 w-full">
       <ResponsiveContainer>
         <LineChart data={data} margin={{ top: 8, right: 16, bottom: 8, left: 8 }}>
-          <CartesianGrid stroke="var(--border)" vertical={false} />
+          <CartesianGrid stroke="var(--border)" strokeDasharray="0" vertical={false} />
           <XAxis dataKey="month" tick={axis} />
-          <YAxis tick={axis} tickFormatter={dollars} width={64} />
+          <YAxis tick={axis} tickFormatter={dollars} width={64} axisLine={false} tickLine={false} />
           <Tooltip {...tooltip} />
           <Line
             type="monotone"
@@ -95,7 +100,8 @@ export function MonthlyLineChart({ data }: { data: { month: string; cents: Cents
             name="Confirmed"
             stroke="var(--chart-1)"
             strokeWidth={2}
-            dot={{ r: 3 }}
+            dot={{ r: 4, strokeWidth: 2, stroke: "var(--card)" }}
+            activeDot={{ r: 5, strokeWidth: 2, stroke: "var(--card)" }}
           />
         </LineChart>
       </ResponsiveContainer>

@@ -66,14 +66,14 @@ export function NotificationBell({
       <PopoverTrigger
         aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} unread)` : ""}`}
         className={cn(
-          "border-border text-muted-foreground hover:bg-muted hover:text-foreground",
-          "focus-visible:ring-ring relative grid size-9 cursor-pointer place-items-center rounded-lg border",
+          "text-muted-foreground hover:bg-muted hover:text-foreground",
+          "focus-visible:ring-ring relative grid size-9 cursor-pointer place-items-center rounded-md",
           "transition-colors duration-150 focus-visible:ring-2 focus-visible:outline-none",
         )}
       >
-        <BellIcon className="size-4" strokeWidth={1.75} aria-hidden />
+        <BellIcon className="size-[18px]" strokeWidth={1.75} aria-hidden />
         {unreadCount > 0 && (
-          <span className="bg-brass ring-background absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[0.6rem] leading-none font-bold text-[oklch(0.255_0.093_277.5)] ring-2">
+          <span className="bg-brass ring-background absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[0.6rem] leading-none font-bold text-[oklch(0.255_0.093_277.5)] ring-2">
             {display}
           </span>
         )}
@@ -82,7 +82,7 @@ export function NotificationBell({
       <PopoverContent
         align="end"
         sideOffset={10}
-        className="w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-xl p-0"
+        className="w-[min(22rem,calc(100vw-2rem))] overflow-hidden rounded-lg p-0"
       >
         <div className="border-border flex items-center justify-between gap-3 border-b px-4 py-3">
           <h3 className="text-sm font-semibold">Notifications</h3>
@@ -101,7 +101,7 @@ export function NotificationBell({
 
         {items.length === 0 ? (
           <div className="text-muted-foreground flex flex-col items-center justify-center px-4 py-10">
-            <span className="bg-secondary text-primary mb-3 grid size-11 place-items-center rounded-xl">
+            <span className="bg-secondary text-primary mb-3 grid size-11 place-items-center rounded-lg">
               <InboxIcon className="size-5" aria-hidden />
             </span>
             <p className="text-foreground text-sm font-semibold">Nothing yet</p>
@@ -114,7 +114,10 @@ export function NotificationBell({
             <ul className="divide-border/50 divide-y">
               {items.map((item) => (
                 <li key={item.id}>
-                  <form action={openNotification.bind(null, item.id)} onSubmit={() => setOpen(false)}>
+                  <form
+                    action={openNotification.bind(null, item.id)}
+                    onSubmit={() => setOpen(false)}
+                  >
                     <button
                       type="submit"
                       className={cn(
@@ -124,7 +127,10 @@ export function NotificationBell({
                     >
                       <span className="flex items-baseline gap-2 text-sm leading-snug">
                         {!item.read && (
-                          <span aria-hidden className="bg-primary mt-1.5 size-1.5 shrink-0 rounded-full" />
+                          <span
+                            aria-hidden
+                            className="bg-primary mt-1.5 size-1.5 shrink-0 rounded-full"
+                          />
                         )}
                         <span className={cn("min-w-0 flex-1", !item.read && "font-medium")}>
                           {!item.read && <span className="sr-only">Unread: </span>}

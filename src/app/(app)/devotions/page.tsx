@@ -6,8 +6,10 @@ import { requireSession } from "@/lib/auth/dal";
 import { listDevotions, type DevotionTab } from "@/lib/data/devotions";
 import { formatDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
+import { paginate, parsePaging } from "@/lib/paging";
 
 import { EmptyState, PageHeader } from "../_components/page-parts";
+import { Pagination } from "../_components/pagination";
 
 export const metadata: Metadata = { title: "Devotions" };
 
@@ -30,6 +32,7 @@ export default async function DevotionsPage(props: PageProps<"/devotions">) {
 
   const feed = await listDevotions(user, { q, tab: tabParam });
   const latestId = feed.tab === "published" ? feed.rows[0]?.id : undefined;
+  const shown = paginate(feed.rows, parsePaging(params, 30));
 
   return (
     <>
@@ -41,7 +44,7 @@ export default async function DevotionsPage(props: PageProps<"/devotions">) {
           feed.manages && (
             <Link
               href="/devotions/new"
-              className="action-solid inline-flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
+              className="action-solid inline-flex h-9 items-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               <PlusIcon className="size-4" aria-hidden />
               New devotion
@@ -89,7 +92,7 @@ export default async function DevotionsPage(props: PageProps<"/devotions">) {
       </form>
 
       {feed.rows.length === 0 ? (
-        <div className="bg-card border-border rounded-xl border">
+        <div className="bg-card border-border rounded-lg border">
           <EmptyState icon={<SunriseIcon className="size-5" aria-hidden />} title="Nothing here yet">
             {q
               ? "No devotion matches that search."
@@ -97,12 +100,13 @@ export default async function DevotionsPage(props: PageProps<"/devotions">) {
           </EmptyState>
         </div>
       ) : (
+        <>
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {feed.rows.map((devotion) => (
+          {shown.rows.map((devotion) => (
             <li key={devotion.id}>
               <Link
                 href={`/devotions/${devotion.id}`}
-                className="bg-card border-border hover:border-primary/40 flex h-full flex-col rounded-xl border p-5 transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+                className="bg-card border-border hover:border-primary/40 flex h-full flex-col rounded-lg border p-5 transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
               >
                 <p className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="text-muted-foreground">
@@ -131,6 +135,20 @@ export default async function DevotionsPage(props: PageProps<"/devotions">) {
             </li>
           ))}
         </ul>
+        {shown.total > 5 && (
+          <div className="bg-card border-border mt-4 rounded-lg border">
+            <Pagination
+              page={shown.page}
+              pageCount={shown.pageCount}
+              total={shown.total}
+              size={shown.size}
+              pathname="/devotions"
+              params={{ q, tab: tabParam }}
+              className="border-t-0"
+            />
+          </div>
+        )}
+        </>
       )}
     </>
   );

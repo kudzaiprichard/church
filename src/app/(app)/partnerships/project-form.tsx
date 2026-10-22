@@ -97,7 +97,7 @@ export function CompleteProjectForm({ projectId, name }: { projectId: string; na
       <div>
         <button
           type="submit"
-          className="border-border hover:bg-muted h-9 cursor-pointer rounded-lg border px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+          className="border-border hover:bg-muted h-9 cursor-pointer rounded-md border px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
         >
           Mark complete
         </button>

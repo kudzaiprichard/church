@@ -7,6 +7,7 @@ import { ledGroupIds, requireSession } from "@/lib/auth/dal";
 import { listSent } from "@/lib/data/messages";
 import { relativeTime } from "@/lib/dates";
 import { mayCompose } from "@/lib/messages/rules";
+import { parsePaging } from "@/lib/paging";
 
 import { EmptyState, PageHeader, Panel } from "../../_components/page-parts";
 import { Pagination } from "../../_components/pagination";
@@ -23,8 +24,7 @@ export default async function SentPage(props: PageProps<"/messages/sent">) {
   const user = await requireSession();
   if (!mayCompose(user, await ledGroupIds(user))) redirect("/messages");
 
-  const { page } = await props.searchParams;
-  const sent = await listSent(user, { page: Number(page) || 1 });
+  const sent = await listSent(user, parsePaging(await props.searchParams, 20));
   const now = new Date();
 
   return (
@@ -78,15 +78,14 @@ export default async function SentPage(props: PageProps<"/messages/sent">) {
                 </li>
               ))}
             </ul>
-            <div className="border-border border-t">
-              <Pagination
+            <Pagination
                 page={sent.page}
                 pageCount={sent.pageCount}
+                size={sent.size}
                 total={sent.total}
                 pathname="/messages/sent"
                 params={{}}
               />
-            </div>
           </>
         )}
       </Panel>

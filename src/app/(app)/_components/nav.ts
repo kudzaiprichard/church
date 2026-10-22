@@ -3,10 +3,11 @@ import { can, type Permission } from "@/lib/auth/permissions";
 /**
  * The shape of the internal system, in one place (docs/SCOPE.md §8).
  *
- * Two levels, because the shell has two zones. The icon rail shows *sections*;
- * choosing one opens a context panel listing that section's *pages*. The
+ * Two levels: the sidebar lists the *sections*, each with its name, and a
+ * row of tabs under the top bar lists the current section's *pages*. The
  * breadcrumb and the command palette both read from here too, so a page can
- * never be called one thing in the rail and another at the top of the screen.
+ * never be called one thing in the sidebar and another at the top of the
+ * screen.
  *
  * `access` decides what a person is even shown. It is presentation only — the
  * actual gate is `requirePermission()` / `requireGroupLeader()` inside the page
@@ -81,7 +82,7 @@ export type RailSection = {
 export const RAIL: RailSection[] = [
   {
     id: "overview",
-    label: "Overview",
+    label: "Home",
     icon: "overview",
     href: "/dashboard",
     items: [{ href: "/dashboard", label: "Dashboard", icon: "dashboard" }],
@@ -116,6 +117,7 @@ export const RAIL: RailSection[] = [
     items: [
       { href: "/messages", label: "Messages", icon: "inbox" },
       { href: "/events", label: "Events", icon: "calendar" },
+      { href: "/attendance", label: "Attendance", icon: "attendance" },
       { href: "/prayer", label: "Prayer requests", icon: "prayer" },
       { href: "/sermons", label: "Sermons", icon: "sermons" },
       { href: "/devotions", label: "Devotions", icon: "devotion" },
@@ -123,11 +125,10 @@ export const RAIL: RailSection[] = [
   },
   {
     id: "records",
-    label: "Records",
+    label: "Giving",
     icon: "records",
-    href: "/attendance",
+    href: "/finance",
     items: [
-      { href: "/attendance", label: "Attendance", icon: "attendance" },
       { href: "/finance", label: "My giving", icon: "giving" },
       {
         href: "/finance/church",
@@ -233,6 +234,67 @@ export function sectionFor(pathname: string, rail: RailSection[]) {
     .sort((a, b) => b.href.length - a.href.length);
 
   return items.find(({ href }) => pathname === href || pathname.startsWith(`${href}/`))?.section;
+}
+
+/**
+ * The things a person can start from anywhere: the top bar's "New" menu.
+ *
+ * Same rule as the pages: `access` only decides what is offered; each page
+ * checks again. `compose` items follow the message rule instead (Apostles,
+ * and leaders for their groups), which is decided in the layout.
+ */
+export type CreateAction = {
+  href: string;
+  label: string;
+  icon: IconName;
+  access?: NavAccess;
+  compose?: boolean;
+};
+
+export const CREATE_ACTIONS: CreateAction[] = [
+  { href: "/messages/new", label: "Message", icon: "inbox", compose: true },
+  {
+    href: "/events/new",
+    label: "Event",
+    icon: "calendar",
+    access: { permissions: ["events.manage"] },
+  },
+  {
+    href: "/members/new",
+    label: "Enrol a member",
+    icon: "users",
+    access: { permissions: ["members.enroll"] },
+  },
+  {
+    href: "/sermons/new",
+    label: "Sermon",
+    icon: "sermons",
+    access: { permissions: ["sermons.manage"] },
+  },
+  {
+    href: "/devotions/new",
+    label: "Devotion",
+    icon: "devotion",
+    access: { permissions: ["devotions.manage"] },
+  },
+  {
+    href: "/groups/new",
+    label: "Connect group",
+    icon: "groups",
+    access: { permissions: ["groups.manage"] },
+  },
+  { href: "/finance", label: "Log a payment", icon: "giving" },
+  { href: "/prayer", label: "Prayer request", icon: "prayer" },
+];
+
+export function createActionsFor(
+  user: NavUser,
+  ledGroupIds: readonly string[],
+  canCompose: boolean,
+): CreateAction[] {
+  return CREATE_ACTIONS.filter((action) =>
+    action.compose ? canCompose : canSee(user, action.access, ledGroupIds.length > 0),
+  );
 }
 
 /** Every page label, including ones with no panel entry of their own. */

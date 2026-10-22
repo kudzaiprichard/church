@@ -290,7 +290,7 @@ function ResultTable({
   more?: number;
 }) {
   return (
-    <div className="border-border overflow-x-auto rounded-lg border">
+    <div className="border-border overflow-x-auto overflow-y-hidden rounded-lg border">
       <table className="w-full text-left text-sm">
         <caption className="text-foreground px-3 py-2 text-left text-xs font-bold">
           {caption}

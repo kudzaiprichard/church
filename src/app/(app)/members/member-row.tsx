@@ -1,3 +1,4 @@
+import { ChevronRightIcon } from "lucide-react";
 import Link from "next/link";
 
 import { ROLES, ROLE_LABELS } from "@/lib/auth/permissions";
@@ -30,19 +31,22 @@ type ControlledMember = Pick<
 /** Where an account stands, in a word or three, with its colour. */
 export function memberStatus(member: ControlledMember) {
   if (!member.isActive) return { label: "Deactivated", tone: "bg-destructive/10 text-destructive" };
-  if (!member.activated)
-    return { label: "Invitation pending", tone: "bg-accent text-accent-foreground" };
+  if (!member.activated) return { label: "Invited", tone: "bg-accent text-accent-foreground" };
   return {
     label: member.lastLoginAt
-      ? `Last signed in ${joined.format(new Date(member.lastLoginAt))}`
+      ? `Active ${joined.format(new Date(member.lastLoginAt))}`
       : "Never signed in",
     tone: "bg-success/10 text-success",
   };
 }
 
 /**
- * One person in the directory: who they are, their groups, and what the
- * viewer's office lets them do to the account.
+ * One person in the directory: who they are, their groups and where their
+ * account stands — and, when it is pending, the one thing to do about it.
+ *
+ * Changing an office or deactivating someone happens on their own page, not
+ * from a long list: those are rare, consequential acts, and four buttons on
+ * every row made the roll hard to read and easy to misclick.
  */
 export function MemberRow({
   member,
@@ -54,49 +58,57 @@ export function MemberRow({
   can: RowAbilities;
 }) {
   const status = memberStatus(member);
+  const href = `/members/${member.id}`;
 
   return (
-    <li className="grid gap-x-6 gap-y-3 px-5 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
-      <div className="flex min-w-0 items-start gap-3">
+    <li className="group hover:bg-muted/50 relative grid gap-x-4 gap-y-2 px-4 py-3 transition-colors md:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_auto] md:items-center">
+      <div className="flex min-w-0 items-center gap-3">
         <PersonAvatar person={member} muted={!member.isActive} />
-
         <div className="min-w-0">
-          <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            {/* The name is the row's link; its hit area is stretched over the row. */}
             <Link
-              href={`/members/${member.id}`}
-              className="text-foreground rounded-sm text-sm font-semibold hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+              href={href}
+              className="text-foreground rounded-sm text-sm font-semibold after:absolute after:inset-0 hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
             >
               {member.firstName} {member.lastName}
             </Link>
             {member.role !== "MEMBER" && (
-              <span className="bg-secondary text-primary rounded-md px-1.5 py-0.5 text-[0.65rem] font-semibold">
+              <span className="bg-secondary text-primary rounded px-1.5 py-px text-[0.65rem] font-semibold">
                 {ROLE_LABELS[member.role]}
               </span>
             )}
             {isSelf && <span className="text-muted-foreground text-xs">(you)</span>}
           </p>
-          <p className="text-muted-foreground mt-0.5 text-sm break-all">
+          <p className="text-muted-foreground truncate text-xs">
             {member.email}
             {member.phone && <span className="numeric"> · {member.phone}</span>}
-          </p>
-          <p className="mt-1.5 flex flex-wrap items-center gap-2 text-xs">
-            <span className={`rounded-md px-1.5 py-0.5 font-medium ${status.tone}`}>
-              {status.label}
-            </span>
-            {member.groups.length > 0 ? (
-              <span className="text-muted-foreground">
-                {member.groups.map((group) => group.name).join(" · ")}
-              </span>
-            ) : (
-              <span className="text-muted-foreground italic">No connect group</span>
-            )}
           </p>
         </div>
       </div>
 
-      {/* An Apostle cannot demote or deactivate themselves — that is the
-          fastest route to a church with no Apostle and no way back in. */}
-      {!isSelf && <MemberControls member={member} can={can} className="sm:justify-end" />}
+      <p className="text-muted-foreground min-w-0 truncate pl-12 text-xs md:pl-0">
+        {member.groups.length > 0 ? (
+          member.groups.map((group) => group.name).join(", ")
+        ) : (
+          <span className="italic">No connect group</span>
+        )}
+      </p>
+
+      <div className="relative flex items-center gap-2 pl-12 md:justify-end md:pl-0">
+        <span
+          className={`rounded px-1.5 py-0.5 text-xs font-medium whitespace-nowrap ${status.tone}`}
+        >
+          {status.label}
+        </span>
+        {can.enroll && !member.activated && member.isActive && !isSelf && (
+          <RowAction action={resendInvitation.bind(null, member.id)}>Resend</RowAction>
+        )}
+        <ChevronRightIcon
+          className="text-muted-foreground hidden size-4 shrink-0 md:block"
+          aria-hidden
+        />
+      </div>
     </li>
   );
 }

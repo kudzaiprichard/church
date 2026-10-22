@@ -207,7 +207,7 @@ export function PaymentForm({
 export function LogPaymentDialog({ options, today }: { options: PaymentOptions; today: string }) {
   return (
     <Dialog>
-      <DialogTrigger className="action-solid inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none">
+      <DialogTrigger className="action-solid inline-flex h-9 cursor-pointer items-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none">
         <PlusIcon className="size-4" aria-hidden />
         Log payment
       </DialogTrigger>

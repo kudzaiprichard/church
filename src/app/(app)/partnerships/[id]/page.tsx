@@ -9,11 +9,13 @@ import { getProject } from "@/lib/data/partnerships";
 import { formatDateOnly } from "@/lib/dates";
 import { sumCents } from "@/lib/finance/money";
 import { progress } from "@/lib/finance/pledges";
+import { paginate, parsePaging } from "@/lib/paging";
 
 import { Money } from "../../_components/money";
 import { EmptyState, PageHeader, Panel } from "../../_components/page-parts";
 import { ProjectStatusBadge, Progress } from "../../finance/finance-parts";
 import { CompleteProjectForm, ProjectForm } from "../project-form";
+import { Pagination } from "../../_components/pagination";
 
 export const metadata: Metadata = { title: "Partnership project" };
 
@@ -27,6 +29,7 @@ export default async function ProjectPage(props: PageProps<"/partnerships/[id]">
   const { id } = await props.params;
 
   const project = await getProject(user, id);
+  const given = paginate(project?.contributions ?? [], parsePaging(await props.searchParams, 20));
   if (!project) notFound();
 
   const bar = progress(project.raisedCents, project.targetCents);
@@ -94,7 +97,8 @@ export default async function ProjectPage(props: PageProps<"/partnerships/[id]">
                 : null}
             </EmptyState>
           ) : (
-            <div className="overflow-x-auto">
+            <>
+            <div className="overflow-x-auto overflow-y-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-border text-muted-foreground border-b text-xs">
@@ -115,7 +119,7 @@ export default async function ProjectPage(props: PageProps<"/partnerships/[id]">
                   </tr>
                 </thead>
                 <tbody className="divide-border divide-y">
-                  {project.contributions.map((entry) => (
+                  {given.rows.map((entry) => (
                     <tr key={entry.id}>
                       {project.seesAll && (
                         <td className="px-5 py-2.5">
@@ -150,6 +154,15 @@ export default async function ProjectPage(props: PageProps<"/partnerships/[id]">
                 </tfoot>
               </table>
             </div>
+            <Pagination
+              page={given.page}
+              pageCount={given.pageCount}
+              total={given.total}
+              size={given.size}
+              pathname={`/partnerships/${project.id}`}
+              params={{}}
+            />
+            </>
           )}
         </Panel>
 

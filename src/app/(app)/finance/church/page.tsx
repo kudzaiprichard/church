@@ -6,6 +6,7 @@ import { requirePermission } from "@/lib/auth/dal";
 import { churchFinance, defaultPeriod } from "@/lib/data/finance";
 import { groupOptions } from "@/lib/data/members";
 import { isDateOnly } from "@/lib/dates";
+import { parsePaging } from "@/lib/paging";
 
 import { Money } from "../../_components/money";
 import { EmptyState, PageHeader, Panel } from "../../_components/page-parts";
@@ -41,7 +42,7 @@ export default async function ChurchFinancePage(props: PageProps<"/finance/churc
     from,
     to,
     groupId,
-    page: Number(params.page) || 1,
+    ...parsePaging(params, 25),
   }))!;
 
   const query = new URLSearchParams({ from, to, ...(groupId ? { group: groupId } : {}) });
@@ -58,7 +59,7 @@ export default async function ChurchFinancePage(props: PageProps<"/finance/churc
           <Link
             href={`/finance/export?${query}`}
             prefetch={false}
-            className="border-border bg-card hover:bg-muted inline-flex h-9 items-center gap-2 rounded-lg border px-3.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+            className="border-border bg-card hover:bg-muted inline-flex h-9 items-center gap-2 rounded-md border px-3.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
           >
             <DownloadIcon className="size-4" aria-hidden />
             Export CSV
@@ -69,7 +70,7 @@ export default async function ChurchFinancePage(props: PageProps<"/finance/churc
       <form
         method="get"
         aria-label="Filter finance"
-        className="bg-card border-border mb-4 grid gap-3 rounded-xl border p-4 sm:grid-cols-[repeat(3,minmax(0,1fr))_auto] sm:items-end"
+        className="bg-card border-border mb-4 grid gap-3 rounded-lg border p-4 sm:grid-cols-[repeat(3,minmax(0,1fr))_auto] sm:items-end"
       >
         <label className="text-xs font-semibold">
           From
@@ -98,16 +99,25 @@ export default async function ChurchFinancePage(props: PageProps<"/finance/churc
         </button>
       </form>
 
-      <p className="text-muted-foreground mb-2 text-sm">
-        Confirmed total <Money cents={result.totals.total} className="text-foreground font-semibold" />
-        {result.totals.pendingTotal !== 0 && (
+      <Panel
+        title={
           <>
-            {" · "}
-            <Money cents={result.totals.pendingTotal} pending /> pending
+            Confirmed total{" "}
+            <Money cents={result.totals.total} className="text-foreground" />
           </>
-        )}
-      </p>
-      <TypeTotals confirmed={result.totals.confirmed} pending={result.totals.pending} />
+        }
+        description={
+          result.totals.pendingTotal !== 0 ? (
+            <>
+              <Money cents={result.totals.pendingTotal} pending /> still pending review
+            </>
+          ) : (
+            "Nothing pending in this period."
+          )
+        }
+      >
+        <TypeTotals confirmed={result.totals.confirmed} pending={result.totals.pending} />
+      </Panel>
 
       {result.total === 0 ? (
         <Panel className="mt-4">
@@ -139,15 +149,14 @@ export default async function ChurchFinancePage(props: PageProps<"/finance/churc
             bodyClassName="p-0"
           >
             <HistoryTable rows={result.rows} showMember />
-            <div className="border-border border-t">
-              <Pagination
+            <Pagination
                 page={result.page}
                 pageCount={result.pageCount}
+                size={result.size}
                 total={result.total}
                 pathname="/finance/church"
                 params={{ from, to, group: groupId }}
               />
-            </div>
           </Panel>
         </>
       )}

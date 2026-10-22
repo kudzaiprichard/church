@@ -8,6 +8,7 @@ import { listNotifications } from "@/lib/data/notifications";
 import { relativeTime } from "@/lib/dates";
 import { NOTIFICATION_TYPE_LABELS } from "@/lib/notification-rows";
 import { cn } from "@/lib/utils";
+import { parsePaging } from "@/lib/paging";
 
 import { EmptyState, PageHeader, Panel } from "../_components/page-parts";
 import { Pagination } from "../_components/pagination";
@@ -27,7 +28,7 @@ export default async function NotificationsPage(props: PageProps<"/notifications
   const params = await props.searchParams;
   const type = TYPES.find((value) => value === params.type);
 
-  const result = await listNotifications(user, { type, page: Number(params.page) || 1 });
+  const result = await listNotifications(user, { type, ...parsePaging(params, 20) });
   const now = new Date();
 
   const chip = (active: boolean) =>
@@ -46,7 +47,7 @@ export default async function NotificationsPage(props: PageProps<"/notifications
         description="Messages, replies and group activity addressed to you. Only you see these."
       />
 
-      <nav aria-label="Filter by kind" className="mb-4 flex gap-1.5 overflow-x-auto pb-1">
+      <nav aria-label="Filter by kind" className="mb-4 flex gap-1.5 overflow-x-auto overflow-y-hidden pb-1">
         <Link href="/notifications" aria-current={!type ? "page" : undefined} className={chip(!type)}>
           All
         </Link>
@@ -134,15 +135,14 @@ export default async function NotificationsPage(props: PageProps<"/notifications
                 </li>
               ))}
             </ul>
-            <div className="border-border border-t">
-              <Pagination
+            <Pagination
                 page={result.page}
                 pageCount={result.pageCount}
+                size={result.size}
                 total={result.total}
                 pathname="/notifications"
                 params={{ type }}
               />
-            </div>
           </>
         )}
       </Panel>

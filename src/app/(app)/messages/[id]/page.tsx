@@ -56,7 +56,7 @@ export default async function MessagePage(props: PageProps<"/messages/[id]">) {
         {isSender && !isRecipient ? "Sent" : "Inbox"}
       </Link>
 
-      <article className="bg-card border-border max-w-3xl overflow-hidden rounded-xl border">
+      <article className="bg-card border-border max-w-3xl overflow-hidden rounded-lg border">
         <header className="border-border border-b px-5 py-4">
           <p className="text-accent-foreground inline-flex items-center gap-2 text-xs font-semibold tracking-[0.16em] uppercase">
             <span aria-hidden className="bg-brass size-1.5 rounded-full" />
@@ -103,7 +103,7 @@ export default async function MessagePage(props: PageProps<"/messages/[id]">) {
 
         {(isSender || !isRecipient) &&
           (message.threads.length === 0 ? (
-            <div className="bg-card border-border rounded-xl border">
+            <div className="bg-card border-border rounded-lg border">
               <EmptyState
                 icon={<MessagesSquareIcon className="size-5" aria-hidden />}
                 title="No replies yet"
@@ -147,7 +147,7 @@ function Thread({ thread, now }: { thread: ThreadView; now: Date }) {
         <li
           key={entry.id}
           className={cn(
-            "max-w-[85%] rounded-xl px-4 py-3",
+            "max-w-[85%] rounded-lg px-4 py-3",
             entry.mine ? "bg-secondary/70 justify-self-end" : "bg-muted justify-self-start",
           )}
         >

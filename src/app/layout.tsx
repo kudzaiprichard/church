@@ -1,5 +1,13 @@
 import type { Metadata, Viewport } from "next";
-import { Cinzel, Cormorant_Garamond, Inter, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import {
+  Bricolage_Grotesque,
+  Cinzel,
+  Cormorant_Garamond,
+  Inter,
+  JetBrains_Mono,
+  Plus_Jakarta_Sans,
+  Public_Sans,
+} from "next/font/google";
 import "./globals.css";
 
 import { SiteLoader } from "@/components/loader/site-loader";
@@ -14,7 +22,26 @@ import { churchIdentity } from "@/lib/church";
 //                      inscriptional capitals and turns to noise at body sizes
 //   Cormorant Garamond scripture, in italic — the one place the page speaks
 //                      in a voice other than its own
-//   JetBrains Mono     figures (times, dates, giving, attendance)
+//   JetBrains Mono     code-like strings only; figures are tabular in the text face
+//
+// The member portal has its own pair, scoped to its shell (`.app-ui`):
+//   Bricolage Grotesque page titles and headline figures — warm, a little
+//                       unexpected, and with optical sizes that keep big
+//                       numbers tight
+//   Public Sans         everything else: plain, very legible at 13–14 px, and
+//                       with true tabular figures so money lines up in columns
+const bricolage = Bricolage_Grotesque({
+  variable: "--font-bricolage",
+  subsets: ["latin"],
+  display: "swap",
+});
+
+const publicSans = Public_Sans({
+  variable: "--font-public-sans",
+  subsets: ["latin"],
+  display: "swap",
+});
+
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
   subsets: ["latin"],
@@ -67,7 +94,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${inter.variable} ${jakarta.variable} ${cinzel.variable} ${cormorant.variable} ${jetBrainsMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${jakarta.variable} ${cinzel.variable} ${cormorant.variable} ${jetBrainsMono.variable} ${bricolage.variable} ${publicSans.variable} h-full antialiased`}
       suppressHydrationWarning
     >
       <body className="min-h-full flex flex-col">

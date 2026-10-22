@@ -47,7 +47,7 @@ export default async function ClassPage(props: PageProps<"/baptism/classes/[id]"
             <form action={closeClass.bind(null, klass.id)}>
               <button
                 type="submit"
-                className="border-border bg-card hover:bg-muted h-9 cursor-pointer rounded-lg border px-3.5 text-sm font-semibold"
+                className="border-border bg-card hover:bg-muted h-9 cursor-pointer rounded-md border px-3.5 text-sm font-semibold"
               >
                 Close class
               </button>

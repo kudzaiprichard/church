@@ -73,17 +73,18 @@ export async function bellPreview(user: SessionUser) {
 /** The full list, optionally of one type, paginated. */
 export async function listNotifications(
   user: SessionUser,
-  filters: { type?: NotificationType; page?: number } = {},
+  filters: { type?: NotificationType; page?: number; size?: number } = {},
 ) {
   const page = Math.max(1, Math.floor(filters.page ?? 1));
+  const size = filters.size ?? PAGE_SIZE;
   const where = { ...selfScope(user), ...(filters.type ? { type: filters.type } : {}) };
 
   const [rows, total, unread] = await Promise.all([
     prisma.notification.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
+      skip: (page - 1) * size,
+      take: size,
       select: itemSelect,
     }),
     prisma.notification.count({ where }),
@@ -95,6 +96,7 @@ export async function listNotifications(
     total,
     unread,
     page,
-    pageCount: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    pageCount: Math.max(1, Math.ceil(total / size)),
+    size,
   };
 }
