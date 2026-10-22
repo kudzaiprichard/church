@@ -17,8 +17,12 @@ import { Logo } from "@/components/brand/logo";
 import { NextGatheringLine } from "@/components/landing/next-gathering-line";
 import { ownerScope, requireSession } from "@/lib/auth/dal";
 import { can } from "@/lib/auth/permissions";
+import { formatRate } from "@/lib/attendance/rules";
+import { lastEventAttendance, ownAttendance } from "@/lib/data/attendance";
+import { upcomingEvents } from "@/lib/data/events";
 import { ledGroups } from "@/lib/data/groups";
 import { unreadMessageCount } from "@/lib/data/messages";
+import { formatDateOnly } from "@/lib/dates";
 import { lastUpdatedLine } from "@/lib/last-updated";
 import { prisma } from "@/lib/prisma";
 import { getThemes } from "@/lib/settings";
@@ -65,17 +69,20 @@ function greeting(now: Date) {
 export default async function DashboardPage() {
   const user = await requireSession();
   const seesChurchGiving = can(user, "finance.viewAll");
-  const seesChurchAttendance = can(user, "attendance.viewAll");
   const now = new Date();
 
-  const [contributions, attendance, unreadMessages, { current: theme }, myGroups] =
+  const [contributions, attendance, unreadMessages, { current: theme }, led, upcoming] =
     await Promise.all([
       prisma.contribution.count({ where: ownerScope(user, "finance.viewAll") }),
-      prisma.attendanceRecord.count({ where: ownerScope(user, "attendance.viewAll") }),
+      ownAttendance(user),
       unreadMessageCount(user),
       getThemes(),
       ledGroups(user),
+      upcomingEvents(user, 3),
     ]);
+  const myGroups = await Promise.all(
+    led.map(async (group) => ({ ...group, lastEvent: await lastEventAttendance(group.id) })),
+  );
 
   const figures = [
     {
@@ -84,9 +91,13 @@ export default async function DashboardPage() {
       icon: <WalletIcon className="size-4" aria-hidden />,
     },
     {
-      label: seesChurchAttendance ? "Attendance records" : "Services attended",
-      value: attendance,
+      label: "Your attendance",
+      value: formatRate(attendance.rate),
       icon: <ClipboardCheckIcon className="size-4" aria-hidden />,
+      hint:
+        attendance.rows.length === 0
+          ? "Nothing marked yet."
+          : `Present over marked, last twelve months (${attendance.rows.length} events).`,
     },
     {
       label: "Unread messages",
@@ -165,7 +176,7 @@ export default async function DashboardPage() {
       {myGroups.length > 0 && (
         <Panel
           title={myGroups.length === 1 ? "My group" : "My groups"}
-          description="The groups you lead. Attendance and chema figures join as those modules arrive."
+          description="The groups you lead. Chema compliance joins with the finance module."
           className="mt-4"
           bodyClassName="p-0"
         >
@@ -184,6 +195,15 @@ export default async function DashboardPage() {
                   </Link>
                   <p className="text-muted-foreground numeric mt-0.5 text-xs">
                     {group.memberCount} active {group.memberCount === 1 ? "member" : "members"}
+                    {group.lastEvent && (
+                      <>
+                        {" · "}
+                        {group.lastEvent.present} of {group.lastEvent.members} at{" "}
+                        <Link href={`/events/${group.lastEvent.id}`} className="hover:underline">
+                          {group.lastEvent.title}
+                        </Link>
+                      </>
+                    )}
                   </p>
                 </div>
                 <Link
@@ -246,8 +266,32 @@ export default async function DashboardPage() {
           </Panel>
         )}
 
-        <Panel title="This week" description="In church time, Harare.">
+        <Panel title="Coming up" description="In church time, Harare.">
           <NextGatheringLine />
+          {upcoming.length > 0 && (
+            <ul className="border-border mt-4 grid gap-2 border-t pt-4">
+              {upcoming.map((event) => (
+                <li key={event.id}>
+                  <Link
+                    href={`/events/${event.id}`}
+                    className="text-foreground text-sm font-semibold hover:underline"
+                  >
+                    {event.title}
+                  </Link>
+                  <p className="text-muted-foreground numeric text-xs">
+                    {formatDateOnly(event.date)} · {event.time} · {event.group?.name ?? "All Church"}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          )}
+          <Link
+            href="/events"
+            className="text-primary mt-4 mr-4 inline-flex items-center gap-1 rounded-sm text-sm font-semibold hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+          >
+            All events
+            <ArrowUpRightIcon className="size-3.5" aria-hidden />
+          </Link>
           <Link
             href="/#visit"
             className="text-primary mt-4 inline-flex items-center gap-1 rounded-sm text-sm font-semibold hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"

@@ -1,16 +1,27 @@
-import { ArrowLeftIcon, MegaphoneIcon, SendIcon, UsersRoundIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  CalendarDaysIcon,
+  MegaphoneIcon,
+  SendIcon,
+  UsersRoundIcon,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { requireSession } from "@/lib/auth/dal";
 import { ROLE_LABELS } from "@/lib/auth/permissions";
+import { groupEvents } from "@/lib/data/events";
 import { getGroup, peopleForGroup } from "@/lib/data/groups";
 import { groupAnnouncements } from "@/lib/data/messages";
+import { prayerBoard } from "@/lib/data/prayer";
 import { cn } from "@/lib/utils";
 
 import { EmptyState, PageHeader, Panel } from "../../_components/page-parts";
+import { EventListItem } from "../../events/event-parts";
 import { initialsOf } from "../../members/member-row";
+import { PrayerList } from "../../prayer/prayer-board";
+import { PrayerForm } from "../../prayer/prayer-form";
 import { removeMember } from "../actions";
 import { AddMembersForm, DeleteGroupForm, GroupForm, LeaderForm } from "../group-form";
 
@@ -29,8 +40,7 @@ const sent = new Intl.DateTimeFormat("en-GB", {
  * `getGroup` returns `null` for a group that is not the caller's — a member of
  * Youth Alive opening Kingdom Total Women gets the same 404 as a mistyped id.
  * Contact details come back only for the group's leader and the Apostles, so
- * this page draws whatever it was given. Events and Prayer tabs arrive with
- * Phase 2.
+ * this page draws whatever it was given.
  */
 export default async function GroupPage(props: PageProps<"/groups/[id]">) {
   const user = await requireSession();
@@ -43,13 +53,17 @@ export default async function GroupPage(props: PageProps<"/groups/[id]">) {
   const tabs = [
     { id: "members", label: "Members" },
     { id: "announcements", label: "Announcements" },
+    { id: "events", label: "Events" },
+    { id: "prayer", label: "Prayer" },
     ...(group.viewer.manages ? [{ id: "manage", label: "Manage" }] : []),
   ];
   const active = tabs.find((entry) => entry.id === tab)?.id ?? "members";
 
-  const [announcements, people] = await Promise.all([
+  const [announcements, people, events, prayer] = await Promise.all([
     active === "announcements" ? groupAnnouncements(user, group.id, group.viewer.leads) : [],
     active === "manage" ? peopleForGroup(user, group.id) : { all: [], notInGroup: [] },
+    active === "events" ? groupEvents(group.id) : null,
+    active === "prayer" ? prayerBoard(user, group.id) : null,
   ]);
 
   const activeCount = group.members.filter((member) => member.isActive).length;
@@ -259,6 +273,53 @@ export default async function GroupPage(props: PageProps<"/groups/[id]">) {
             </ul>
           )}
         </Panel>
+      )}
+
+      {events && (
+        <div className="grid max-w-4xl gap-4">
+          <Panel
+            title="Upcoming"
+            description="This group's own events. All-church ones are on the calendar."
+            bodyClassName="p-0"
+          >
+            {events.upcoming.length === 0 ? (
+              <EmptyState
+                icon={<CalendarDaysIcon className="size-5" aria-hidden />}
+                title="Nothing planned"
+              >
+                The group&apos;s next event will appear here.
+              </EmptyState>
+            ) : (
+              <ul className="divide-border divide-y">
+                {events.upcoming.map((event) => (
+                  <EventListItem key={event.id} event={event} />
+                ))}
+              </ul>
+            )}
+          </Panel>
+          {events.past.length > 0 && (
+            <Panel title="Recent" bodyClassName="p-0">
+              <ul className="divide-border divide-y">
+                {events.past.map((event) => (
+                  <EventListItem key={event.id} event={event} muted />
+                ))}
+              </ul>
+            </Panel>
+          )}
+        </div>
+      )}
+
+      {prayer && (
+        <div className="grid max-w-4xl gap-4">
+          {prayer.canPost && (
+            <Panel>
+              <PrayerForm groupId={group.id} groupName={group.name} />
+            </Panel>
+          )}
+          <Panel title="Prayer requests" description="Pinned first, then newest." bodyClassName="p-0">
+            <PrayerList items={prayer.items} />
+          </Panel>
+        </div>
       )}
 
       {active === "manage" && group.viewer.manages && (
