@@ -373,7 +373,7 @@ that is genuinely static (service times, the weekly timetable) and seeds the res
 ```
 MEMBER_ENROLLED  MEMBER_UPDATED  GROUP_CREATED  GROUP_UPDATED  GROUP_DELETED  GROUP_LEADER_CHANGED
 CONTRIBUTION_CONFIRMED  CONTRIBUTION_REJECTED  CONTRIBUTION_RECORDED_FOR_MEMBER
-PROJECT_CREATED  PROJECT_COMPLETED  FINANCE_EXPORTED
+PROJECT_CREATED  PROJECT_UPDATED  PROJECT_COMPLETED  PLEDGE_CANCELLED  FINANCE_EXPORTED
 BAPTISM_RECORD_UPDATED  CERTIFICATE_ISSUED
 SERMON_DELETED  DEVOTION_DELETED  EVENT_DELETED  PRAYER_REQUEST_REMOVED
 THEME_UPDATED  SETTINGS_UPDATED
@@ -581,6 +581,7 @@ model Contribution {
   reviewedById  String?
   reviewedAt    DateTime?
   rejectReason  String?
+  reversalOfId  String?            @unique   // set on a reversing entry: the confirmed row it cancels
   createdAt     DateTime           @default(now())
 
   user       User                @relation(fields: [userId], references: [id], onDelete: Restrict)
@@ -597,8 +598,9 @@ model Contribution {
 // Raw-SQL partial unique index in the migration:
 //   CREATE UNIQUE INDEX contribution_one_chema_per_month
 //   ON "Contribution"("userId","chemaYear","chemaMonth")
-//   WHERE type = 'CHEMA' AND status <> 'REJECTED';
-// A CHECK constraint enforces the CHEMA / PARTNERSHIP column requirements.
+//   WHERE type = 'CHEMA' AND status <> 'REJECTED' AND "reversalOfId" IS NULL;
+// CHECK constraints enforce the CHEMA / PARTNERSHIP column requirements, and
+// that only a reversing entry (reversalOfId set) may be negative.
 
 enum ProjectStatus { ACTIVE COMPLETED CANCELLED }
 
@@ -611,13 +613,13 @@ model PartnershipProject {
   endDate      DateTime?     @db.Date
   status       ProjectStatus @default(ACTIVE)
   completedAt  DateTime?
-  createdById  String
+  createdById  String?                     // null for the seeded projects
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
   contributions Contribution[]
   pledges       Pledge[]
-  createdBy     User @relation("ProjectCreator", fields: [createdById], references: [id])
+  createdBy     User? @relation("ProjectCreator", fields: [createdById], references: [id], onDelete: SetNull)
 }
 
 enum PledgeStatus { ACTIVE FULFILLED CANCELLED }   // "Overdue" is derived
