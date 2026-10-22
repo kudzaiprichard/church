@@ -758,7 +758,8 @@ and sees statuses → Apostle creates a project, member pledges and contributes 
       for audio; CSP `media-src`/`img-src`/`connect-src` updated in `next.config.ts`.
       *Built for Cloudflare R2 with `aws4fetch`; not yet exercised against a real bucket (see
       the entry criterion).*
-- [ ] Avatar upload on `/profile` (uses storage).
+- [x] Avatar upload on `/profile` (uses storage).
+      *Built; untested against a real bucket until R2 credentials exist.*
 - [x] Migration `phase4_content`: reshaped `Sermon`, `SermonNote`, `Devotion`.
 - [x] `src/lib/data/sermons.ts`; `/sermons` (search + series/preacher/tag filters), `/sermons/new`,
       `/sermons/[id]`, `/sermons/[id]/edit`; card, audio player; `createSermon`, `updateSermon`,

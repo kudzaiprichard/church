@@ -21,10 +21,11 @@ import { formatDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 
 import { EmptyState, PageHeader, Panel } from "../../_components/page-parts";
+import { PersonAvatar } from "../../_components/person-avatar";
 import { ChemaGrid, HistoryTable, TypeTotals } from "../../finance/finance-parts";
 import { PledgeList } from "../../finance/pledges/pledge-list";
 import { ReverseForm } from "../../finance/review/review-forms";
-import { MemberControls, initialsOf, memberStatus } from "../member-row";
+import { MemberControls, memberStatus } from "../member-row";
 
 export const metadata: Metadata = { title: "Member" };
 
@@ -96,12 +97,7 @@ export default async function MemberPage(props: PageProps<"/members/[id]">) {
         eyebrow={ROLE_LABELS[member.role]}
         title={
           <span className="flex items-center gap-3">
-            <span
-              aria-hidden
-              className="bg-secondary text-primary grid size-11 shrink-0 place-items-center rounded-full text-sm font-bold"
-            >
-              {initialsOf(member)}
-            </span>
+            <PersonAvatar person={member} className="size-11 text-sm" />
             {member.firstName} {member.lastName}
           </span>
         }
