@@ -78,7 +78,8 @@ model User {
   themeUpdates     ThemeOfYear[]      @relation("ThemeUpdater")
   sentMessages     Message[]          @relation("MessageSender")
   receivedMessages MessageRecipient[]
-  messageReplies   MessageReply[]
+  repliesWritten   MessageReply[]     @relation("ReplyAuthor")
+  replyThreads     MessageReply[]     @relation("ReplyThread")
   attendance       AttendanceRecord[]
   contributions    Contribution[]
   partnerships     Partnership[]
@@ -174,6 +175,10 @@ enum AuditAction {
   MEMBER_UPDATED
   THEME_UPDATED
   SETTINGS_UPDATED
+  GROUP_CREATED
+  GROUP_UPDATED
+  GROUP_DELETED
+  GROUP_LEADER_CHANGED
 }
 
 /// Who did what to whom.
@@ -259,7 +264,9 @@ model GroupMembership {
 // ---------------------------------------------------------------------------
 // Module 3 — Communication (Inbox)
 // A message is authored once and fanned out into MessageRecipient rows, so a
-// member's inbox is a single query scoped to their own user id.
+// member's inbox is a single query scoped to their own user id. Recipients are
+// resolved when the message is sent: somebody who joins a group later does not
+// receive what was sent to it before (docs/SCOPE.md §9.5).
 // ---------------------------------------------------------------------------
 
 enum MessageAudience {
@@ -279,11 +286,13 @@ model Message {
   createdAt DateTime        @default(now())
 
   sender     User               @relation("MessageSender", fields: [senderId], references: [id])
-  group      Group?             @relation(fields: [groupId], references: [id])
+  // Deleting a group keeps the messages sent to it; their recipients were
+  // fixed at send time, so nobody's inbox changes.
+  group      Group?             @relation(fields: [groupId], references: [id], onDelete: SetNull)
   recipients MessageRecipient[]
   replies    MessageReply[]
 
-  @@index([senderId])
+  @@index([senderId, sentAt])
   @@index([groupId])
 }
 
@@ -300,17 +309,26 @@ model MessageRecipient {
   @@index([userId, readAt])
 }
 
+/// A reply belongs to a private thread between the message's sender and ONE
+/// recipient (`threadUserId`). Other recipients of a group message never see
+/// it — replying to an announcement is a conversation, not a reply-all.
 model MessageReply {
-  id        String   @id @default(cuid())
-  messageId String
-  authorId  String
-  body      String
-  createdAt DateTime @default(now())
+  id           String    @id @default(cuid())
+  messageId    String
+  /// The recipient whose conversation with the sender this is.
+  threadUserId String
+  /// That recipient, or the original sender answering them.
+  authorId     String
+  body         String
+  createdAt    DateTime  @default(now())
+  /// When the other party in the thread read it.
+  readAt       DateTime?
 
   message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
-  author  User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  author  User    @relation("ReplyAuthor", fields: [authorId], references: [id], onDelete: Cascade)
+  thread  User    @relation("ReplyThread", fields: [threadUserId], references: [id], onDelete: Cascade)
 
-  @@index([messageId])
+  @@index([messageId, threadUserId, createdAt])
 }
 
 // ---------------------------------------------------------------------------
@@ -513,25 +531,35 @@ model SermonNote {
 
 enum NotificationType {
   MESSAGE
+  MESSAGE_REPLY
   EVENT
   EVENT_REMINDER
   GROUP_ACTIVITY
   PRAYER_REQUEST
+  DEVOTION
+  BIRTHDAY
+  PLEDGE_REMINDER
+  CONTRIBUTION_REVIEWED
 }
 
+/// Written only through `notify()` in src/lib/notifications.ts.
 model Notification {
   id        String           @id @default(cuid())
   userId    String
   type      NotificationType
   title     String
   body      String?
+  /// An internal path only; the layout drops anything else before rendering.
   linkUrl   String?
+  /// Set by senders that may run twice (scheduled reminders), so the second
+  /// run writes nothing: "event-reminder:<event>:<user>".
+  dedupeKey String?          @unique
   readAt    DateTime?
   createdAt DateTime         @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId, readAt])
+  @@index([userId, readAt, createdAt])
 }
 
 // ---------------------------------------------------------------------------
