@@ -627,12 +627,14 @@ Apostle assigns Mai Madzana to Kingdom Total Women → she messages her group �
       (all-or-nothing scope check); `/attendance` overview per role; attendance rate helper.
 - [x] `src/lib/data/prayer.ts`; `/prayer?group=` + `postRequest`, `togglePin`, `markAnswered`,
       `removeRequest`.
-- [ ] Group detail Events and Prayer tabs; member detail Attendance tab; dashboard upcoming
+- [x] Group detail Events and Prayer tabs; member detail Attendance tab; dashboard upcoming
       events and attendance rate.
-- [ ] Add shadcn `calendar`/`checkbox`/`switch` as needed.
-- [ ] Tests: event visibility by group; attendance marking scope; rate (incl. "—" with no
+- [x] Add shadcn `calendar`/`checkbox`/`switch` as needed.
+      *None were needed: the month grid is a server-rendered table of links, and the sheet and
+      forms use native radios, checkboxes and date/time inputs, which post without client state.*
+- [x] Tests: event visibility by group; attendance marking scope; rate (incl. "—" with no
       records); prayer visibility.
-- [ ] Nav: Events, Attendance, Prayer requests live.
+- [x] Nav: Events, Attendance, Prayer requests live.
 - [ ] `docs(plan): complete phase 2`.
 
 ### Exit criteria
