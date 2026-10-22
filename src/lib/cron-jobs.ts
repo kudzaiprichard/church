@@ -1,6 +1,6 @@
 import "server-only";
 
-import { pledgeReminder, reminderWindow } from "@/lib/cron-rules";
+import { pledgeReminder, reminderWindow, tomorrowInHarare } from "@/lib/cron-rules";
 import { todaysCelebrants } from "@/lib/data/birthdays";
 import { fromDateOnly, harareToday, toDateOnly } from "@/lib/dates";
 import { formatMoney, toCents } from "@/lib/finance/money";
@@ -124,14 +124,25 @@ export async function runDaily(now: Date = new Date()) {
   summary.purgedSessions = sessions.count;
   summary.purgedTokens = tokens.count;
 
+  // Tomorrow's events. On a plan that runs cron only daily this is the event
+  // reminder; with the hourly job scheduled too, whichever reaches an event
+  // first claims it and the other skips it.
+  summary.eventReminders = (await remindAbout(tomorrowInHarare(today), now)).notifications;
+
   return summary;
 }
 
-/** Event reminders for events starting 23 to 25 hours from now, each sent once. */
+/**
+ * Event reminders for events starting 23 to 25 hours from now, each sent once.
+ * For an hourly schedule, which needs a paid Vercel plan.
+ */
 export async function runReminders(now: Date = new Date()) {
-  const { from, to } = reminderWindow(now);
+  return remindAbout(reminderWindow(now), now);
+}
+
+async function remindAbout({ from, to }: { from: Date; to: Date }, now: Date) {
   const events = await prisma.event.findMany({
-    where: { startsAt: { gte: from, lte: to }, reminderSentAt: null },
+    where: { startsAt: { gte: from, lt: to }, reminderSentAt: null },
     select: { id: true, title: true, location: true, groupId: true, startsAt: true },
   });
 

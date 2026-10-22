@@ -28,6 +28,15 @@ export function reminderWindow(now: Date): { from: Date; to: Date } {
 const DAY_MS = 86_400_000;
 
 /**
+ * The next Harare calendar day as [start, end) instants — what the daily job
+ * reminds about. Harare is UTC+2 all year.
+ */
+export function tomorrowInHarare(today: string): { from: Date; to: Date } {
+  const start = new Date(`${today}T00:00:00+02:00`).getTime() + DAY_MS;
+  return { from: new Date(start), to: new Date(start + DAY_MS) };
+}
+
+/**
  * Which pledge reminder, if any, is due today: 7 days before, 1 day before,
  * and the day it becomes overdue (the day after its due date).
  */

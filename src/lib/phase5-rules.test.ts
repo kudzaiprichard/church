@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { classStatus, formatCertificateNumber, nextCertificateNumber } from "./baptism/rules";
-import { cronAuthorized, pledgeReminder, reminderWindow } from "./cron-rules";
+import { cronAuthorized, pledgeReminder, reminderWindow, tomorrowInHarare } from "./cron-rules";
 import { ageOn, birthdayIn, nextBirthday, weekOf } from "./dates";
 
 describe("birthdays on Harare's calendar", () => {
@@ -68,6 +68,13 @@ describe("cron", () => {
     expect(reminderWindow(now)).toEqual({
       from: new Date("2026-10-23T07:00:00Z"),
       to: new Date("2026-10-23T09:00:00Z"),
+    });
+  });
+
+  it("takes tomorrow as the next Harare day", () => {
+    expect(tomorrowInHarare("2026-10-22")).toEqual({
+      from: new Date("2026-10-22T22:00:00Z"),
+      to: new Date("2026-10-23T22:00:00Z"),
     });
   });
 

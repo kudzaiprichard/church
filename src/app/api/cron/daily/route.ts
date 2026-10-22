@@ -4,7 +4,8 @@ import { env } from "@/lib/env";
 
 /**
  * The morning job, 06:00 Harare (vercel.json): birthdays, today's devotion,
- * pledge reminders and housekeeping (docs/SCOPE.md §9.21). Only Vercel Cron,
+ * pledge reminders, tomorrow's event reminders and housekeeping
+ * (docs/SCOPE.md §9.21). Only Vercel Cron,
  * carrying `CRON_SECRET`, may run it; a second run in a day adds nothing.
  */
 export async function GET(request: Request) {

@@ -840,6 +840,11 @@ teaser.
 - [x] `CRON_SECRET` in env; `vercel.json` crons; `/api/cron/daily` (birthdays, devotion of the
       day, pledge reminders, notification and session/token purges) and `/api/cron/reminders`
       (event reminders); all idempotent via `dedupeKey`.
+      *After completion: both Vercel previews failed once `vercel.json` scheduled the reminders
+      job hourly — Vercel's Hobby plan allows cron at most daily. `vercel.json` now schedules
+      only the daily job, which also sends reminders for the next Harare day's events; the
+      hourly route stays, ready to schedule on a paid plan. Each event is claimed once, so the
+      two cannot double up.*
 - [x] PWA: manifest, icons (192, 512, maskable), linked from root layout; no caching of private
       routes.
 - [x] Audit log filters (action, actor, date range).
