@@ -86,6 +86,11 @@ export default async function ProfilePage() {
                 <Detail label="Baptized on">{formatDateOnly(profile.baptism.baptismDate)}</Detail>
                 <Detail label="Where">{profile.baptism.location}</Detail>
                 <Detail label="Conducted by">{profile.baptism.conductedBy}</Detail>
+                <Detail label="Certificate">
+                  {profile.baptism.certificateNumber
+                    ? `Issued — ${profile.baptism.certificateNumber}`
+                    : "Not issued yet. The church office issues it."}
+                </Detail>
               </dl>
             ) : (
               <p className="text-muted-foreground text-sm text-pretty">

@@ -165,6 +165,9 @@ export type BaptismDto = {
   conductedBy: string;
   classCompletedOn: string | null;
   notes: string | null;
+  /** "KMMI-BAP-2026-0007" once issued; null while pending. */
+  certificateNumber: string | null;
+  certificateIssuedAt: string | null;
 };
 
 /**
@@ -195,6 +198,8 @@ function toBaptism(record: {
   conductedBy: string;
   classCompletedOn: Date | null;
   notes: string | null;
+  certificateNumber: string | null;
+  certificateIssuedAt: Date | null;
 }): BaptismDto {
   return {
     baptismDate: fromDateOnly(record.baptismDate),
@@ -202,6 +207,8 @@ function toBaptism(record: {
     conductedBy: record.conductedBy,
     classCompletedOn: record.classCompletedOn ? fromDateOnly(record.classCompletedOn) : null,
     notes: record.notes,
+    certificateNumber: record.certificateNumber,
+    certificateIssuedAt: record.certificateIssuedAt?.toISOString() ?? null,
   };
 }
 
@@ -227,6 +234,8 @@ export async function getMember(user: SessionUser, id: string): Promise<MemberDe
           conductedBy: true,
           classCompletedOn: true,
           notes: true,
+          certificateNumber: true,
+          certificateIssuedAt: true,
         },
       },
     },
@@ -283,6 +292,8 @@ export async function getOwnProfile(user: SessionUser): Promise<OwnProfile> {
           conductedBy: true,
           classCompletedOn: true,
           notes: true,
+          certificateNumber: true,
+          certificateIssuedAt: true,
         },
       },
     },
@@ -345,6 +356,8 @@ export async function getMemberForEdit(
           conductedBy: true,
           classCompletedOn: true,
           notes: true,
+          certificateNumber: true,
+          certificateIssuedAt: true,
         },
       },
     },

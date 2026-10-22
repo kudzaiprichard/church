@@ -152,6 +152,24 @@ export async function enrollMember(
     return retry(values, { email: "Somebody already has an account with that address." });
   }
 
+  // Enrolling a baptism candidate links the two, so the class history and the
+  // member's record meet (SCOPE §9.3, §9.16). Only a candidate not yet linked
+  // to anyone, and only by someone who keeps the baptismal records.
+  const candidateField = formData.get("candidateId");
+  const candidateId =
+    typeof candidateField === "string" && candidateField && can(actor, "baptism.manage")
+      ? candidateField
+      : null;
+  if (
+    candidateId &&
+    !(await prisma.baptismCandidate.findFirst({
+      where: { id: candidateId, userId: null },
+      select: { id: true },
+    }))
+  ) {
+    return { ...retry(values, {}), error: "That candidate has already been enrolled." };
+  }
+
   let created: { id: string; email: string; firstName: string };
   try {
     created = await prisma.$transaction(async (tx) => {
@@ -170,6 +188,13 @@ export async function enrollMember(
         },
         select: { id: true, email: true, firstName: true },
       });
+
+      if (candidateId) {
+        await tx.baptismCandidate.update({
+          where: { id: candidateId },
+          data: { userId: user.id, status: "BAPTIZED" },
+        });
+      }
 
       await recordAuditIn(tx, {
         action: "MEMBER_ENROLLED",

@@ -829,11 +829,11 @@ teaser.
 ### Deliverables
 - [x] Migration `phase5_baptism`: `BaptismCandidate`, `BaptismalClass`,
       `BaptismalClassEnrollment`; certificate fields on `BaptismalRecord`.
-- [ ] `src/lib/data/baptism.ts`; `/baptism` records (filters), `/baptism/[id]` + Issue certificate
+- [x] `src/lib/data/baptism.ts`; `/baptism` records (filters), `/baptism/[id]` + Issue certificate
       (numbering, audit, notify), `/baptism/[id]/certificate` printable page,
       `/baptism/candidates` (+ "Enrol as member" pre-filling `/members/new`),
       `/baptism/classes`, `/baptism/classes/[id]`.
-- [ ] Profile shows own baptism and certificate status.
+- [x] Profile shows own baptism and certificate status.
 - [x] `src/lib/dates.ts` birthday helpers (Harare, 29 Feb rule); `src/lib/data/birthdays.ts`;
       `/birthdays` (Today / Week / Month / All by month, search, group filter); dashboard banner
       and week card; `announceBirthdays` action.
