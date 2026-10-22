@@ -22,7 +22,7 @@ The single place to see where the build stands. Update it as described in
 |:-:|---|---|:-:|:-:|---|---|
 | — | Pre-flight | `docs/implementation-plan` | ✅ Done | #13, #14 | 2026-10-21 | 2026-10-21 |
 | 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | ✅ Done | #15 | 2026-10-21 | 2026-10-21 |
-| 1 | Groups & communication | `feat/phase-1-groups-messaging` | 🟡 In progress | — | 2026-10-22 | — |
+| 1 | Groups & communication | `feat/phase-1-groups-messaging` | 🟡 In progress | #16 | 2026-10-22 | — |
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ⬜ Not started | — | — | — |
 | 3 | Finance | `feat/phase-3-finance` | ⬜ Not started | — | — | — |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ⬜ Not started | — | — | — |
@@ -565,9 +565,9 @@ change the theme and check the landing page.
       avatars only.*
 
 ### Deliverables
-- [ ] Migration `phase1_messaging`: `MessageReply` thread fields, `Message.groupId` `SetNull`,
+- [x] Migration `phase1_messaging`: `MessageReply` thread fields, `Message.groupId` `SetNull`,
       `NotificationType` additions, `Notification.dedupeKey`.
-- [ ] `src/lib/notifications.ts` — `notify()` (fan-out, dedupe, optional post-commit email).
+- [x] `src/lib/notifications.ts` — `notify()` (fan-out, dedupe, optional post-commit email).
 - [ ] `src/lib/data/groups.ts`; `/groups`, `/groups/[id]` (Members + Announcements tabs; Events
       and Prayer tabs arrive in Phase 2) + `createGroup`, `updateGroup`, `deleteGroup`,
       `setLeader`, `addMembers`, `removeMember` with audit.
