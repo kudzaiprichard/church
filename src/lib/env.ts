@@ -19,6 +19,13 @@ import { z } from "zod";
 
 const nodeEnv = z.enum(["development", "test", "production"]).default("development");
 
+/** An optional variable where "set but empty" means unset, as it does in a copied .env. */
+const blank = <T extends z.ZodType>(inner: T) =>
+  z.preprocess(
+    (value) => (typeof value === "string" && value.trim() === "" ? undefined : value),
+    inner.optional(),
+  );
+
 const schema = z
   .object({
     NODE_ENV: nodeEnv,
@@ -75,8 +82,46 @@ const schema = z
     BOOTSTRAP_ADMIN_EMAIL: z.email().optional(),
     BOOTSTRAP_ADMIN_PASSWORD: z.string().min(12).optional(),
     BOOTSTRAP_ADMIN_NAME: z.string().min(2).optional(),
+
+    /**
+     * File storage: Cloudflare R2 (docs/SCOPE.md §9.20), for sermon audio,
+     * handout PDFs and avatars. Optional — without it the portal runs with
+     * uploads switched off — but all-or-none: four of the five set is a typo,
+     * not a choice, and is reported as one.
+     *
+     * `R2_PUBLIC_URL` is the bucket's public address (its r2.dev URL or a
+     * custom domain); files are served from there, and `next.config.ts`
+     * allows it in the Content Security Policy.
+     */
+    R2_ACCOUNT_ID: blank(
+      z.string().regex(/^[a-f0-9]{32}$/, "must be the 32-character account id"),
+    ),
+    R2_ACCESS_KEY_ID: blank(z.string().min(16)),
+    R2_SECRET_ACCESS_KEY: blank(z.string().min(32)),
+    R2_BUCKET: blank(
+      z.string().regex(/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/, "must be a bucket name"),
+    ),
+    R2_PUBLIC_URL: blank(z.url({ protocol: /^https$/, error: "must be an https:// URL" })),
   })
   .superRefine((value, ctx) => {
+    const storage = [
+      "R2_ACCOUNT_ID",
+      "R2_ACCESS_KEY_ID",
+      "R2_SECRET_ACCESS_KEY",
+      "R2_BUCKET",
+      "R2_PUBLIC_URL",
+    ] as const;
+    const set = storage.filter((key) => value[key]);
+    if (set.length > 0 && set.length < storage.length) {
+      for (const key of storage.filter((name) => !value[name])) {
+        ctx.addIssue({
+          code: "custom",
+          path: [key],
+          message: "missing — set all five R2_ variables, or none to leave uploads off",
+        });
+      }
+    }
+
     if (value.NODE_ENV !== "production") return;
 
     /**
@@ -134,6 +179,11 @@ function parseEnv(): Env {
       BOOTSTRAP_ADMIN_EMAIL: undefined,
       BOOTSTRAP_ADMIN_PASSWORD: undefined,
       BOOTSTRAP_ADMIN_NAME: undefined,
+      R2_ACCOUNT_ID: undefined,
+      R2_ACCESS_KEY_ID: undefined,
+      R2_SECRET_ACCESS_KEY: undefined,
+      R2_BUCKET: undefined,
+      R2_PUBLIC_URL: undefined,
     };
   }
 
@@ -170,3 +220,6 @@ export const env = parseEnv();
 
 /** True when mail should be written to the console instead of sent. */
 export const emailIsConfigured = Boolean(env.RESEND_API_KEY);
+
+/** True when uploads can go to R2; when false the portal hides every upload control. */
+export const storageIsConfigured = Boolean(env.R2_ACCOUNT_ID && env.R2_PUBLIC_URL);
