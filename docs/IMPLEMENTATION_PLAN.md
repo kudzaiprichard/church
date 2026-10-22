@@ -683,7 +683,7 @@ CSV.
       `PartnershipPayment`; raw SQL partial unique index (one chema per month) and CHECK
       constraints.
 - [x] Seed the five partnership projects.
-- [ ] `src/lib/finance/chema.ts` (`expectedChema`, compliance) and `src/lib/finance/money.ts`;
+- [x] `src/lib/finance/chema.ts` (`expectedChema`, compliance) and `src/lib/finance/money.ts`;
       `<Money/>` component.
 - [ ] `src/lib/data/finance.ts`, `partnerships.ts`.
 - [ ] `/finance`: Log Payment dialog, totals, 12-month chema grid, history.
