@@ -1,5 +1,5 @@
 import { Logo } from "@/components/brand/logo";
-import { devotion } from "@/lib/church";
+import type { PublicDevotion } from "@/lib/data/devotions";
 
 import { ActionLink } from "./action";
 import { Reveal } from "./reveal";
@@ -8,9 +8,21 @@ import { Eyebrow, Section } from "./section";
 /**
  * Today's devotion as a split panel: the opening of the text on paper, and the
  * verse it hangs on set large on the blue, with the crest faint behind it.
- * The text fades out where the portal takes over.
+ * The opening blurs and fades where the portal takes over (SCOPE §9.14).
+ *
+ * `devotion` is today's published one, or null: a devotion scheduled for
+ * tomorrow never reaches this page, and with none published the section is
+ * left out rather than shown empty.
  */
-export function Devotion() {
+export function Devotion({ devotion }: { devotion: PublicDevotion | null }) {
+  if (!devotion) return null;
+  const initials = devotion.author
+    .split(" ")
+    .filter((word) => /^[A-Z]/.test(word) && word !== "Apostle")
+    .map((word) => word.charAt(0))
+    .slice(0, 2)
+    .join("");
+
   return (
     <Section tone="tint">
       <Reveal>
@@ -27,21 +39,23 @@ export function Devotion() {
                 aria-hidden
                 className="bg-primary text-primary-foreground grid size-8 place-items-center rounded-full text-[0.7rem] font-bold"
               >
-                {devotion.initials}
+                {initials}
               </span>
               <p className="text-foreground text-sm font-semibold">{devotion.author}</p>
             </div>
 
             <div className="relative mt-6">
-              <p className="text-muted-foreground line-clamp-4 leading-relaxed">{devotion.opening}</p>
+              <p className="text-muted-foreground line-clamp-4 leading-relaxed">
+                {devotion.firstParagraph}
+              </p>
               <span
                 aria-hidden
-                className="from-card pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t to-transparent"
+                className="from-card pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t to-transparent backdrop-blur-[2px] [mask-image:linear-gradient(to_bottom,transparent,black)]"
               />
             </div>
 
             <ActionLink href="/login" arrow className="mt-7">
-              Continue reading
+              Sign in to continue
             </ActionLink>
           </div>
 
@@ -58,7 +72,7 @@ export function Devotion() {
                 </p>
               </blockquote>
               <figcaption className="text-brass mt-4 text-xs font-semibold tracking-[0.16em] uppercase">
-                {devotion.scriptureReference}
+                {devotion.scriptureRef}
               </figcaption>
             </figure>
           </div>

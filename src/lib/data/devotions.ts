@@ -188,6 +188,7 @@ export async function todaysDevotion(): Promise<DevotionCard | null> {
 
 export type PublicDevotion = {
   title: string;
+  author: string;
   scriptureRef: string;
   scriptureQuote: string;
   firstParagraph: string;
@@ -210,11 +211,13 @@ const readPublic = unstable_cache(
         scriptureQuote: true,
         body: true,
         publishOn: true,
+        author: { select: { firstName: true, lastName: true } },
       },
     });
     if (!row) return null;
     return {
       title: row.title,
+      author: `${row.author.firstName} ${row.author.lastName}`,
       scriptureRef: row.scriptureRef,
       scriptureQuote: row.scriptureQuote,
       firstParagraph: paragraphs(row.body)[0] ?? "",

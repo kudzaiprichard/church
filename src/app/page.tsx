@@ -9,6 +9,8 @@ import { Sermons } from "@/components/landing/sermons";
 import { SiteNav } from "@/components/landing/site-nav";
 import { ThemeConnect } from "@/components/landing/theme-connect";
 import { getSession } from "@/lib/auth/dal";
+import { getPublicDevotion } from "@/lib/data/devotions";
+import { getPublicSermons } from "@/lib/data/sermons";
 import { getChurchInfo, getPublicGroups, getThemes, getVisibleSocialLinks } from "@/lib/settings";
 
 /**
@@ -25,7 +27,8 @@ import { getChurchInfo, getPublicGroups, getThemes, getVisibleSocialLinks } from
  *
  * The church's details, theme, social links and groups come from Settings —
  * cached, and expired the moment an Apostle saves, so a change is on this page
- * at the next load. Devotion and sermons are still static until Phase 4.
+ * at the next load. Today's devotion and the latest sermons come from their
+ * modules the same way, expired whenever one is saved.
  *
  * The wrapper clips horizontally (`clip`, not `hidden`): reveals that arrive
  * from the side sit 32px outside their column while they travel, which is
@@ -41,13 +44,16 @@ export default async function Home() {
    * returns a DTO: passing the row itself would ship a password hash and
    * lockout counters to the browser of anyone who viewed the home page.
    */
-  const [user, church, { current: theme }, socials, groups] = await Promise.all([
-    getSession(),
-    getChurchInfo(),
-    getThemes(),
-    getVisibleSocialLinks(),
-    getPublicGroups(),
-  ]);
+  const [user, church, { current: theme }, socials, groups, devotion, sermons] =
+    await Promise.all([
+      getSession(),
+      getChurchInfo(),
+      getThemes(),
+      getVisibleSocialLinks(),
+      getPublicGroups(),
+      getPublicDevotion(),
+      getPublicSermons(),
+    ]);
   const contact = { phone: church.phone, address: church.address, mapUrl: church.mapUrl };
 
   return (
@@ -60,8 +66,8 @@ export default async function Home() {
         <ThemeConnect theme={theme} socials={socials} />
         <Features />
         <Groups groups={groups} />
-        <Devotion />
-        <Sermons />
+        <Devotion devotion={devotion} />
+        <Sermons sermons={sermons} />
         <PlanVisit contact={contact} />
       </main>
 

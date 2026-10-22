@@ -8,8 +8,7 @@
  * leaders. What stays here is the weekly rhythm (service times and the
  * timetable), the anchor verse, and the marketing copy for the portal.
  *
- * `devotion` and `recentSermons` are interim: they move to the database with
- * the devotions and sermons modules (Phase 4 of docs/IMPLEMENTATION_PLAN.md).
+ * Today's devotion and the latest sermons come from their own modules.
  * Service times are still placeholders to confirm with the office.
  */
 
@@ -114,43 +113,3 @@ export const portalFeatures = [
     icon: "groups",
   },
 ] as const;
-
-export const devotion = {
-  title: "Walking in Kingdom Authority",
-  author: "Apostle Edna Makamba",
-  initials: "EM",
-  scriptureQuote: "Thy kingdom come, thy will be done on earth as it is in heaven.",
-  scriptureReference: "Matthew 6:10",
-  opening:
-    'The believer who understands their position in Christ walks not in timidity but in authority. The Kingdom of God is not a distant concept reserved for eternity — it is the present reality of every blood-washed child of God. When Jesus taught His disciples to pray "Thy Kingdom come," He was anchoring them to a truth: Heaven\'s culture is meant to be reproduced on earth, through us.',
-};
-
-export const recentSermons = [
-  {
-    title: "Ambassadors of the Kingdom",
-    preacher: "Apostle Takura James Makamba",
-    date: "2026-05-25",
-    series: "Kingdom Expressions 2026",
-    passage: "2 Corinthians 5:20",
-    summary:
-      "The profound identity of every believer as an ambassador of the Kingdom — carrying Heaven's culture wherever we go.",
-  },
-  {
-    title: "The Fire That Does Not Consume",
-    preacher: "Apostle Edna Makamba",
-    date: "2026-05-18",
-    series: "Kingdom Expressions 2026",
-    passage: "Exodus 3:2",
-    summary:
-      "A prophetic word from the burning bush: the call to carry the fire of God without being destroyed by it.",
-  },
-  {
-    title: "The Dominion Mandate Revisited",
-    preacher: "Apostle Takura James Makamba",
-    date: "2026-05-11",
-    series: "Kingdom Expressions 2026",
-    passage: "Genesis 1:28",
-    summary:
-      "Dominion is not domination — it is stewardship, creativity, and the responsibility to reflect God's rule in every sphere.",
-  },
-];
