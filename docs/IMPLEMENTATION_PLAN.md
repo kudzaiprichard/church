@@ -22,7 +22,7 @@ The single place to see where the build stands. Update it as described in
 |:-:|---|---|:-:|:-:|---|---|
 | — | Pre-flight | `docs/implementation-plan` | ✅ Done | #13, #14 | 2026-10-21 | 2026-10-21 |
 | 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | ✅ Done | #15 | 2026-10-21 | 2026-10-21 |
-| 1 | Groups & communication | `feat/phase-1-groups-messaging` | ⬜ Not started | — | — | — |
+| 1 | Groups & communication | `feat/phase-1-groups-messaging` | 🟡 In progress | — | 2026-10-22 | — |
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ⬜ Not started | — | — | — |
 | 3 | Finance | `feat/phase-3-finance` | ⬜ Not started | — | — | — |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ⬜ Not started | — | — | — |
@@ -552,15 +552,17 @@ change the theme and check the landing page.
 
 ## Phase 1 — Groups & communication
 
-**Status:** ⬜ Not started
+**Status:** 🟡 In progress
 **Branch:** `feat/phase-1-groups-messaging`
 **Goal:** Groups with leaders, a targeted inbox with private replies, and working notifications.
 **Scope:** §5.4, §6 (Messages, Notification), §9.4, §9.5, §9.13 (excluding cron sources).
 **Depends on:** Phase 0.
 
 ### Entry criteria
-- [ ] Phase 0 ✅ and merged.
-- [ ] Q5 (members seeing fellow members' phone numbers) answered, or default "No" accepted.
+- [x] Phase 0 ✅ and merged.
+- [x] Q5 (members seeing fellow members' phone numbers) answered, or default "No" accepted.
+      *Default "No" accepted by the maintainer on 2026-10-22: fellow members see names and
+      avatars only.*
 
 ### Deliverables
 - [ ] Migration `phase1_messaging`: `MessageReply` thread fields, `Message.groupId` `SetNull`,
