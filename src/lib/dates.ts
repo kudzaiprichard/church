@@ -60,3 +60,38 @@ const longDay = new Intl.DateTimeFormat("en-GB", {
 export function formatDateOnly(value: string): string {
   return longDay.format(toDateOnly(value));
 }
+
+const shortDay = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  timeZone: CHURCH_TIME_ZONE,
+});
+
+const shortDayYear = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: CHURCH_TIME_ZONE,
+});
+
+/**
+ * "Just now", "12 min ago", "3 h ago", "Yesterday", "4 Mar", "4 Mar 2025" —
+ * for an inbox, where the age of a message matters more than its minute.
+ * Days are counted on Harare's calendar.
+ */
+export function relativeTime(iso: string, now: Date = new Date()): string {
+  const then = new Date(iso);
+  const minutes = Math.floor((now.getTime() - then.getTime()) / 60_000);
+
+  if (minutes < 1) return "Just now";
+  if (minutes < 60) return `${minutes} min ago`;
+
+  const days = Math.round(
+    (toDateOnly(harareToday(now)).getTime() - toDateOnly(harareToday(then)).getTime()) / 86_400_000,
+  );
+  if (days === 0) return `${Math.floor(minutes / 60)} h ago`;
+  if (days === 1) return "Yesterday";
+  return harareToday(then).slice(0, 4) === harareToday(now).slice(0, 4)
+    ? shortDay.format(then)
+    : shortDayYear.format(then);
+}

@@ -571,7 +571,7 @@ change the theme and check the landing page.
 - [x] `src/lib/data/groups.ts`; `/groups`, `/groups/[id]` (Members + Announcements tabs; Events
       and Prayer tabs arrive in Phase 2) + `createGroup`, `updateGroup`, `deleteGroup`,
       `setLeader`, `addMembers`, `removeMember` with audit.
-- [ ] `src/lib/data/messages.ts`; `/messages`, `/messages/sent`, `/messages/new`,
+- [x] `src/lib/data/messages.ts`; `/messages`, `/messages/sent`, `/messages/new`,
       `/messages/[id]`; `sendMessage` (audience guard, send-time fan-out), `reply`, `markRead`,
       `markAllRead`.
 - [ ] Notification bell: mark one / all read, 60 s refresh; `/notifications` page with type filter.
