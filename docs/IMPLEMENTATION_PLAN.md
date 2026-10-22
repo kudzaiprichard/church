@@ -625,7 +625,7 @@ Apostle assigns Mai Madzana to Kingdom Total Women â†’ she messages her group â†
       `duplicateEvent` with notifications and audit.
 - [x] `src/lib/data/attendance.ts`; `/events/[id]/attendance` sheet + `markAttendance`
       (all-or-nothing scope check); `/attendance` overview per role; attendance rate helper.
-- [ ] `src/lib/data/prayer.ts`; `/prayer?group=` + `postRequest`, `togglePin`, `markAnswered`,
+- [x] `src/lib/data/prayer.ts`; `/prayer?group=` + `postRequest`, `togglePin`, `markAnswered`,
       `removeRequest`.
 - [ ] Group detail Events and Prayer tabs; member detail Attendance tab; dashboard upcoming
       events and attendance rate.
