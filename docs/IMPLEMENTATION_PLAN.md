@@ -845,7 +845,7 @@ teaser.
 - [x] Audit log filters (action, actor, date range).
 - [ ] Tests: next-birthday calculation incl. 29 Feb and year boundary; cron handlers reject
       missing/wrong secret; running a cron twice creates no duplicate notifications.
-- [ ] Nav: Birthdays, Baptism records live — **no `soon: true` items remain**.
+- [x] Nav: Birthdays, Baptism records live — **no `soon: true` items remain**.
 - [ ] `docs(plan): complete phase 5`.
 
 ### Exit criteria
