@@ -9,18 +9,47 @@ import type { GroupRef } from "@/lib/data/members";
 import { FormSuccess } from "../../_components/form-fields";
 import { enrollMember } from "../actions";
 import { memberIdleState, refill } from "../form-state";
-import { MemberFields } from "../member-fields";
+import { MemberFields, type MemberDefaults } from "../member-fields";
+
+type Candidate = {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string | null;
+  phone: string | null;
+  classCompletedOn: string | null;
+};
 
 export function EnrollForm({
   groups,
   today,
   canAppoint,
+  candidate,
 }: {
   groups: GroupRef[];
   today: string;
   canAppoint: boolean;
+  /** A baptism candidate being enrolled: pre-fills the form and is linked on save. */
+  candidate?: Candidate | null;
 }) {
   const [state, action] = useActionState(enrollMember, memberIdleState);
+  const fromCandidate: MemberDefaults = candidate
+    ? {
+        firstName: candidate.firstName,
+        lastName: candidate.lastName,
+        email: candidate.email ?? undefined,
+        phone: candidate.phone,
+        baptism: {
+          baptismDate: "",
+          location: "",
+          conductedBy: "",
+          classCompletedOn: candidate.classCompletedOn,
+          notes: null,
+        },
+      }
+    : {};
+  // The link is made once; after a successful enrolment the form is for someone new.
+  const linking = candidate && !state.done;
 
   return (
     <div className="grid gap-5">
@@ -60,9 +89,21 @@ export function EnrollForm({
         className="grid gap-6"
         noValidate
       >
+        {linking && (
+          <>
+            <input type="hidden" name="candidateId" value={candidate.id} />
+            <p className="bg-secondary/60 rounded-lg px-3.5 py-2.5 text-sm">
+              Enrolling baptism candidate{" "}
+              <span className="font-semibold">
+                {candidate.firstName} {candidate.lastName}
+              </span>
+              . Their class record is linked when you save.
+            </p>
+          </>
+        )}
         <MemberFields
           groups={groups}
-          defaults={state.done ? {} : refill(state)}
+          defaults={state.done ? {} : refill(state, fromCandidate)}
           errors={state.fieldErrors}
           today={today}
           showOffice={canAppoint}

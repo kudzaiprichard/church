@@ -21,7 +21,7 @@ export type MemberDefaults = {
   gender?: Gender | null;
   role?: Role;
   groupIds?: readonly string[];
-  baptism?: BaptismDto | null;
+  baptism?: Omit<BaptismDto, "certificateNumber" | "certificateIssuedAt"> | null;
 };
 
 /**

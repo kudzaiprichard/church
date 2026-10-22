@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { requirePermission } from "@/lib/auth/dal";
 import { can } from "@/lib/auth/permissions";
+import { candidateForEnrolment } from "@/lib/data/baptism";
 import { groupOptions } from "@/lib/data/members";
 import { harareToday } from "@/lib/dates";
 
@@ -16,11 +17,16 @@ export const metadata: Metadata = { title: "Enrol a member" };
  *
  * Apostles and the Matron. There is no public sign-up, and only the baptized
  * may be enrolled: the baptism date is required here and again, regardless of
- * the form, in `enrollMember`.
+ * the form, in `enrollMember`. `?candidate=` pre-fills it from a baptism
+ * candidate and links the two when it is saved.
  */
-export default async function EnrollPage() {
+export default async function EnrollPage(props: PageProps<"/members/new">) {
   const user = await requirePermission("members.enroll");
-  const groups = await groupOptions();
+  const { candidate: candidateParam } = await props.searchParams;
+  const [groups, candidate] = await Promise.all([
+    groupOptions(),
+    typeof candidateParam === "string" ? candidateForEnrolment(user, candidateParam) : null,
+  ]);
 
   return (
     <>
@@ -35,6 +41,16 @@ export default async function EnrollPage() {
           groups={groups}
           today={harareToday()}
           canAppoint={can(user, "members.setRole")}
+          candidate={
+            candidate && {
+              id: candidate.id,
+              firstName: candidate.firstName,
+              lastName: candidate.lastName,
+              email: candidate.email,
+              phone: candidate.phone,
+              classCompletedOn: candidate.classCompletedOn,
+            }
+          }
         />
       </Panel>
     </>

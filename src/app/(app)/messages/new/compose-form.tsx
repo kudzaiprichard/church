@@ -22,7 +22,13 @@ export function ComposeForm({
   initial,
 }: {
   options: ComposeOptions;
-  initial: { audience: Audience; groupId?: string; recipientId?: string };
+  initial: {
+    audience: Audience;
+    groupId?: string;
+    recipientId?: string;
+    subject?: string;
+    body?: string;
+  };
 }) {
   const [state, action] = useActionState(sendMessage, messageIdleState);
   const values = state.values;
@@ -110,7 +116,7 @@ export function ComposeForm({
         name="subject"
         label="Subject"
         required
-        defaultValue={values?.subject}
+        defaultValue={values?.subject ?? initial.subject}
         error={errors.subject}
       />
       <TextAreaField
@@ -119,7 +125,7 @@ export function ComposeForm({
         label="Message"
         required
         rows={8}
-        defaultValue={values?.body}
+        defaultValue={values?.body ?? initial.body}
         error={errors.body}
         hint="Replies come back to you privately — recipients never see one another's."
       />

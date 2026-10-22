@@ -26,7 +26,7 @@ The single place to see where the build stands. Update it as described in
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ✅ Done | #17 | 2026-10-22 | 2026-10-22 |
 | 3 | Finance | `feat/phase-3-finance` | ✅ Done | #18 | 2026-10-22 | 2026-10-22 |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ✅ Done | #19 | 2026-10-22 | 2026-10-22 |
-| 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ⬜ Not started | — | — | — |
+| 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ✅ Done | #20 | 2026-10-22 | 2026-10-22 |
 | 6 | Hardening & launch | `feat/phase-6-hardening` | ⬜ Not started | — | — | — |
 
 **Legend:** ⬜ Not started · 🟡 In progress · ✅ Done · ⛔ Blocked (reason in the phase section)
@@ -813,7 +813,7 @@ teaser.
 
 ## Phase 5 — Records, celebration & automation
 
-**Status:** ⬜ Not started
+**Status:** ✅ Done
 **Branch:** `feat/phase-5-records-automation`
 **Goal:** Baptism administration, birthdays, scheduled reminders and the installable app.
 **Scope:** §6 (Baptism candidates/classes), §9.13 (cron sources), §9.15, §9.16, §9.21, §9.22,
@@ -821,36 +821,64 @@ teaser.
 **Depends on:** Phases 1–4.
 
 ### Entry criteria
-- [ ] Phase 4 ✅ and merged.
-- [ ] **Q3** (public birthdays) and **Q4** (baptism candidates) answered or defaults accepted.
+- [x] Phase 4 ✅ and merged.
+- [x] **Q3** (public birthdays) and **Q4** (baptism candidates) answered or defaults accepted.
+      *Defaults accepted by the maintainer on 2026-10-22: birthdays stay inside the portal, and
+      candidates are separate, non-user records.*
 
 ### Deliverables
-- [ ] Migration `phase5_baptism`: `BaptismCandidate`, `BaptismalClass`,
+- [x] Migration `phase5_baptism`: `BaptismCandidate`, `BaptismalClass`,
       `BaptismalClassEnrollment`; certificate fields on `BaptismalRecord`.
-- [ ] `src/lib/data/baptism.ts`; `/baptism` records (filters), `/baptism/[id]` + Issue certificate
+- [x] `src/lib/data/baptism.ts`; `/baptism` records (filters), `/baptism/[id]` + Issue certificate
       (numbering, audit, notify), `/baptism/[id]/certificate` printable page,
       `/baptism/candidates` (+ "Enrol as member" pre-filling `/members/new`),
       `/baptism/classes`, `/baptism/classes/[id]`.
-- [ ] Profile shows own baptism and certificate status.
-- [ ] `src/lib/dates.ts` birthday helpers (Harare, 29 Feb rule); `src/lib/data/birthdays.ts`;
+- [x] Profile shows own baptism and certificate status.
+- [x] `src/lib/dates.ts` birthday helpers (Harare, 29 Feb rule); `src/lib/data/birthdays.ts`;
       `/birthdays` (Today / Week / Month / All by month, search, group filter); dashboard banner
       and week card; `announceBirthdays` action.
-- [ ] `CRON_SECRET` in env; `vercel.json` crons; `/api/cron/daily` (birthdays, devotion of the
+- [x] `CRON_SECRET` in env; `vercel.json` crons; `/api/cron/daily` (birthdays, devotion of the
       day, pledge reminders, notification and session/token purges) and `/api/cron/reminders`
       (event reminders); all idempotent via `dedupeKey`.
-- [ ] PWA: manifest, icons (192, 512, maskable), linked from root layout; no caching of private
+      *After completion: both Vercel previews failed once `vercel.json` scheduled the reminders
+      job hourly — Vercel's Hobby plan allows cron at most daily. `vercel.json` now schedules
+      only the daily job, which also sends reminders for the next Harare day's events; the
+      hourly route stays, ready to schedule on a paid plan. Each event is claimed once, so the
+      two cannot double up.*
+- [x] PWA: manifest, icons (192, 512, maskable), linked from root layout; no caching of private
       routes.
-- [ ] Audit log filters (action, actor, date range).
-- [ ] Tests: next-birthday calculation incl. 29 Feb and year boundary; cron handlers reject
+- [x] Audit log filters (action, actor, date range).
+- [x] Tests: next-birthday calculation incl. 29 Feb and year boundary; cron handlers reject
       missing/wrong secret; running a cron twice creates no duplicate notifications.
-- [ ] Nav: Birthdays, Baptism records live — **no `soon: true` items remain**.
-- [ ] `docs(plan): complete phase 5`.
+- [x] Nav: Birthdays, Baptism records live — **no `soon: true` items remain**.
+- [x] `docs(plan): complete phase 5`.
 
 ### Exit criteria
-- [ ] Other members never see a birth year or age.
-- [ ] Matron can do everything in Baptism and nothing in finance or settings.
-- [ ] Every feature in `SCOPE.md` §9 is reachable from the navigation.
-- [ ] §4.10 verification green locally; demo script walked.
+- [x] Other members never see a birth year or age.
+- [x] Matron can do everything in Baptism and nothing in finance or settings.
+- [x] Every feature in `SCOPE.md` §9 is reachable from the navigation.
+- [x] §4.10 verification green locally; demo script walked.
+      *Verified on 2026-10-22 against a new, empty `church_verify_p5` database: all nine
+      migrations, seed, `migrate status` and no drift; typecheck, lint, 179 tests and build
+      green. On a production build with a test `CRON_SECRET` set for the process only:
+      - `/api/cron/daily` without the secret and with a wrong one returned 401.
+      - Run twice with the secret, it wrote one birthday notification and then nothing (one row
+        in the database); `/api/cron/reminders` ran.
+      - As the Matron (Minister Winnie): church finance, review, chema compliance, settings,
+        the audit log and member editing all redirected away; Baptism opened.
+      - She added two candidates, created a class with both, marked both completed and enrolled
+        Rutendo as a member from "Enrol as member" (pre-filled, including the class completion
+        date); the candidate became Baptized and linked.
+      - She issued certificate KMMI-BAP-2026-0001, and the printable certificate rendered.
+      - Rutendo accepted the invitation (the portal showed the link because email is off), saw
+        the certificate on their profile and had the notification.
+      - The birthday calendar showed today's celebrant to another member with no birth year or
+        age. The celebrant saw the dashboard banner, their own age and the birthday
+        notification. The Apostle saw ages and got the pre-filled all-church announcement.
+      - The manifest, its three icons, the link tag and the theme colour were served, with no
+        service worker.
+      Installing the app on a phone, the last step of the demo script, moved to Phase 6 with
+      the other external checks (maintainer's decision of 2026-10-22).*
 
 ### Demo script
 Matron creates a class with two candidates, completes it, enrols one candidate as a member, issues
@@ -900,6 +928,8 @@ and run `/api/cron/daily` twice: one notification → install the PWA on a phone
 - [ ] All scope integration tests pass in CI.
 - [ ] Deleting a sermon removes its audio from storage — its URL stops resolving. *(Moved from
       Phase 4 on 2026-10-22.)*
+- [ ] The portal installs from the browser on an Android phone and an iPhone and opens on the
+      dashboard. *(Moved from Phase 5 on 2026-10-22.)*
 - [ ] Production deployment serves real data; the leadership walk-through (one session per role)
       completes without defects.
 - [ ] Every earlier row on the Status board is ✅.

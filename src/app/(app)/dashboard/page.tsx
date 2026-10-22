@@ -19,6 +19,7 @@ import { requireSession } from "@/lib/auth/dal";
 import { can } from "@/lib/auth/permissions";
 import { formatRate } from "@/lib/attendance/rules";
 import { lastEventAttendance, ownAttendance } from "@/lib/data/attendance";
+import { birthdaysThisWeek, isMyBirthday } from "@/lib/data/birthdays";
 import { todaysDevotion } from "@/lib/data/devotions";
 import { upcomingEvents } from "@/lib/data/events";
 import {
@@ -40,11 +41,11 @@ import { lastUpdatedLine } from "@/lib/last-updated";
 import { prisma } from "@/lib/prisma";
 import { getThemes } from "@/lib/settings";
 
-import { railFor } from "../_components/nav";
-import { NavIcon } from "../_components/nav-icon";
 import { PageHeader, Panel, StatCard } from "../_components/page-parts";
 import { Progress, TypeTotals } from "../finance/finance-parts";
 import { PledgeList } from "../finance/pledges/pledge-list";
+
+import { BirthdayBanner } from "./birthday-banner";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -77,9 +78,8 @@ function greeting(now: Date) {
  * their groups; the finance officers add the church's month; Apostles add the
  * roll. Nothing here is computed in the page.
  *
- * Everything else on the page is either the church's own content (the theme,
- * the next gathering) or read from the navigation itself (what is coming), so
- * nothing here is a placeholder figure.
+ * Everything else on the page is the church's own content (the theme, the
+ * next gathering), so nothing here is a placeholder figure.
  */
 export default async function DashboardPage() {
   const user = await requireSession();
@@ -106,6 +106,8 @@ export default async function DashboardPage() {
     roll,
     devotion,
     sermon,
+    birthdayToday,
+    birthdays,
   ] = await Promise.all([
     myGiving(user, { year }),
     myChemaThisMonth(user),
@@ -126,6 +128,8 @@ export default async function DashboardPage() {
       : null,
     todaysDevotion(),
     latestSermon(),
+    isMyBirthday(user),
+    birthdaysThisWeek(user),
   ]);
   const myGroups = await Promise.all(
     led.map(async (group) => ({
@@ -205,12 +209,6 @@ export default async function DashboardPage() {
     },
   ];
 
-  const comingSoon = railFor(
-    user,
-    myGroups.map((group) => group.id),
-  )
-    .flatMap((section) => section.items)
-    .filter((item) => item.soon);
 
   return (
     <>
@@ -223,6 +221,8 @@ export default async function DashboardPage() {
             : "These are your own records. Nobody else's data is visible here, and yours is visible only to you and the church office."
         }
       />
+
+      {birthdayToday && <BirthdayBanner firstName={user.firstName} year={year} />}
 
       <div className="grid gap-4 sm:grid-cols-3">
         {figures.map((figure) => (
@@ -326,6 +326,37 @@ export default async function DashboardPage() {
                 ))}
             </ul>
           )}
+        </Panel>
+      )}
+
+      {birthdays.length > 0 && (
+        <Panel
+          title="Birthdays this week"
+          action={
+            <Link href="/birthdays" className="text-primary text-xs font-semibold hover:underline">
+              All birthdays
+            </Link>
+          }
+          className="mt-4"
+        >
+          <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+            {birthdays.map((person) => (
+              <li key={person.id}>
+                <span className="text-foreground font-medium">
+                  {person.firstName} {person.lastName}
+                </span>
+                <span className="text-muted-foreground">
+                  {" · "}
+                  {person.inDays === 0
+                    ? "today"
+                    : `${Number(person.monthDay.slice(3))} ${
+                        MONTHS[Number(person.monthDay.slice(0, 2)) - 1]
+                      }`}
+                  {person.groups[0] && ` · ${person.groups[0]}`}
+                </span>
+              </li>
+            ))}
+          </ul>
         </Panel>
       )}
 
@@ -476,7 +507,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+      <div className="mt-4 max-w-3xl">
         <Panel title="Quick links" bodyClassName="p-2">
           <ul className="grid gap-0.5">
             {quickLinks.map(({ href, label, detail, Icon }) => (
@@ -502,26 +533,6 @@ export default async function DashboardPage() {
           </ul>
         </Panel>
 
-        <Panel
-          title="Coming to the portal"
-          description="These modules are planned and will appear in the sidebar as they are built."
-          bodyClassName="p-3"
-        >
-          <ul className="grid gap-1 sm:grid-cols-2">
-            {comingSoon.map((item) => (
-              <li
-                key={item.href}
-                className="text-muted-foreground flex items-center gap-2.5 rounded-lg px-2 py-2 text-sm"
-              >
-                <NavIcon name={item.icon} className="size-4 shrink-0 opacity-70" />
-                <span className="flex-1 truncate">{item.label}</span>
-                <span className="bg-muted rounded-md px-1.5 py-0.5 text-[0.6rem] font-semibold tracking-wide uppercase">
-                  Soon
-                </span>
-              </li>
-            ))}
-          </ul>
-        </Panel>
       </div>
     </>
   );

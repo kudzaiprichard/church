@@ -610,3 +610,27 @@
     animation-duration: 2600ms;
   }
 }
+/*
+ * Printing a certificate (src/app/(app)/baptism/[id]/certificate): only the
+ * `.print-area` is printed, filling the page, with the portal's shell hidden.
+ */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-area,
+  .print-area * {
+    visibility: visible;
+  }
+  .print-area {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    max-width: none;
+    border-width: 6px;
+  }
+  @page {
+    size: A4;
+    margin: 12mm;
+  }
+}

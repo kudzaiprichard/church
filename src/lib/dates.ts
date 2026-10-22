@@ -11,7 +11,7 @@
  *   a `Date` at UTC midnight — never converted through a local time zone,
  *   which is how birthdays end up a day early.
  *
- * Birthday arithmetic arrives with the birthdays module (Phase 5).
+ * Birthday arithmetic is at the end of this file.
  */
 
 export const CHURCH_TIME_ZONE = "Africa/Harare";
@@ -94,4 +94,55 @@ export function relativeTime(iso: string, now: Date = new Date()): string {
   return harareToday(then).slice(0, 4) === harareToday(now).slice(0, 4)
     ? shortDay.format(then)
     : shortDayYear.format(then);
+}
+
+// ─── Birthdays (docs/SCOPE.md §9.15) ────────────────────────────────────────
+
+const isLeap = (year: number) => (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+
+/**
+ * The day a birthday is kept in a given year, as `YYYY-MM-DD`. A 29 February
+ * birthday is kept on 28 February when the year has no 29th.
+ */
+export function birthdayIn(dateOfBirth: string, year: number): string {
+  const monthDay = dateOfBirth.slice(5);
+  if (monthDay === "02-29" && !isLeap(year)) return `${year}-02-28`;
+  return `${year}-${monthDay}`;
+}
+
+const DAY_MS = 86_400_000;
+
+/**
+ * The next time a birthday comes round on Harare's calendar — today counts —
+ * and how many days away it is.
+ */
+export function nextBirthday(
+  dateOfBirth: string,
+  today: string,
+): { date: string; inDays: number } {
+  const year = Number(today.slice(0, 4));
+  let date = birthdayIn(dateOfBirth, year);
+  if (date < today) date = birthdayIn(dateOfBirth, year + 1);
+  return {
+    date,
+    inDays: Math.round((toDateOnly(date).getTime() - toDateOnly(today).getTime()) / DAY_MS),
+  };
+}
+
+/** Whole years old on `today`. Only ever shown to the person and to Apostles. */
+export function ageOn(dateOfBirth: string, today: string): number {
+  const year = Number(today.slice(0, 4));
+  const had = birthdayIn(dateOfBirth, year) <= today;
+  return year - Number(dateOfBirth.slice(0, 4)) - (had ? 0 : 1);
+}
+
+/** Monday of the Harare week containing `today`, and the Sunday after it. */
+export function weekOf(today: string): { start: string; end: string } {
+  const day = toDateOnly(today);
+  const back = (day.getUTCDay() + 6) % 7;
+  const start = new Date(day.getTime() - back * DAY_MS);
+  return {
+    start: fromDateOnly(start),
+    end: fromDateOnly(new Date(start.getTime() + 6 * DAY_MS)),
+  };
 }

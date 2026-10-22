@@ -93,12 +93,14 @@ model User {
   createdEvents         Event[]              @relation("EventCreator")
   uploadedSermons       Sermon[]             @relation("SermonUploader")
   devotions             Devotion[]           @relation("DevotionAuthor")
+  baptismCandidate      BaptismCandidate?
 
   @@index([role])
   @@index([isActive])
 }
 
-/// Proof of baptism, created with the member at enrolment.
+/// Proof of baptism, created with the member at enrolment. The certificate
+/// fields are filled when the Matron or an Apostle issues one (SCOPE §9.16).
 ///
 /// Only the baptized may be enrolled, so every member enrolled through the
 /// portal has exactly one. Accounts that predate enrolment (the bootstrapped
@@ -106,17 +108,78 @@ model User {
 /// is optional on `User` rather than enforced by the database. Certificate
 /// fields arrive with the baptism module (Phase 5).
 model BaptismalRecord {
-  id               String    @id @default(cuid())
-  userId           String    @unique
-  baptismDate      DateTime  @db.Date
-  location         String
-  conductedBy      String
-  classCompletedOn DateTime? @db.Date
-  notes            String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  baptismDate         DateTime  @db.Date
+  location            String
+  conductedBy         String
+  classCompletedOn    DateTime? @db.Date
+  /// "KMMI-BAP-2026-0007": the year of issue and a four-digit sequence within it.
+  certificateNumber   String?   @unique
+  certificateIssuedAt DateTime?
+  /// The issuer's name, copied in so the certificate still reads if they leave.
+  certificateIssuedBy String?
+  notes               String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum CandidateStatus {
+  IN_CLASS
+  BAPTIZED
+  WITHDRAWN
+}
+
+/// Somebody preparing for baptism. Not a portal user — only the baptized are
+/// enrolled (SCOPE §11 Q4). When they are enrolled, `userId` links the two
+/// and the status becomes BAPTIZED.
+model BaptismCandidate {
+  id        String          @id @default(cuid())
+  firstName String
+  lastName  String
+  phone     String?
+  email     String?
+  notes     String?
+  status    CandidateStatus @default(IN_CLASS)
+  userId    String?         @unique
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  user        User?                      @relation(fields: [userId], references: [id], onDelete: SetNull)
+  enrollments BaptismalClassEnrollment[]
+
+  @@index([status])
+}
+
+/// A run of the baptismal class. Upcoming, ongoing or completed is derived
+/// from the dates, or set by closing it (`completedAt`).
+model BaptismalClass {
+  id          String    @id @default(cuid())
+  name        String
+  instructor  String
+  startDate   DateTime  @db.Date
+  endDate     DateTime  @db.Date
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  enrollments BaptismalClassEnrollment[]
+
+  @@index([startDate])
+}
+
+model BaptismalClassEnrollment {
+  id          String    @id @default(cuid())
+  classId     String
+  candidateId String
+  completedOn DateTime? @db.Date
+
+  class     BaptismalClass   @relation(fields: [classId], references: [id], onDelete: Cascade)
+  candidate BaptismCandidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, candidateId])
+  @@index([candidateId])
 }
 
 /// A signed-in browser.
@@ -196,6 +259,8 @@ enum AuditAction {
   FINANCE_EXPORTED
   SERMON_DELETED
   DEVOTION_DELETED
+  BAPTISM_RECORD_UPDATED
+  CERTIFICATE_ISSUED
 }
 
 /// Who did what to whom.
