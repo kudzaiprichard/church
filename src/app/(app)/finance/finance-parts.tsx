@@ -77,7 +77,7 @@ export function Progress({ value, label }: { value: number; label: string }) {
         aria-valuenow={Math.round(shown * 100)}
         className="bg-muted h-2 flex-1 overflow-hidden rounded-full"
       >
-        <div className="bg-primary h-full rounded-full" style={{ width: `${shown * 100}%` }} />
+        <div className="bg-indicator h-full rounded-full" style={{ width: `${shown * 100}%` }} />
       </div>
       <span className="numeric text-muted-foreground w-12 text-right text-xs">
         {Math.round(value * 100)}%

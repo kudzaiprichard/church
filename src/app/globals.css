@@ -322,17 +322,22 @@
   mix-blend-mode: normal;
 }
 
-/* A thin gold scrollbar, as on the KMMI portal. */
+/* A thin, quiet scrollbar: a grey thumb on no track. Gold here read as a
+   stray vertical line beside anything that could scroll. */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--muted);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--brass);
+  background: color-mix(in oklab, var(--muted-foreground) 35%, transparent);
   border-radius: 3px;
+}
+* {
+  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 35%, transparent) transparent;
+  scrollbar-width: thin;
 }
 
 /* A solid action, flat. No shelf, no shadow, no lift — nothing that suggests
@@ -367,6 +372,14 @@
   &:active {
     background-color: oklch(0.640 0.108 87);
   }
+}
+
+/* A count that wants attention (unread, to review): crown gold with navy
+   figures, the same badge as the notification bell's. Gold carries status;
+   blue stays for the things you press. */
+@utility badge-count {
+  background-color: var(--brass);
+  color: oklch(0.255 0.093 277.5);
 }
 
 /* Rows of tabs scroll sideways on a narrow screen but show no scrollbar:

@@ -66,7 +66,7 @@ export function SectionTabs({
             {count > 0 && (
               <span
                 aria-label={`${count} new`}
-                className="bg-primary text-primary-foreground numeric grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[0.7rem] font-semibold"
+                className="badge-count numeric grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[0.7rem] font-semibold"
               >
                 {count > 99 ? "99+" : count}
               </span>

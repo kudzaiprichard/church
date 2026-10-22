@@ -139,9 +139,10 @@ export function StatCard({
         <span
           className={cn(
             "grid size-6 shrink-0 place-items-center rounded-md [&_svg]:size-3.5",
+            // Gold for an ordinary figure; solid blue when it asks for action.
             tone === "attention"
-              ? "bg-brass/20 text-accent-foreground"
-              : "bg-secondary text-primary",
+              ? "bg-primary text-primary-foreground"
+              : "bg-accent text-accent-foreground",
           )}
         >
           {icon}
@@ -195,7 +196,7 @@ export function QuickActions({
               href={action.href}
               className="group hover:bg-muted focus-visible:ring-ring flex items-center gap-3 rounded-md px-2.5 py-2 transition-colors focus-visible:ring-2 focus-visible:outline-none"
             >
-              <span className="bg-secondary text-primary grid size-8 shrink-0 place-items-center rounded-md [&_svg]:size-4">
+              <span className="bg-accent text-accent-foreground grid size-8 shrink-0 place-items-center rounded-md [&_svg]:size-4">
                 {action.icon}
               </span>
               <span className="min-w-0 flex-1">
