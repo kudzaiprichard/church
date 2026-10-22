@@ -5,6 +5,7 @@ import Link from "next/link";
 import { requireSession } from "@/lib/auth/dal";
 import { can } from "@/lib/auth/permissions";
 import { listSermons, sermonFacets } from "@/lib/data/sermons";
+import { parsePaging } from "@/lib/paging";
 
 import { EmptyState, PageHeader } from "../_components/page-parts";
 import { Pagination } from "../_components/pagination";
@@ -30,7 +31,7 @@ export default async function SermonsPage(props: PageProps<"/sermons">) {
     series: one("series"),
     preacher: one("preacher"),
     tag: one("tag"),
-    page: Number(one("page")) || 1,
+    ...parsePaging(params, 30),
   };
 
   const [result, facets] = await Promise.all([listSermons(user, filters), sermonFacets(user)]);
@@ -150,12 +151,15 @@ export default async function SermonsPage(props: PageProps<"/sermons">) {
               </li>
             ))}
           </ul>
+          {result.total > 5 && (
           <div className="bg-card border-border mt-4 rounded-lg border">
             <Pagination
               page={result.page}
               pageCount={result.pageCount}
+              size={result.size}
               total={result.total}
               pathname="/sermons"
+              className="border-t-0"
               params={{
                 q: filters.q,
                 series: filters.series,
@@ -164,6 +168,7 @@ export default async function SermonsPage(props: PageProps<"/sermons">) {
               }}
             />
           </div>
+          )}
         </>
       )}
     </>

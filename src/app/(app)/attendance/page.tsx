@@ -1,6 +1,7 @@
 import { ClipboardCheckIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import type { AttendanceStatus } from "@/generated/prisma/enums";
 import { formatRate } from "@/lib/attendance/rules";
@@ -17,9 +18,11 @@ import {
 import { groupOptions } from "@/lib/data/members";
 import { formatDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
+import { paginate, parsePaging } from "@/lib/paging";
 
 import { EmptyState, FactList, PageGrid, PageHeader, Panel } from "../_components/page-parts";
 import { dayLabel } from "../events/event-parts";
+import { Pagination } from "../_components/pagination";
 
 export const metadata: Metadata = { title: "Attendance" };
 
@@ -48,6 +51,21 @@ export default async function AttendanceOverviewPage(props: PageProps<"/attendan
   ]);
 
   const present = own.rows.filter((row) => row.status === "PRESENT").length;
+  const one = (key: string) =>
+    typeof params[key] === "string" ? (params[key] as string) : undefined;
+  const churchPaged = paginate(church ?? [], parsePaging(params, 20));
+  const historyPaged = paginate(own.rows, parsePaging(params, 10, HISTORY_KEYS));
+  const historyBar = (
+    <Pagination
+      page={historyPaged.page}
+      pageCount={historyPaged.pageCount}
+      total={historyPaged.total}
+      size={historyPaged.size}
+      pathname="/attendance"
+      params={{ group: filterGroup, page: one("page"), size: one("size") }}
+      keys={HISTORY_KEYS}
+    />
+  );
   // Leaders and Apostles have the church's or their groups' tables to work
   // with; everyone else's page is their own history.
   const oversees = (apostle && church !== null) || matrices.some(Boolean);
@@ -77,7 +95,7 @@ export default async function AttendanceOverviewPage(props: PageProps<"/attendan
               </div>
             </Panel>
             {oversees ? (
-              <OwnHistory rows={own.rows} />
+              <OwnHistory rows={historyPaged.rows} total={historyPaged.total} footer={historyBar} />
             ) : (
               <Panel title="How it is taken">
                 <p className="text-muted-foreground text-sm leading-relaxed">
@@ -89,20 +107,49 @@ export default async function AttendanceOverviewPage(props: PageProps<"/attendan
           </>
         }
       >
-        {apostle && church && <ChurchPanel rows={church} groups={groups} groupId={filterGroup} />}
+        {apostle && church && (
+          <ChurchPanel
+            rows={churchPaged.rows}
+            total={churchPaged.total}
+            groups={groups}
+            groupId={filterGroup}
+            footer={
+              <Pagination
+                page={churchPaged.page}
+                pageCount={churchPaged.pageCount}
+                total={churchPaged.total}
+                size={churchPaged.size}
+                pathname="/attendance"
+                params={{ group: filterGroup, hpage: one("hpage"), hsize: one("hsize") }}
+              />
+            }
+          />
+        )}
 
         {matrices.map((matrix) => matrix && <MatrixPanel key={matrix.group.id} matrix={matrix} />)}
 
-        {!oversees && <OwnHistory rows={own.rows} />}
+        {!oversees && (
+          <OwnHistory rows={historyPaged.rows} total={historyPaged.total} footer={historyBar} />
+        )}
       </PageGrid>
     </>
   );
 }
 
-function OwnHistory({ rows }: { rows: HistoryRow[] }) {
+const HISTORY_KEYS = { page: "hpage", size: "hsize" };
+
+function OwnHistory({
+  rows,
+  total,
+  footer,
+}: {
+  rows: HistoryRow[];
+  total: number;
+  footer: ReactNode;
+}) {
   return (
     <Panel title="Your history" bodyClassName="p-0">
-      {rows.length === 0 ? (
+      {total === 0 ? (
         <EmptyState
           icon={<ClipboardCheckIcon className="size-5" aria-hidden />}
           title="Nothing yet"
@@ -129,6 +176,7 @@ function OwnHistory({ rows }: { rows: HistoryRow[] }) {
           ))}
         </ul>
       )}
+      {footer}
     </Panel>
   );
 }
@@ -243,10 +291,14 @@ function MatrixPanel({ matrix }: { matrix: GroupMatrix }) {
 
 function ChurchPanel({
   rows,
+  total,
+  footer,
   groups,
   groupId,
 }: {
   rows: ChurchEventRow[];
+  total: number;
+  footer: ReactNode;
   groups: { id: string; name: string }[];
   groupId?: string;
 }) {
@@ -286,7 +338,7 @@ function ChurchPanel({
       }
       bodyClassName="p-0"
     >
-      {rows.length === 0 ? (
+      {total === 0 ? (
         <EmptyState
           icon={<ClipboardCheckIcon className="size-5" aria-hidden />}
           title="No events yet"
@@ -333,6 +385,7 @@ function ChurchPanel({
           </table>
         </div>
       )}
+      {footer}
     </Panel>
   );
 }

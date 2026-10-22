@@ -20,6 +20,7 @@ import { memberPledges } from "@/lib/data/partnerships";
 import { formatDateOnly } from "@/lib/dates";
 import { formatMoney } from "@/lib/finance/money";
 import { cn } from "@/lib/utils";
+import { paginate, parsePaging } from "@/lib/paging";
 
 import { EmptyState, FactList, PageGrid, PageHeader, Panel } from "../../_components/page-parts";
 import { PersonAvatar } from "../../_components/person-avatar";
@@ -27,6 +28,7 @@ import { ChemaGrid, HistoryTable, TypeTotals } from "../../finance/finance-parts
 import { PledgeList } from "../../finance/pledges/pledge-list";
 import { ReverseForm } from "../../finance/review/review-forms";
 import { MemberControls, memberStatus } from "../member-row";
+import { Pagination } from "../../_components/pagination";
 
 export const metadata: Metadata = { title: "Member" };
 
@@ -54,7 +56,10 @@ const GENDER = { MALE: "Male", FEMALE: "Female" } as const;
 export default async function MemberPage(props: PageProps<"/members/[id]">) {
   const user = await requireSession();
   const { id } = await props.params;
-  const { tab } = await props.searchParams;
+  const search = await props.searchParams;
+  const { tab } = search;
+  // One tab's list shows at a time, so one page and size serve them all.
+  const paging = parsePaging(search, 10);
 
   const member = await getMember(user, id);
   if (!member) notFound();
@@ -82,6 +87,9 @@ export default async function MemberPage(props: PageProps<"/members/[id]">) {
     setActive: can(user, "members.setActive"),
   };
   const status = memberStatus(member);
+  const marks = paginate(attendance?.rows ?? [], paging);
+  const payments = paginate(giving?.history ?? [], paging);
+  const promised = paginate(pledges ?? [], paging);
   const isSelf = member.id === user.id;
   const openPledges = pledges?.filter(
     (pledge) => pledge.state === "ACTIVE" || pledge.state === "OVERDUE",
@@ -257,31 +265,41 @@ export default async function MemberPage(props: PageProps<"/members/[id]">) {
                   title="Nothing marked yet"
                 />
               ) : (
-                <ul className="divide-border divide-y">
-                  {attendance.rows.map((row) => (
-                    <li
-                      key={row.eventId}
-                      className="flex items-center justify-between gap-3 px-5 py-3"
-                    >
-                      <div className="min-w-0">
-                        <p className="text-foreground text-sm font-semibold">{row.title}</p>
-                        <p className="text-muted-foreground text-xs">
-                          {formatDateOnly(row.date)} · {row.group ?? "All Church"}
-                        </p>
-                      </div>
-                      <span
-                        className={cn(
-                          "rounded-md px-2 py-0.5 text-xs font-semibold",
-                          row.status === "PRESENT"
-                            ? "bg-success/15 text-success"
-                            : "bg-destructive/10 text-destructive",
-                        )}
+                <>
+                  <ul className="divide-border divide-y">
+                    {marks.rows.map((row) => (
+                      <li
+                        key={row.eventId}
+                        className="flex items-center justify-between gap-3 px-5 py-3"
                       >
-                        {row.status === "PRESENT" ? "Present" : "Absent"}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
+                        <div className="min-w-0">
+                          <p className="text-foreground text-sm font-semibold">{row.title}</p>
+                          <p className="text-muted-foreground text-xs">
+                            {formatDateOnly(row.date)} · {row.group ?? "All Church"}
+                          </p>
+                        </div>
+                        <span
+                          className={cn(
+                            "rounded-md px-2 py-0.5 text-xs font-semibold",
+                            row.status === "PRESENT"
+                              ? "bg-success/15 text-success"
+                              : "bg-destructive/10 text-destructive",
+                          )}
+                        >
+                          {row.status === "PRESENT" ? "Present" : "Absent"}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                  <Pagination
+                    page={marks.page}
+                    pageCount={marks.pageCount}
+                    total={marks.total}
+                    size={marks.size}
+                    pathname={`/members/${member.id}`}
+                    params={{ tab: "attendance" }}
+                  />
+                </>
               )}
             </Panel>
           )}
@@ -307,17 +325,27 @@ export default async function MemberPage(props: PageProps<"/members/[id]">) {
                     title="Nothing this year"
                   />
                 ) : (
-                  <HistoryTable
-                    rows={giving.history}
-                    actions={
-                      reverses
-                        ? (row) =>
-                            row.status === "CONFIRMED" && !row.isReversal && !row.reversed ? (
-                              <ReverseForm id={row.id} />
-                            ) : null
-                        : undefined
-                    }
-                  />
+                  <>
+                    <HistoryTable
+                      rows={payments.rows}
+                      actions={
+                        reverses
+                          ? (row) =>
+                              row.status === "CONFIRMED" && !row.isReversal && !row.reversed ? (
+                                <ReverseForm id={row.id} />
+                              ) : null
+                          : undefined
+                      }
+                    />
+                    <Pagination
+                      page={payments.page}
+                      pageCount={payments.pageCount}
+                      total={payments.total}
+                      size={payments.size}
+                      pathname={`/members/${member.id}`}
+                      params={{ tab: "giving" }}
+                    />
+                  </>
                 )}
               </Panel>
             </div>
@@ -331,7 +359,17 @@ export default async function MemberPage(props: PageProps<"/members/[id]">) {
                   title="No pledges"
                 />
               ) : (
-                <PledgeList pledges={pledges} />
+                <>
+                  <PledgeList pledges={promised.rows} />
+                  <Pagination
+                    page={promised.page}
+                    pageCount={promised.pageCount}
+                    total={promised.total}
+                    size={promised.size}
+                    pathname={`/members/${member.id}`}
+                    params={{ tab: "pledges" }}
+                  />
+                </>
               )}
             </Panel>
           )}

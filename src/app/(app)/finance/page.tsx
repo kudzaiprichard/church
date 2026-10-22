@@ -11,8 +11,10 @@ import { formatMoney } from "@/lib/finance/money";
 import { progress } from "@/lib/finance/pledges";
 import { TYPE_LABELS, TYPES } from "@/lib/finance/totals";
 import { cn } from "@/lib/utils";
+import { paginate, parsePaging } from "@/lib/paging";
 
 import { EmptyState, PageGrid, PageHeader, Panel, PanelLink } from "../_components/page-parts";
+import { Pagination } from "../_components/pagination";
 
 import { ChemaGrid, HistoryTable, PledgeBadge, Progress, TypeTotals } from "./finance-parts";
 import { LogPaymentDialog } from "./payment-form";
@@ -40,6 +42,7 @@ export default async function MyGivingPage(props: PageProps<"/finance">) {
     (pledge) => pledge.state === "ACTIVE" || pledge.state === "OVERDUE",
   );
   const today = harareToday();
+  const history = paginate(giving.history, parsePaging(params, 10));
 
   const chip = (active: boolean) =>
     cn(
@@ -176,7 +179,17 @@ export default async function MyGivingPage(props: PageProps<"/finance">) {
               Log a payment and it appears here, pending until it is confirmed.
             </EmptyState>
           ) : (
-            <HistoryTable rows={giving.history} />
+            <>
+              <HistoryTable rows={history.rows} />
+              <Pagination
+                page={history.page}
+                pageCount={history.pageCount}
+                total={history.total}
+                size={history.size}
+                pathname="/finance"
+                params={{ year: typeof params.year === "string" ? params.year : undefined, type }}
+              />
+            </>
           )}
         </Panel>
       </PageGrid>

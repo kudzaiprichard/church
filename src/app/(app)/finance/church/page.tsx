@@ -6,6 +6,7 @@ import { requirePermission } from "@/lib/auth/dal";
 import { churchFinance, defaultPeriod } from "@/lib/data/finance";
 import { groupOptions } from "@/lib/data/members";
 import { isDateOnly } from "@/lib/dates";
+import { parsePaging } from "@/lib/paging";
 
 import { Money } from "../../_components/money";
 import { EmptyState, PageHeader, Panel } from "../../_components/page-parts";
@@ -41,7 +42,7 @@ export default async function ChurchFinancePage(props: PageProps<"/finance/churc
     from,
     to,
     groupId,
-    page: Number(params.page) || 1,
+    ...parsePaging(params, 25),
   }))!;
 
   const query = new URLSearchParams({ from, to, ...(groupId ? { group: groupId } : {}) });
@@ -148,15 +149,14 @@ export default async function ChurchFinancePage(props: PageProps<"/finance/churc
             bodyClassName="p-0"
           >
             <HistoryTable rows={result.rows} showMember />
-            <div className="border-border border-t">
-              <Pagination
+            <Pagination
                 page={result.page}
                 pageCount={result.pageCount}
+                size={result.size}
                 total={result.total}
                 pathname="/finance/church"
                 params={{ from, to, group: groupId }}
               />
-            </div>
           </Panel>
         </>
       )}

@@ -20,6 +20,7 @@ import { groupAnnouncements } from "@/lib/data/messages";
 import { prayerBoard } from "@/lib/data/prayer";
 import { harareToday } from "@/lib/dates";
 import { cn } from "@/lib/utils";
+import { paginate, parsePaging } from "@/lib/paging";
 
 import {
   DateChip,
@@ -37,6 +38,7 @@ import { PrayerList } from "../../prayer/prayer-board";
 import { PrayerForm } from "../../prayer/prayer-form";
 import { removeMember } from "../actions";
 import { AddMembersForm, DeleteGroupForm, GroupForm, LeaderForm } from "../group-form";
+import { Pagination } from "../../_components/pagination";
 
 export const metadata: Metadata = { title: "Connect group" };
 
@@ -58,7 +60,10 @@ const sent = new Intl.DateTimeFormat("en-GB", {
 export default async function GroupPage(props: PageProps<"/groups/[id]">) {
   const user = await requireSession();
   const { id } = await props.params;
-  const { tab } = await props.searchParams;
+  const search = await props.searchParams;
+  const { tab } = search;
+  // One list shows at a time (the open tab), so one page and size serve them all.
+  const paging = parsePaging(search, 20);
 
   const group = await getGroup(user, id);
   if (!group) notFound();
@@ -92,6 +97,9 @@ export default async function GroupPage(props: PageProps<"/groups/[id]">) {
   ]);
 
   const activeCount = group.members.filter((member) => member.isActive).length;
+  const members = paginate(group.members, paging);
+  const notices = paginate(announcements, paging);
+  const requests = paginate(prayer?.items ?? [], paging);
   const next = events.upcoming.slice(0, 3);
 
   const aside = (
@@ -276,75 +284,85 @@ export default async function GroupPage(props: PageProps<"/groups/[id]">) {
                     : "This group has no members yet."}
                 </EmptyState>
               ) : (
-                <ul className="divide-border divide-y">
-                  {group.members.map((member) => (
-                    <li key={member.id} className="flex items-center gap-3 px-4 py-2.5">
-                      <PersonAvatar person={member} muted={!member.isActive} />
-                      <div className="min-w-0 flex-1">
-                        <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                          {group.viewer.leads ? (
-                            <Link
-                              href={`/members/${member.id}`}
-                              className="text-foreground rounded-sm text-sm font-semibold hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
-                            >
-                              {member.firstName} {member.lastName}
-                            </Link>
-                          ) : (
-                            <span className="text-foreground text-sm font-semibold">
-                              {member.firstName} {member.lastName}
-                            </span>
-                          )}
-                          {member.isLeader && (
-                            <span className="bg-brass/20 text-accent-foreground rounded-md px-1.5 py-0.5 text-[0.65rem] font-semibold">
-                              Leader
-                            </span>
-                          )}
-                          {member.role !== "MEMBER" && (
-                            <span className="bg-secondary text-primary rounded-md px-1.5 py-0.5 text-[0.65rem] font-semibold">
-                              {ROLE_LABELS[member.role]}
-                            </span>
-                          )}
-                          {!member.isActive && (
-                            <span className="bg-destructive/10 text-destructive rounded-md px-1.5 py-0.5 text-[0.65rem] font-semibold">
-                              Deactivated
-                            </span>
-                          )}
-                          {member.id === user.id && (
-                            <span className="text-muted-foreground text-xs">(you)</span>
-                          )}
-                        </p>
-                        {member.contact && (
-                          <p className="text-muted-foreground mt-0.5 truncate text-xs">
-                            {member.contact.email}
-                            {member.contact.phone && (
-                              <span className="numeric"> · {member.contact.phone}</span>
+                <>
+                  <ul className="divide-border divide-y">
+                    {members.rows.map((member) => (
+                      <li key={member.id} className="flex items-center gap-3 px-4 py-2.5">
+                        <PersonAvatar person={member} muted={!member.isActive} />
+                        <div className="min-w-0 flex-1">
+                          <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                            {group.viewer.leads ? (
+                              <Link
+                                href={`/members/${member.id}`}
+                                className="text-foreground rounded-sm text-sm font-semibold hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+                              >
+                                {member.firstName} {member.lastName}
+                              </Link>
+                            ) : (
+                              <span className="text-foreground text-sm font-semibold">
+                                {member.firstName} {member.lastName}
+                              </span>
+                            )}
+                            {member.isLeader && (
+                              <span className="bg-brass/20 text-accent-foreground rounded-md px-1.5 py-0.5 text-[0.65rem] font-semibold">
+                                Leader
+                              </span>
+                            )}
+                            {member.role !== "MEMBER" && (
+                              <span className="bg-secondary text-primary rounded-md px-1.5 py-0.5 text-[0.65rem] font-semibold">
+                                {ROLE_LABELS[member.role]}
+                              </span>
+                            )}
+                            {!member.isActive && (
+                              <span className="bg-destructive/10 text-destructive rounded-md px-1.5 py-0.5 text-[0.65rem] font-semibold">
+                                Deactivated
+                              </span>
+                            )}
+                            {member.id === user.id && (
+                              <span className="text-muted-foreground text-xs">(you)</span>
                             )}
                           </p>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-1.5">
-                        {group.viewer.leads && member.id !== user.id && member.isActive && (
-                          <Link
-                            href={`/messages/new?to=${member.id}`}
-                            className="border-border text-foreground/80 hover:bg-muted inline-flex h-7 items-center rounded-md border px-2.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
-                          >
-                            Message
-                          </Link>
-                        )}
-                        {group.viewer.manages && !member.isLeader && (
-                          <form action={removeMember.bind(null, group.id, member.id)}>
-                            <button
-                              type="submit"
-                              className="border-destructive/25 text-destructive hover:bg-destructive/10 h-7 cursor-pointer rounded-md border px-2.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+                          {member.contact && (
+                            <p className="text-muted-foreground mt-0.5 truncate text-xs">
+                              {member.contact.email}
+                              {member.contact.phone && (
+                                <span className="numeric"> · {member.contact.phone}</span>
+                              )}
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          {group.viewer.leads && member.id !== user.id && member.isActive && (
+                            <Link
+                              href={`/messages/new?to=${member.id}`}
+                              className="border-border text-foreground/80 hover:bg-muted inline-flex h-7 items-center rounded-md border px-2.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
                             >
-                              Remove
-                            </button>
-                          </form>
-                        )}
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+                              Message
+                            </Link>
+                          )}
+                          {group.viewer.manages && !member.isLeader && (
+                            <form action={removeMember.bind(null, group.id, member.id)}>
+                              <button
+                                type="submit"
+                                className="border-destructive/25 text-destructive hover:bg-destructive/10 h-7 cursor-pointer rounded-md border px-2.5 text-xs font-medium transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+                              >
+                                Remove
+                              </button>
+                            </form>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                  <Pagination
+                    page={members.page}
+                    pageCount={members.pageCount}
+                    total={members.total}
+                    size={members.size}
+                    pathname={`/groups/${group.id}`}
+                    params={{ tab: undefined }}
+                  />
+                </>
               )}
             </Panel>
           )}
@@ -370,31 +388,41 @@ export default async function GroupPage(props: PageProps<"/groups/[id]">) {
                     : "Announcements from the leader will appear here."}
                 </EmptyState>
               ) : (
-                <ul className="divide-border divide-y">
-                  {announcements.map((message) => (
-                    <li key={message.id}>
-                      <Link
-                        href={`/messages/${message.id}`}
-                        className="hover:bg-muted/60 block px-5 py-4 transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none focus-visible:ring-inset"
-                      >
-                        <p className="flex flex-wrap items-baseline justify-between gap-x-3">
-                          <span className="text-foreground text-sm font-semibold">
-                            {message.subject}
-                          </span>
-                          <span className="text-muted-foreground text-xs">
-                            {sent.format(new Date(message.sentAt))}
-                          </span>
-                        </p>
-                        <p className="text-muted-foreground mt-0.5 text-xs">
-                          From {message.sender.name}
-                        </p>
-                        <p className="text-muted-foreground mt-1.5 line-clamp-2 text-sm">
-                          {message.excerpt}
-                        </p>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
+                <>
+                  <ul className="divide-border divide-y">
+                    {notices.rows.map((message) => (
+                      <li key={message.id}>
+                        <Link
+                          href={`/messages/${message.id}`}
+                          className="hover:bg-muted/60 block px-5 py-4 transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none focus-visible:ring-inset"
+                        >
+                          <p className="flex flex-wrap items-baseline justify-between gap-x-3">
+                            <span className="text-foreground text-sm font-semibold">
+                              {message.subject}
+                            </span>
+                            <span className="text-muted-foreground text-xs">
+                              {sent.format(new Date(message.sentAt))}
+                            </span>
+                          </p>
+                          <p className="text-muted-foreground mt-0.5 text-xs">
+                            From {message.sender.name}
+                          </p>
+                          <p className="text-muted-foreground mt-1.5 line-clamp-2 text-sm">
+                            {message.excerpt}
+                          </p>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                  <Pagination
+                    page={notices.page}
+                    pageCount={notices.pageCount}
+                    total={notices.total}
+                    size={notices.size}
+                    pathname={`/groups/${group.id}`}
+                    params={{ tab: "announcements" }}
+                  />
+                </>
               )}
             </Panel>
           )}
@@ -445,7 +473,15 @@ export default async function GroupPage(props: PageProps<"/groups/[id]">) {
                 description="Pinned first, then newest."
                 bodyClassName="p-0"
               >
-                <PrayerList items={prayer.items} />
+                <PrayerList items={requests.rows} />
+                <Pagination
+                  page={requests.page}
+                  pageCount={requests.pageCount}
+                  total={requests.total}
+                  size={requests.size}
+                  pathname={`/groups/${group.id}`}
+                  params={{ tab: "prayer" }}
+                />
               </Panel>
             </div>
           )}

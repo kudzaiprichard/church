@@ -6,6 +6,7 @@ import type { AuditAction } from "@/generated/prisma/enums";
 import { requirePermission } from "@/lib/auth/dal";
 import { isDateOnly } from "@/lib/dates";
 import { prisma } from "@/lib/prisma";
+import { parsePaging } from "@/lib/paging";
 
 import { EmptyState, PageHeader, Panel } from "../_components/page-parts";
 import { Pagination } from "../_components/pagination";
@@ -67,7 +68,6 @@ const DESCRIPTIONS: Record<AuditAction, { label: string; weight: "high" | "norma
  * Filters — action, actor (by email) and a Harare date range — live in the URL,
  * and the list pages through in fifties (docs/SCOPE.md §9.23).
  */
-const PAGE_SIZE = 50;
 
 export default async function AuditPage(props: PageProps<"/audit">) {
   await requirePermission("audit.view");
@@ -81,7 +81,7 @@ export default async function AuditPage(props: PageProps<"/audit">) {
   const actor = one("actor");
   const from = isDateOnly(one("from") ?? "") ? one("from") : undefined;
   const to = isDateOnly(one("to") ?? "") ? one("to") : undefined;
-  const page = Math.max(1, Number(one("page")) || 1);
+  const { page, size } = parsePaging(params, 25);
 
   // Dates are Harare days: from midnight at the start of `from` (UTC+2) to
   // midnight at the end of `to`.
@@ -103,8 +103,8 @@ export default async function AuditPage(props: PageProps<"/audit">) {
     prisma.auditLog.findMany({
       where,
       orderBy: { createdAt: "desc" },
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
+      skip: (page - 1) * size,
+      take: size,
     }),
     prisma.auditLog.count({ where }),
   ]);
@@ -231,15 +231,14 @@ export default async function AuditPage(props: PageProps<"/audit">) {
             })}
           </ol>
         )}
-        <div className="border-border border-t">
-          <Pagination
+        <Pagination
             page={page}
-            pageCount={Math.max(1, Math.ceil(total / PAGE_SIZE))}
+            pageCount={Math.max(1, Math.ceil(total / size))}
+            size={size}
             total={total}
             pathname="/audit"
             params={{ action, actor, from, to }}
           />
-        </div>
       </Panel>
     </>
   );

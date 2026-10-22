@@ -5,8 +5,10 @@ import Link from "next/link";
 import { requireSession } from "@/lib/auth/dal";
 import { prayerBoard } from "@/lib/data/prayer";
 import { cn } from "@/lib/utils";
+import { paginate, parsePaging } from "@/lib/paging";
 
 import { EmptyState, FactList, PageGrid, PageHeader, Panel } from "../_components/page-parts";
+import { Pagination } from "../_components/pagination";
 
 import { PrayerList } from "./prayer-board";
 import { PrayerForm } from "./prayer-form";
@@ -24,6 +26,7 @@ export default async function PrayerPage(props: PageProps<"/prayer">) {
   const board = await prayerBoard(user, typeof group === "string" ? group : undefined);
   const apostle = user.role === "APOSTLE";
   const selectedName = board.groups.find((entry) => entry.id === board.selected)?.name;
+  const requests = paginate(board.items, parsePaging(await props.searchParams, 10));
 
   const tab = (id: string | null, label: string) => (
     <Link
@@ -100,7 +103,15 @@ export default async function PrayerPage(props: PageProps<"/prayer">) {
               description="Pinned first, then newest."
               bodyClassName="p-0"
             >
-              <PrayerList items={board.items} showGroup={board.selected === null} />
+              <PrayerList items={requests.rows} showGroup={board.selected === null} />
+              <Pagination
+                page={requests.page}
+                pageCount={requests.pageCount}
+                total={requests.total}
+                size={requests.size}
+                pathname="/prayer"
+                params={{ group: board.selected ?? undefined }}
+              />
             </Panel>
           </PageGrid>
         </>

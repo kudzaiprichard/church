@@ -14,6 +14,7 @@ import {
   type MemberFilters,
 } from "@/lib/data/members";
 import { listGroups } from "@/lib/data/groups";
+import { parsePaging } from "@/lib/paging";
 
 import {
   EmptyState,
@@ -47,7 +48,7 @@ function filtersFrom(params: Record<string, string | string[] | undefined>): Mem
     status: STATUSES.includes(status as (typeof STATUSES)[number])
       ? (status as (typeof STATUSES)[number])
       : "active",
-    page: Number(one("page")) || 1,
+    ...parsePaging(params, 20),
   };
 }
 
@@ -289,10 +290,10 @@ export default async function MembersPage(props: PageProps<"/members">) {
                   />
                 ))}
               </ul>
-              <div className="border-border border-t">
-                <Pagination
+              <Pagination
                   page={result.page}
                   pageCount={result.pageCount}
+                  size={result.size}
                   total={result.total}
                   pathname="/members"
                   params={{
@@ -302,7 +303,6 @@ export default async function MembersPage(props: PageProps<"/members">) {
                     status: filters.status === "active" ? undefined : filters.status,
                   }}
                 />
-              </div>
             </>
           )}
         </section>

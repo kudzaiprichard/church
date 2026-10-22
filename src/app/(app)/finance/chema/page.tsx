@@ -7,10 +7,12 @@ import { chemaCompliance } from "@/lib/data/finance";
 import { groupOptions } from "@/lib/data/members";
 import { formatDateOnly, harareToday } from "@/lib/dates";
 import { MONTHS } from "@/lib/finance/chema";
+import { paginate, parsePaging } from "@/lib/paging";
 
 import { Money } from "../../_components/money";
 import { EmptyState, FactList, PageGrid, PageHeader, Panel } from "../../_components/page-parts";
 import { ChemaBadge } from "../finance-parts";
+import { Pagination } from "../../_components/pagination";
 
 export const metadata: Metadata = { title: "Chema compliance" };
 
@@ -47,6 +49,7 @@ export default async function ChemaPage(props: PageProps<"/finance/chema">) {
   const control =
     "border-input bg-background mt-1 h-9 w-full rounded-md border px-3 text-sm text-foreground outline-none focus:border-[var(--ring)] focus:ring-4 focus:ring-[color-mix(in_oklab,var(--ring)_18%,transparent)]";
 
+  const listed = paginate(result.rows, parsePaging(params, 25));
   const counts = { PAID: 0, PENDING: 0, UNPAID: 0 };
   for (const row of result.rows) counts[row.status] += 1;
 
@@ -158,6 +161,7 @@ export default async function ChemaPage(props: PageProps<"/finance/chema">) {
               No active members match.
             </EmptyState>
           ) : (
+            <>
             <div className="overflow-x-auto overflow-y-hidden">
               <table className="w-full text-sm">
                 <thead>
@@ -177,7 +181,7 @@ export default async function ChemaPage(props: PageProps<"/finance/chema">) {
                   </tr>
                 </thead>
                 <tbody className="divide-border divide-y">
-                  {result.rows.map((row) => (
+                  {listed.rows.map((row) => (
                     <tr key={row.member.id}>
                       <td className="px-5 py-2.5">
                         <span className="text-foreground font-medium">{row.member.name}</span>
@@ -199,6 +203,15 @@ export default async function ChemaPage(props: PageProps<"/finance/chema">) {
                 </tbody>
               </table>
             </div>
+            <Pagination
+              page={listed.page}
+              pageCount={listed.pageCount}
+              total={listed.total}
+              size={listed.size}
+              pathname="/finance/chema"
+              params={{ month: String(month), year: String(year), group: groupParam }}
+            />
+            </>
           )}
         </Panel>
       </PageGrid>

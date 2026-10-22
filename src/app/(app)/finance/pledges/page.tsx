@@ -7,8 +7,10 @@ import { can } from "@/lib/auth/permissions";
 import { paymentOptions } from "@/lib/data/finance";
 import { groupOptions } from "@/lib/data/members";
 import { allPledges, myPledges } from "@/lib/data/partnerships";
+import { paginate, parsePaging } from "@/lib/paging";
 
 import { EmptyState, PageHeader, Panel } from "../../_components/page-parts";
+import { Pagination } from "../../_components/pagination";
 
 import { PledgeForm } from "./pledge-form";
 import { PledgeList } from "./pledge-list";
@@ -37,6 +39,8 @@ export default async function PledgesPage(props: PageProps<"/finance/pledges">) 
     officer ? allPledges(user, { status, projectId, groupId }) : null,
     officer ? groupOptions() : [],
   ]);
+  const allPaged = paginate(all ?? [], parsePaging(params, 20));
+  const minePaged = paginate(mine, parsePaging(params, 10, { page: "mpage", size: "msize" }));
   const control = "border-input bg-background mt-1.5 h-9 w-full rounded-lg border px-2 text-sm";
 
   return (
@@ -57,7 +61,24 @@ export default async function PledgesPage(props: PageProps<"/finance/pledges">) 
               Make one below.
             </EmptyState>
           ) : (
-            <PledgeList pledges={mine} />
+            <>
+              <PledgeList pledges={minePaged.rows} />
+              <Pagination
+                page={minePaged.page}
+                pageCount={minePaged.pageCount}
+                total={minePaged.total}
+                size={minePaged.size}
+                pathname="/finance/pledges"
+                params={{
+                  status,
+                  project: projectId,
+                  group: groupId,
+                  page: typeof params.page === "string" ? params.page : undefined,
+                  size: typeof params.size === "string" ? params.size : undefined,
+                }}
+                keys={{ page: "mpage", size: "msize" }}
+              />
+            </>
           )}
         </Panel>
 
@@ -119,7 +140,23 @@ export default async function PledgesPage(props: PageProps<"/finance/pledges">) 
                 title="None match"
               />
             ) : (
-              <PledgeList pledges={all} showMember />
+              <>
+                <PledgeList pledges={allPaged.rows} showMember />
+                <Pagination
+                  page={allPaged.page}
+                  pageCount={allPaged.pageCount}
+                  total={allPaged.total}
+                  size={allPaged.size}
+                  pathname="/finance/pledges"
+                  params={{
+                    status,
+                    project: projectId,
+                    group: groupId,
+                    mpage: typeof params.mpage === "string" ? params.mpage : undefined,
+                    msize: typeof params.msize === "string" ? params.msize : undefined,
+                  }}
+                />
+              </>
             )}
           </Panel>
         )}

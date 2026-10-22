@@ -6,8 +6,10 @@ import { requireSession } from "@/lib/auth/dal";
 import { listDevotions, type DevotionTab } from "@/lib/data/devotions";
 import { formatDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
+import { paginate, parsePaging } from "@/lib/paging";
 
 import { EmptyState, PageHeader } from "../_components/page-parts";
+import { Pagination } from "../_components/pagination";
 
 export const metadata: Metadata = { title: "Devotions" };
 
@@ -30,6 +32,7 @@ export default async function DevotionsPage(props: PageProps<"/devotions">) {
 
   const feed = await listDevotions(user, { q, tab: tabParam });
   const latestId = feed.tab === "published" ? feed.rows[0]?.id : undefined;
+  const shown = paginate(feed.rows, parsePaging(params, 30));
 
   return (
     <>
@@ -97,8 +100,9 @@ export default async function DevotionsPage(props: PageProps<"/devotions">) {
           </EmptyState>
         </div>
       ) : (
+        <>
         <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {feed.rows.map((devotion) => (
+          {shown.rows.map((devotion) => (
             <li key={devotion.id}>
               <Link
                 href={`/devotions/${devotion.id}`}
@@ -131,6 +135,20 @@ export default async function DevotionsPage(props: PageProps<"/devotions">) {
             </li>
           ))}
         </ul>
+        {shown.total > 5 && (
+          <div className="bg-card border-border mt-4 rounded-lg border">
+            <Pagination
+              page={shown.page}
+              pageCount={shown.pageCount}
+              total={shown.total}
+              size={shown.size}
+              pathname="/devotions"
+              params={{ q, tab: tabParam }}
+              className="border-t-0"
+            />
+          </div>
+        )}
+        </>
       )}
     </>
   );
