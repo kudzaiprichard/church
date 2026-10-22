@@ -2,25 +2,11 @@ import { cookies } from "next/headers";
 
 import { signOut } from "@/app/(auth)/actions";
 import { ledGroupIds, requireSession, selfScope } from "@/lib/auth/dal";
+import { internalPath } from "@/lib/notification-rows";
 import { prisma } from "@/lib/prisma";
 
 import { AppShell } from "./_components/app-shell";
 import { PANEL_COOKIE, railFor } from "./_components/nav";
-
-/**
- * Reduce a stored URL to a same-site path, or nothing.
- *
- * A single leading slash only: no scheme, and none of the protocol-relative
- * disguises (`//host`, `/\host`, `javascript:`), since a browser will happily
- * follow all of them out of the application.
- */
-function safeInternalPath(value: string | null): string | null {
-  if (!value) return null;
-  if (!value.startsWith("/")) return null;
-  if (value.startsWith("//")) return null;
-  if (value.includes("\\") || value.includes("://")) return null;
-  return value;
-}
 
 /**
  * The member area.
@@ -64,7 +50,7 @@ export default async function AppLayout({ children }: LayoutProps<"/">) {
         // `javascript:` and `data:` URLs both run there. Only a plain path on
         // this site survives; anything else is dropped and the notification
         // falls back to the inbox.
-        linkUrl: safeInternalPath(linkUrl),
+        linkUrl: internalPath(linkUrl),
         createdAt: createdAt.toISOString(),
         read: readAt !== null,
       }))}
