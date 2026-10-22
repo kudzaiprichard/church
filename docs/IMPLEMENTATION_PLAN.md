@@ -27,7 +27,7 @@ The single place to see where the build stands. Update it as described in
 | 3 | Finance | `feat/phase-3-finance` | ✅ Done | #18 | 2026-10-22 | 2026-10-22 |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ✅ Done | #19 | 2026-10-22 | 2026-10-22 |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ✅ Done | #20 | 2026-10-22 | 2026-10-22 |
-| 6 | Hardening & launch | `feat/phase-6-hardening` | 🟡 In progress | — | 2026-10-22 | — |
+| 6 | Hardening & launch | `feat/phase-6-hardening` | 🟡 In progress | #21 | 2026-10-22 | — |
 
 **Legend:** ⬜ Not started · 🟡 In progress · ✅ Done · ⛔ Blocked (reason in the phase section)
 
@@ -907,11 +907,17 @@ performance passes, the member import tool and the README — while the services
       *Outstanding; the import tool is built and tested against a sample file meanwhile.*
 
 ### Deliverables
-- [ ] Integration test harness against Docker Postgres (separate test database, migrated and
+- [x] Integration test harness against Docker Postgres (separate test database, migrated and
       seeded per run); CI service container for it.
-- [ ] Scope integration tests: for **every** `src/lib/data/*` function, a Member, a leader of
+      *`npm run test:integration` creates a throwaway `church_it_<random>` database on the
+      configured server, migrates and seeds it, and drops it afterwards. CI has a Postgres
+      service and an integration step, untested in CI while the Actions budget is exhausted.*
+- [x] Scope integration tests: for **every** `src/lib/data/*` function, a Member, a leader of
       another group, the Matron, the Elder and an Apostle each receive exactly the rows
       `SCOPE.md` §4.3 allows.
+      *108 tests in `src/lib/data/scopes.it.test.ts`, passing locally. Breaking the group
+      content scope on purpose fails six of them. The public, cached teasers (`getPublicSermons`,
+      `getPublicDevotion`) need Next's cache and are covered by the Phase 4 demo instead.*
 - [ ] Accessibility pass (keyboard, focus, labels, contrast in both themes) and 360 px pass on
       every route.
 - [ ] Performance pass: indexes confirmed against slow queries; dashboard queries batched.

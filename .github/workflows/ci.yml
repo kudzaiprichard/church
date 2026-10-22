@@ -44,6 +44,7 @@ jobs:
               - 'components.json'
               - 'prisma.config.ts'
               - 'vitest.config.ts'
+              - 'vitest.integration.config.ts'
 
   web:
     name: Lint & build (web)
@@ -62,6 +63,23 @@ jobs:
       # parse would reject the placeholder http:// APP_URL, which is exactly the
       # check we want firing on a deploy and not on a pull request.
       SKIP_ENV_VALIDATION: "1"
+      # The integration tests create, migrate and drop their own database on
+      # this server; only its host and credentials are used.
+      TEST_DATABASE_URL: postgresql://church:church@localhost:5432/postgres
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: church
+          POSTGRES_PASSWORD: church
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U church"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
 
@@ -81,6 +99,9 @@ jobs:
 
       - name: Test
         run: npm test
+
+      - name: Integration tests (scopes)
+        run: npm run test:integration
 
       - name: Build
         run: npm run build
