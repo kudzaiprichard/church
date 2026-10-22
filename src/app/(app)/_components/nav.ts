@@ -3,10 +3,11 @@ import { can, type Permission } from "@/lib/auth/permissions";
 /**
  * The shape of the internal system, in one place (docs/SCOPE.md §8).
  *
- * Two levels, because the shell has two zones. The icon rail shows *sections*;
- * choosing one opens a context panel listing that section's *pages*. The
+ * Two levels: the sidebar lists the *sections*, each with its name, and a
+ * row of tabs under the top bar lists the current section's *pages*. The
  * breadcrumb and the command palette both read from here too, so a page can
- * never be called one thing in the rail and another at the top of the screen.
+ * never be called one thing in the sidebar and another at the top of the
+ * screen.
  *
  * `access` decides what a person is even shown. It is presentation only — the
  * actual gate is `requirePermission()` / `requireGroupLeader()` inside the page
@@ -81,7 +82,7 @@ export type RailSection = {
 export const RAIL: RailSection[] = [
   {
     id: "overview",
-    label: "Overview",
+    label: "Home",
     icon: "overview",
     href: "/dashboard",
     items: [{ href: "/dashboard", label: "Dashboard", icon: "dashboard" }],
@@ -116,6 +117,7 @@ export const RAIL: RailSection[] = [
     items: [
       { href: "/messages", label: "Messages", icon: "inbox" },
       { href: "/events", label: "Events", icon: "calendar" },
+      { href: "/attendance", label: "Attendance", icon: "attendance" },
       { href: "/prayer", label: "Prayer requests", icon: "prayer" },
       { href: "/sermons", label: "Sermons", icon: "sermons" },
       { href: "/devotions", label: "Devotions", icon: "devotion" },
@@ -123,11 +125,10 @@ export const RAIL: RailSection[] = [
   },
   {
     id: "records",
-    label: "Records",
+    label: "Giving",
     icon: "records",
-    href: "/attendance",
+    href: "/finance",
     items: [
-      { href: "/attendance", label: "Attendance", icon: "attendance" },
       { href: "/finance", label: "My giving", icon: "giving" },
       {
         href: "/finance/church",

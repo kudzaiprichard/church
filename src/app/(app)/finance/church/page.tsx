@@ -98,16 +98,25 @@ export default async function ChurchFinancePage(props: PageProps<"/finance/churc
         </button>
       </form>
 
-      <p className="text-muted-foreground mb-2 text-sm">
-        Confirmed total <Money cents={result.totals.total} className="text-foreground font-semibold" />
-        {result.totals.pendingTotal !== 0 && (
+      <Panel
+        title={
           <>
-            {" · "}
-            <Money cents={result.totals.pendingTotal} pending /> pending
+            Confirmed total{" "}
+            <Money cents={result.totals.total} className="text-foreground" />
           </>
-        )}
-      </p>
-      <TypeTotals confirmed={result.totals.confirmed} pending={result.totals.pending} />
+        }
+        description={
+          result.totals.pendingTotal !== 0 ? (
+            <>
+              <Money cents={result.totals.pendingTotal} pending /> still pending review
+            </>
+          ) : (
+            "Nothing pending in this period."
+          )
+        }
+      >
+        <TypeTotals confirmed={result.totals.confirmed} pending={result.totals.pending} />
+      </Panel>
 
       {result.total === 0 ? (
         <Panel className="mt-4">

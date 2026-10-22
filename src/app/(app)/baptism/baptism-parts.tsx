@@ -15,7 +15,10 @@ export function BaptismTabs({ active }: { active: "records" | "candidates" | "cl
   ] as const;
 
   return (
-    <nav aria-label="Baptism" className="border-border mb-4 flex gap-1 overflow-x-auto border-b">
+    <nav
+      aria-label="Baptism"
+      className="border-border mb-4 flex gap-1 scrollbar-none overflow-x-auto border-b"
+    >
       {tabs.map((tab) => (
         <Link
           key={tab.id}

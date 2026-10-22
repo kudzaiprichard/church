@@ -62,7 +62,7 @@ export default async function PrayerPage(props: PageProps<"/prayer">) {
         <>
           <nav
             aria-label="Groups"
-            className="border-border mb-4 flex gap-1 overflow-x-auto border-b"
+            className="border-border mb-4 flex gap-1 scrollbar-none overflow-x-auto border-b"
           >
             {apostle && tab(null, "All")}
             {board.groups.map((entry) => tab(entry.id, entry.name))}

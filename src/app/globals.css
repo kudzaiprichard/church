@@ -12,6 +12,7 @@
      paper is set in. Named so no component has to carry a hardcoded colour. */
   --color-ink: var(--ink);
   --color-brass: var(--brass);
+  --color-indicator: var(--indicator);
   --color-navy: var(--navy);
   --color-parchment: var(--parchment);
   --color-canvas: var(--canvas);
@@ -111,6 +112,9 @@
   --radius: 0.625rem;
   --ink: oklch(0.450 0.220 265.6);
   --brass: oklch(0.743 0.117 89.5);
+  /* The current-page mark under the section tabs: the crown gold, deepened
+     until it clears 3:1 on white (3.7:1) as a state indicator must. */
+  --indicator: oklch(0.62 0.13 82);
   --brass-light: oklch(0.858 0.117 88.1);
   --navy: oklch(0.255 0.093 277.5);
   --parchment: oklch(0.976 0.007 97.4);
@@ -162,6 +166,7 @@
      without glaring against the night background. */
   --ink: oklch(0.300 0.150 266);
   --brass: oklch(0.780 0.120 88);
+  --indicator: oklch(0.780 0.120 88);
   --brass-light: oklch(0.880 0.110 88);
   --navy: oklch(0.955 0.008 265);
   --parchment: oklch(0.205 0.045 272);
@@ -361,6 +366,16 @@
 
   &:active {
     background-color: oklch(0.640 0.108 87);
+  }
+}
+
+/* Rows of tabs scroll sideways on a narrow screen but show no scrollbar:
+   the gold thumb read as a stray mark at the end of every tab row. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 

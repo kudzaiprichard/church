@@ -10,11 +10,13 @@ import type { SessionUser } from "@/lib/auth/dal";
 import { CommandPalette } from "./command-palette";
 import { PANEL_COOKIE, LABELS, sectionFor, type CreateAction, type RailSection } from "./nav";
 import type { NotificationPreview } from "./notification-bell";
+import { SectionTabs } from "./section-tabs";
 import { Sidebar } from "./sidebar";
 import { Topbar } from "./topbar";
 
 /**
- * The internal shell: the sidebar on the left, and the page under a top bar.
+ * The internal shell: the sidebar of sections on the left; on the right the
+ * top bar, the current section's pages as tabs, and the page.
  *
  * It is the only client component in the layout — `children` is still passed
  * down from the Server Component layout, so every page inside stays
@@ -123,7 +125,9 @@ export function AppShell({
         {/* Below md the drawer takes over. */}
         <div className="hidden h-full md:block">
           <Sidebar
+            user={user}
             sections={rail}
+            activeId={section?.id}
             pathname={pathname}
             badges={badges}
             collapsed={collapsed}
@@ -145,6 +149,8 @@ export function AppShell({
             onOpenMobileMenu={() => setDrawerOpen(true)}
           />
 
+          <SectionTabs section={section} pathname={pathname} badges={badges} />
+
           <main id="content" tabIndex={-1} className="min-h-0 min-w-0 flex-1 outline-none">
             <ScrollArea className="h-full w-full">
               <div className="mx-auto w-full max-w-[90rem] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
@@ -160,7 +166,9 @@ export function AppShell({
         <SheetContent side="left" className="app-ui bg-sidebar w-[17rem] gap-0 p-0">
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <Sidebar
+            user={user}
             sections={rail}
+            activeId={section?.id}
             pathname={pathname}
             badges={badges}
             collapsed={false}

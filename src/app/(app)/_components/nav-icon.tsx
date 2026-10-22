@@ -24,6 +24,7 @@ import {
   UsersIcon,
   UsersRoundIcon,
   WalletIcon,
+  HouseIcon,
   type LucideIcon,
 } from "lucide-react";
 
@@ -36,10 +37,10 @@ import type { IconName } from "./nav";
  */
 const ICONS: Record<IconName, LucideIcon> = {
   // Rail sections
-  overview: LayoutDashboardIcon,
+  overview: HouseIcon,
   people: UsersIcon,
   life: ChurchIcon,
-  records: ClipboardCheckIcon,
+  records: WalletIcon,
   you: CircleUserIcon,
   admin: ShieldIcon,
   // Panel pages

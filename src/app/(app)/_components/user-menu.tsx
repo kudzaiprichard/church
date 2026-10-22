@@ -60,7 +60,7 @@ export function UserMenu({ user, signOut }: { user: SessionUser; signOut: () => 
             {initials}
           </span>
         )}
-        <span className="hidden text-left leading-tight xl:block">
+        <span className="sr-only">
           <span className="block text-sm font-semibold">
             {user.firstName} {user.lastName}
           </span>
