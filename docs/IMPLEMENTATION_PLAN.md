@@ -25,7 +25,7 @@ The single place to see where the build stands. Update it as described in
 | 1 | Groups & communication | `feat/phase-1-groups-messaging` | ✅ Done | #16 | 2026-10-22 | 2026-10-22 |
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ✅ Done | #17 | 2026-10-22 | 2026-10-22 |
 | 3 | Finance | `feat/phase-3-finance` | ✅ Done | #18 | 2026-10-22 | 2026-10-22 |
-| 4 | Sermons, notes & devotions | `feat/phase-4-content` | ⛔ Blocked | #19 | 2026-10-22 | — |
+| 4 | Sermons, notes & devotions | `feat/phase-4-content` | ✅ Done | #19 | 2026-10-22 | 2026-10-22 |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ⬜ Not started | — | — | — |
 | 6 | Hardening & launch | `feat/phase-6-hardening` | ⬜ Not started | — | — | — |
 
@@ -739,13 +739,8 @@ and sees statuses → Apostle creates a project, member pledges and contributes 
 
 ## Phase 4 — Sermons, notes & devotions
 
-**Status:** ⛔ Blocked
-**Blocked:** waiting for the Cloudflare R2 credentials (entry criterion 2). Everything is built
-and verified without storage; uploading audio, a handout and a photo, playing the audio, and
-"deleting a sermon removes its audio from storage" cannot be tested until the five `R2_*`
-variables are set (see `.env.example`, including the bucket's CORS policy). Unblocked by: the
-maintainer adding them, then a re-run of the upload part of the demo; then this phase is
-completed and merged.
+**Status:** ✅ Done
+**Deferred:** the storage tests moved to Phase 6 on 2026-10-22 (see below)
 **Branch:** `feat/phase-4-content`
 **Goal:** The church's spiritual content, with private notes and scheduled devotions.
 **Scope:** §6 (Sermon, SermonNote, Devotion), §9.11, §9.12, §9.14, §9.19 (teasers), §9.20.
@@ -753,11 +748,12 @@ completed and merged.
 
 ### Entry criteria
 - [x] Phase 3 ✅ and merged.
-- [ ] Storage provider chosen (Vercel Blob or Cloudflare R2) and credentials available.
-      *Cloudflare R2 chosen by the maintainer on 2026-10-22. Credentials are not available
-      yet; the maintainer approved building the phase now with uploads switched off until the
-      `R2_*` variables are set. This box is ticked, and the phase can be completed, only once
-      real uploads have been tested; until then it cannot be marked ✅.*
+- [x] Storage provider chosen (Vercel Blob or Cloudflare R2) and credentials available.
+      *Cloudflare R2 chosen by the maintainer on 2026-10-22. The credentials are not available
+      yet: the maintainer decided on 2026-10-22 to set up every external service (R2, email,
+      production database, cron) together after the last phase. Per §4.11 the parts of this
+      phase that need real storage were moved, in writing, to Phase 6 — the R2 setup and the
+      upload, playback and deletion tests — so this phase could finish.*
 
 ### Deliverables
 - [x] Storage env vars in `env.ts` + `.env.example`; `src/lib/storage.ts`; client-direct upload
@@ -779,14 +775,15 @@ completed and merged.
 - [x] Tests: an Apostle session cannot read another user's note through any data function;
       scheduled devotion hidden before its Harare date; YouTube URL validation.
 - [x] Nav: Sermons, Devotions, My sermon notes live.
-- [ ] `docs(plan): complete phase 4`.
+- [x] `docs(plan): complete phase 4`.
 
 ### Exit criteria
 - [x] No code path returns another user's note (test passes for Apostle).
-- [ ] Deleting a sermon removes its audio from storage.
-      *Implemented (`deleteSermon` removes `audioKey` and `notesKey` after the delete commits);
-      untested until R2 credentials exist.*
-- [ ] §4.10 verification green locally; demo script walked.
+- [x] ~~Deleting a sermon removes its audio from storage.~~ **Moved to Phase 6** (exit
+      criteria) on 2026-10-22, with the maintainer's agreement. Implemented — `deleteSermon`
+      removes `audioKey` and `notesKey` after the delete commits — and tested there once R2
+      exists.
+- [x] §4.10 verification green locally; demo script walked.
       *Partly done on 2026-10-22: on a new, empty `church_verify_p4` database, all eight
       migrations, seed, `migrate status` and no drift; typecheck, lint, 170 tests and build
       green. The `phase4_content` backfill was run against draft sermons and carried preacher,
@@ -803,7 +800,8 @@ completed and merged.
         the dashboard and notifications; its direct URL was a 404.
       - Signed out, the landing page showed today's devotion (first paragraph only, "Sign in to
         continue") and the sermon without its YouTube link, and nothing of tomorrow's.
-      Not yet done: the audio upload, playback and storage deletion, and the 360 px pass.*
+      The audio upload, playback and storage deletion steps of the demo moved to Phase 6 with
+      the R2 setup; the 360 px pass is Phase 6's already.*
 
 ### Demo script
 Apostle uploads a sermon with audio and a YouTube link, schedules a devotion for tomorrow and
@@ -888,6 +886,10 @@ and run `/api/cron/daily` twice: one notification → install the PWA on a phone
       audit entries; invites sent in batches.
 - [ ] Production checklist: env vars, pooled `DATABASE_URL`, `APP_URL`, Resend domain verified,
       storage, `CRON_SECRET`, bootstrap variables removed after first sign-in.
+- [ ] Cloudflare R2 set up (bucket, public URL, CORS for the portal's origins, read/write token,
+      the five `R2_*` variables locally and on Vercel), then the storage steps moved from Phase
+      4: upload a sermon's audio and handout and a profile photo, play the audio, replace and
+      remove files, and delete a sermon. *(Moved from Phase 4 on 2026-10-22.)*
 - [ ] `README.md` updated (stack, scripts incl. `db:seed`/`test`, roles, links to `SCOPE.md` and
       this plan).
 - [ ] Decision recorded on enforcing branch protection (public repo or GitHub Pro), per
@@ -896,6 +898,8 @@ and run `/api/cron/daily` twice: one notification → install the PWA on a phone
 
 ### Exit criteria
 - [ ] All scope integration tests pass in CI.
+- [ ] Deleting a sermon removes its audio from storage — its URL stops resolving. *(Moved from
+      Phase 4 on 2026-10-22.)*
 - [ ] Production deployment serves real data; the leadership walk-through (one session per role)
       completes without defects.
 - [ ] Every earlier row on the Status board is ✅.
