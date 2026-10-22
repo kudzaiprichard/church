@@ -620,10 +620,10 @@ Apostle assigns Mai Madzana to Kingdom Total Women â†’ she messages her group â†
 - [x] Migration `phase2_events`: `Event.groupId` + `reminderSentAt` (drop `EventScope`,
       `EventAudience`); `AttendanceRecord` with `markedById`, `@@unique([userId, eventId])`,
       `PRESENT | ABSENT` (drop `serviceName`, `EXCUSED`); `PrayerRequest` index.
-- [ ] `src/lib/data/events.ts`; `/events` (calendar + list views, month param), `/events/new`,
+- [x] `src/lib/data/events.ts`; `/events` (calendar + list views, month param), `/events/new`,
       `/events/[id]`, `/events/[id]/edit`; `createEvent`, `updateEvent`, `deleteEvent`,
       `duplicateEvent` with notifications and audit.
-- [ ] `src/lib/data/attendance.ts`; `/events/[id]/attendance` sheet + `markAttendance`
+- [x] `src/lib/data/attendance.ts`; `/events/[id]/attendance` sheet + `markAttendance`
       (all-or-nothing scope check); `/attendance` overview per role; attendance rate helper.
 - [ ] `src/lib/data/prayer.ts`; `/prayer?group=` + `postRequest`, `togglePin`, `markAnswered`,
       `removeRequest`.
