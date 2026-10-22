@@ -760,10 +760,10 @@ and sees statuses → Apostle creates a project, member pledges and contributes 
       the entry criterion).*
 - [ ] Avatar upload on `/profile` (uses storage).
 - [x] Migration `phase4_content`: reshaped `Sermon`, `SermonNote`, `Devotion`.
-- [ ] `src/lib/data/sermons.ts`; `/sermons` (search + series/preacher/tag filters), `/sermons/new`,
+- [x] `src/lib/data/sermons.ts`; `/sermons` (search + series/preacher/tag filters), `/sermons/new`,
       `/sermons/[id]`, `/sermons/[id]/edit`; card, audio player; `createSermon`, `updateSermon`,
       `deleteSermon` (removes storage objects, audit).
-- [ ] `src/lib/data/notes.ts` using **`selfScope` only**; note editor with autosave on sermon
+- [x] `src/lib/data/notes.ts` using **`selfScope` only**; note editor with autosave on sermon
       detail; `/notes` index; `saveNote`, `deleteNote`.
 - [ ] `src/lib/data/devotions.ts`; `/devotions` (feed + Draft/Scheduled tabs for Apostles),
       `/devotions/new`, `/devotions/[id]`, `/devotions/[id]/edit`; derived status.
