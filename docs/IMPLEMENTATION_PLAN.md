@@ -568,7 +568,7 @@ change the theme and check the landing page.
 - [x] Migration `phase1_messaging`: `MessageReply` thread fields, `Message.groupId` `SetNull`,
       `NotificationType` additions, `Notification.dedupeKey`.
 - [x] `src/lib/notifications.ts` — `notify()` (fan-out, dedupe, optional post-commit email).
-- [ ] `src/lib/data/groups.ts`; `/groups`, `/groups/[id]` (Members + Announcements tabs; Events
+- [x] `src/lib/data/groups.ts`; `/groups`, `/groups/[id]` (Members + Announcements tabs; Events
       and Prayer tabs arrive in Phase 2) + `createGroup`, `updateGroup`, `deleteGroup`,
       `setLeader`, `addMembers`, `removeMember` with audit.
 - [ ] `src/lib/data/messages.ts`; `/messages`, `/messages/sent`, `/messages/new`,
