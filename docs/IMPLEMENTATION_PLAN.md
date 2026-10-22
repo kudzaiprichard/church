@@ -23,7 +23,7 @@ The single place to see where the build stands. Update it as described in
 | — | Pre-flight | `docs/implementation-plan` | ✅ Done | #13, #14 | 2026-10-21 | 2026-10-21 |
 | 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | ✅ Done | #15 | 2026-10-21 | 2026-10-21 |
 | 1 | Groups & communication | `feat/phase-1-groups-messaging` | ✅ Done | #16 | 2026-10-22 | 2026-10-22 |
-| 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ⬜ Not started | — | — | — |
+| 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | 🟡 In progress | — | 2026-10-22 | — |
 | 3 | Finance | `feat/phase-3-finance` | ⬜ Not started | — | — | — |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ⬜ Not started | — | — | — |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ⬜ Not started | — | — | — |
@@ -605,15 +605,16 @@ Apostle assigns Mai Madzana to Kingdom Total Women → she messages her group �
 
 ## Phase 2 — Events, attendance & prayer
 
-**Status:** ⬜ Not started
+**Status:** 🟡 In progress
 **Branch:** `feat/phase-2-events-attendance-prayer`
 **Goal:** The church calendar, attendance per event with rates, and group prayer.
 **Scope:** §6 (Event, AttendanceRecord, PrayerRequest), §9.6, §9.7, §9.8.
 **Depends on:** Phase 1 (groups, `notify()`).
 
 ### Entry criteria
-- [ ] Phase 1 ✅ and merged.
-- [ ] Q9 (leaders creating events) answered, or default "No" accepted.
+- [x] Phase 1 ✅ and merged.
+- [x] Q9 (leaders creating events) answered, or default "No" accepted.
+      *Default "No" accepted by the maintainer on 2026-10-22: only Apostles create events.*
 
 ### Deliverables
 - [ ] Migration `phase2_events`: `Event.groupId` + `reminderSentAt` (drop `EventScope`,
