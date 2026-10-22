@@ -57,3 +57,17 @@ export function notificationRows(input: NotifyInput) {
     dedupeKey: input.dedupeKey ? `${input.dedupeKey}:${userId}` : null,
   }));
 }
+
+/** What each kind is called on the notifications page's filter. */
+export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
+  MESSAGE: "Messages",
+  MESSAGE_REPLY: "Replies",
+  EVENT: "Events",
+  EVENT_REMINDER: "Event reminders",
+  GROUP_ACTIVITY: "Group activity",
+  PRAYER_REQUEST: "Prayer requests",
+  DEVOTION: "Devotions",
+  BIRTHDAY: "Birthdays",
+  PLEDGE_REMINDER: "Pledge reminders",
+  CONTRIBUTION_REVIEWED: "Giving",
+};

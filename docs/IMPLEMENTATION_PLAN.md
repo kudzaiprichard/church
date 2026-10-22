@@ -574,7 +574,7 @@ change the theme and check the landing page.
 - [x] `src/lib/data/messages.ts`; `/messages`, `/messages/sent`, `/messages/new`,
       `/messages/[id]`; `sendMessage` (audience guard, send-time fan-out), `reply`, `markRead`,
       `markAllRead`.
-- [ ] Notification bell: mark one / all read, 60 s refresh; `/notifications` page with type filter.
+- [x] Notification bell: mark one / all read, 60 s refresh; `/notifications` page with type filter.
 - [ ] Dashboard: unread messages, "My group" card for leaders.
 - [ ] Tests: audience guard per role; reply-thread visibility; recipients resolved at send time.
 - [ ] Nav: Connect groups, Messages, Notifications live.
