@@ -24,7 +24,7 @@ The single place to see where the build stands. Update it as described in
 | 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | ✅ Done | #15 | 2026-10-21 | 2026-10-21 |
 | 1 | Groups & communication | `feat/phase-1-groups-messaging` | ✅ Done | #16 | 2026-10-22 | 2026-10-22 |
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ✅ Done | #17 | 2026-10-22 | 2026-10-22 |
-| 3 | Finance | `feat/phase-3-finance` | 🟡 In progress | #18 | 2026-10-22 | — |
+| 3 | Finance | `feat/phase-3-finance` | ✅ Done | #18 | 2026-10-22 | 2026-10-22 |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ⬜ Not started | — | — | — |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ⬜ Not started | — | — | — |
 | 6 | Hardening & launch | `feat/phase-6-hardening` | ⬜ Not started | — | — | — |
@@ -661,7 +661,7 @@ sees own history and rate → member posts a prayer request, leader pins it.
 
 ## Phase 3 — Finance
 
-**Status:** 🟡 In progress
+**Status:** ✅ Done
 **Branch:** `feat/phase-3-finance`
 **Goal:** Chema, welfare, tithe and partnership giving, with review, projects, pledges, charts and
 CSV.
@@ -698,13 +698,37 @@ CSV.
 - [x] Tests: `expectedChema` for all 12 months; duplicate chema rejected; totals count CONFIRMED
       only; CSV escaping; leader sees no non-chema amounts.
 - [x] Nav: My giving, Church finance, Chema compliance, Payment review, Partnerships live.
-- [ ] `docs(plan): complete phase 3`.
+- [x] `docs(plan): complete phase 3`.
 
 ### Exit criteria
-- [ ] Chart totals equal table totals for the same filters.
-- [ ] No stored `amountRaised`/`amountPaid` columns exist.
-- [ ] A confirmed contribution cannot be edited or deleted by any action.
-- [ ] §4.10 verification green locally; demo script walked.
+- [x] Chart totals equal table totals for the same filters.
+- [x] No stored `amountRaised`/`amountPaid` columns exist.
+- [x] A confirmed contribution cannot be edited or deleted by any action.
+- [x] §4.10 verification green locally; demo script walked.
+      *Verified on 2026-10-22 against a new, empty `church_verify_p3` database: all seven
+      migrations from `0_init`, seed (five placeholder projects), `migrate status` up to date
+      and no drift. The hand-edited backfill was run against draft rows (a tithe and an OFFERING
+      at the Harare day boundary) and gave WELFARE, the right Harare dates and CONFIRMED.
+      Typecheck, lint, 155 tests and build green. Demo walked on a production build as member
+      (Farai), Elder Mangezi and Apostle:
+      - Farai logged a January chema (shown and stored as $5.00) and a tithe; a second January
+        chema was refused by the database index.
+      - The Elder confirmed the chema and rejected the tithe with a reason; Farai was notified of
+        both and saw the statuses.
+      - The Apostle created a project; Farai pledged $100 to it and logged $40 against the
+        pledge; once the Elder confirmed it, the project bar showed 8% and the pledge 40%.
+      - Church finance showed a $45.00 confirmed total, matching its table rows and its charts.
+      - The CSV was fetched with an Elder session: 200, `text/csv`, UTF-8 BOM, the right file
+        name and all 13 columns, without the rejected tithe. It was checked as a file, not opened
+        in a spreadsheet program.
+      - An officer reversal of the $40 left the original untouched and took the pledge back to
+        0%.
+      The exit criteria on stored totals and confirmed rows were checked in the code: the schema
+      has no raised/paid columns, and the only contribution updates are guarded by
+      `status: "PENDING"`. A display bug found in the demo (missing spaces in "Recorded by") was
+      fixed afterwards. Not verified in the browser: a non-officer leader's chema view (covered
+      by the `complianceRow` test and the leader branch of `chemaCompliance`) and the 360 px
+      pass.*
 
 ### Demo script
 Member logs January chema ($5) and a tithe → Elder confirms one, rejects one → member is notified
