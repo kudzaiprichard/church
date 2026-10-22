@@ -686,8 +686,8 @@ CSV.
 - [x] `src/lib/finance/chema.ts` (`expectedChema`, compliance) and `src/lib/finance/money.ts`;
       `<Money/>` component.
 - [x] `src/lib/data/finance.ts`, `partnerships.ts`.
-- [ ] `/finance`: Log Payment dialog, totals, 12-month chema grid, history.
-- [ ] `/finance/review`: pending queue, confirm / reject (reason) / bulk confirm; notify member.
+- [x] `/finance`: Log Payment dialog, totals, 12-month chema grid, history.
+- [x] `/finance/review`: pending queue, confirm / reject (reason) / bulk confirm; notify member.
 - [ ] Record-for-member and reversing entries for officers, with audit.
 - [ ] `/finance/church`: filters, KPIs, Recharts bar (type × group) and line (monthly), table.
 - [ ] `/finance/chema`: compliance by month, leaders limited to their groups.
