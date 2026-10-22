@@ -24,7 +24,7 @@ The single place to see where the build stands. Update it as described in
 | 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | ✅ Done | #15 | 2026-10-21 | 2026-10-21 |
 | 1 | Groups & communication | `feat/phase-1-groups-messaging` | ✅ Done | #16 | 2026-10-22 | 2026-10-22 |
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ✅ Done | #17 | 2026-10-22 | 2026-10-22 |
-| 3 | Finance | `feat/phase-3-finance` | 🟡 In progress | — | 2026-10-22 | — |
+| 3 | Finance | `feat/phase-3-finance` | 🟡 In progress | #18 | 2026-10-22 | — |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ⬜ Not started | — | — | — |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ⬜ Not started | — | — | — |
 | 6 | Hardening & launch | `feat/phase-6-hardening` | ⬜ Not started | — | — | — |
@@ -678,11 +678,11 @@ CSV.
       *Placeholder targets agreed on 2026-10-22; Phase 6 replaces them with real ones.*
 
 ### Deliverables
-- [ ] Migration `phase3_finance`: `ContributionType`/`ContributionStatus`, reshaped
+- [x] Migration `phase3_finance`: `ContributionType`/`ContributionStatus`, reshaped
       `Contribution`, `PartnershipProject`, `Pledge`; drop draft `Partnership`,
       `PartnershipPayment`; raw SQL partial unique index (one chema per month) and CHECK
       constraints.
-- [ ] Seed the five partnership projects.
+- [x] Seed the five partnership projects.
 - [ ] `src/lib/finance/chema.ts` (`expectedChema`, compliance) and `src/lib/finance/money.ts`;
       `<Money/>` component.
 - [ ] `src/lib/data/finance.ts`, `partnerships.ts`.

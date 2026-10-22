@@ -111,3 +111,38 @@ export const groups = [
     description: "Ushers and greeters who make every visitor feel at home.",
   },
 ];
+
+/**
+ * The five partnership projects (SCOPE §6.1). The targets are placeholders
+ * agreed on 2026-10-22 until leadership supplies the real ones (SCOPE §11 Q6);
+ * an Apostle can change them in the portal, and Phase 6 replaces them before
+ * go-live. Amounts are strings so they reach the Decimal column exactly.
+ */
+export const PLACEHOLDER_TARGET = "1000.00";
+
+export const projects = [
+  {
+    name: "Building Fund",
+    description: "Placeholder target — to be confirmed by leadership.",
+  },
+  {
+    name: "Missions Support",
+    description: "Placeholder target — to be confirmed by leadership.",
+  },
+  {
+    name: "Equipment Fund",
+    description: "Placeholder target — to be confirmed by leadership.",
+  },
+  {
+    name: "Church Van Fund",
+    description: "Placeholder target — to be confirmed by leadership.",
+  },
+  {
+    name: "Community Outreach",
+    description: "Placeholder target — to be confirmed by leadership.",
+  },
+].map((project) => ({
+  ...project,
+  targetAmount: PLACEHOLDER_TARGET,
+  startDate: new Date("2026-01-01T00:00:00.000Z"),
+}));
