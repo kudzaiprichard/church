@@ -65,6 +65,8 @@ export type SermonFilters = {
   preacher?: string;
   tag?: string;
   page?: number;
+  /** Rows per page; PAGE_SIZE when absent. */
+  size?: number;
 };
 
 /**
@@ -73,6 +75,7 @@ export type SermonFilters = {
  */
 export async function listSermons(user: SessionUser, filters: SermonFilters = {}) {
   const page = Math.max(1, Math.floor(filters.page ?? 1));
+  const size = filters.size ?? PAGE_SIZE;
   const q = filters.q?.trim();
   const where: Prisma.SermonWhereInput = {
     AND: [
@@ -96,8 +99,8 @@ export async function listSermons(user: SessionUser, filters: SermonFilters = {}
     prisma.sermon.findMany({
       where,
       orderBy: [{ preachedAt: "desc" }, { createdAt: "desc" }],
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
+      skip: (page - 1) * size,
+      take: size,
       select: cardSelect,
     }),
     prisma.sermon.count({ where }),
@@ -112,7 +115,8 @@ export async function listSermons(user: SessionUser, filters: SermonFilters = {}
     rows: rows.map(toCard),
     total,
     page,
-    pageCount: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    pageCount: Math.max(1, Math.ceil(total / size)),
+    size,
     latestId: latest?.id ?? null,
   };
 }

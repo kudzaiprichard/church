@@ -207,11 +207,12 @@ function churchWhere(filters: ChurchFilters): Prisma.ContributionWhereInput {
  */
 export async function churchFinance(
   user: SessionUser,
-  filters: ChurchFilters & { page?: number },
+  filters: ChurchFilters & { page?: number; size?: number },
 ) {
   if (!can(user, "finance.viewAll")) return null;
   const where = churchWhere(filters);
   const page = Math.max(1, Math.floor(filters.page ?? 1));
+  const size = filters.size ?? CHURCH_PAGE_SIZE;
 
   const [all, rows] = await Promise.all([
     prisma.contribution.findMany({
@@ -221,8 +222,8 @@ export async function churchFinance(
     prisma.contribution.findMany({
       where,
       orderBy: [{ paidAt: "desc" }, { createdAt: "desc" }],
-      skip: (page - 1) * CHURCH_PAGE_SIZE,
-      take: CHURCH_PAGE_SIZE,
+      skip: (page - 1) * size,
+      take: size,
       select: rowSelect,
     }),
   ]);
@@ -249,7 +250,8 @@ export async function churchFinance(
     rows: rows.map(toRow),
     total: lean.length,
     page,
-    pageCount: Math.max(1, Math.ceil(lean.length / CHURCH_PAGE_SIZE)),
+    pageCount: Math.max(1, Math.ceil(lean.length / size)),
+    size,
     totals: summarise(lean),
     byGroup: byGroup(lean),
     byMonth: byMonth(lean),

@@ -54,7 +54,11 @@ function page(value: number | undefined) {
 }
 
 /** The signed-in person's inbox, newest first. */
-export async function listInbox(user: SessionUser, options: { page?: number } = {}) {
+export async function listInbox(
+  user: SessionUser,
+  options: { page?: number; size?: number } = {},
+) {
+  const size = options.size ?? PAGE_SIZE;
   const current = page(options.page);
   const where = selfScope(user);
 
@@ -62,8 +66,8 @@ export async function listInbox(user: SessionUser, options: { page?: number } = 
     prisma.messageRecipient.findMany({
       where,
       orderBy: { message: { sentAt: "desc" } },
-      skip: (current - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
+      skip: (current - 1) * size,
+      take: size,
       select: {
         readAt: true,
         message: {
@@ -100,7 +104,8 @@ export async function listInbox(user: SessionUser, options: { page?: number } = 
     ),
     total,
     page: current,
-    pageCount: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    pageCount: Math.max(1, Math.ceil(total / size)),
+    size,
   };
 }
 
@@ -116,7 +121,11 @@ export type SentRow = {
 };
 
 /** What the signed-in person has sent, newest first. */
-export async function listSent(user: SessionUser, options: { page?: number } = {}) {
+export async function listSent(
+  user: SessionUser,
+  options: { page?: number; size?: number } = {},
+) {
+  const size = options.size ?? PAGE_SIZE;
   const current = page(options.page);
   const where = selfScope(user, "senderId");
 
@@ -124,8 +133,8 @@ export async function listSent(user: SessionUser, options: { page?: number } = {
     prisma.message.findMany({
       where,
       orderBy: { sentAt: "desc" },
-      skip: (current - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
+      skip: (current - 1) * size,
+      take: size,
       select: {
         id: true,
         subject: true,
@@ -164,7 +173,8 @@ export async function listSent(user: SessionUser, options: { page?: number } = {
     ),
     total,
     page: current,
-    pageCount: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    pageCount: Math.max(1, Math.ceil(total / size)),
+    size,
   };
 }
 

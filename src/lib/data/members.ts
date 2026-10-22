@@ -30,6 +30,8 @@ export type MemberFilters = {
   /** "active" (default), "inactive" or "all". */
   status?: "active" | "inactive" | "all";
   page?: number;
+  /** Rows per page; PAGE_SIZE when absent. */
+  size?: number;
 };
 
 export type GroupRef = { id: string; name: string };
@@ -104,6 +106,7 @@ function toListRow(row: ListRow, pending: Set<string>): MemberListRow {
 /** The directory, filtered, searched and paginated — inside the caller's scope. */
 export async function listMembers(user: SessionUser, filters: MemberFilters = {}) {
   const page = Math.max(1, Math.floor(filters.page ?? 1));
+  const size = filters.size ?? PAGE_SIZE;
   const q = filters.q?.trim();
   const status = filters.status ?? "active";
 
@@ -130,8 +133,8 @@ export async function listMembers(user: SessionUser, filters: MemberFilters = {}
     prisma.user.findMany({
       where,
       orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
-      skip: (page - 1) * PAGE_SIZE,
-      take: PAGE_SIZE,
+      skip: (page - 1) * size,
+      take: size,
       select: listSelect,
     }),
     prisma.user.count({ where }),
@@ -143,7 +146,8 @@ export async function listMembers(user: SessionUser, filters: MemberFilters = {}
     rows: rows.map((row) => toListRow(row, pending)),
     total,
     page,
-    pageCount: Math.max(1, Math.ceil(total / PAGE_SIZE)),
+    pageCount: Math.max(1, Math.ceil(total / size)),
+    size,
   };
 }
 
