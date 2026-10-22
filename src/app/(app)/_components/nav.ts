@@ -239,6 +239,7 @@ export function sectionFor(pathname: string, rail: RailSection[]) {
 export const LABELS: Record<string, string> = {
   ...Object.fromEntries(RAIL.flatMap((s) => s.items).map((item) => [item.href, item.label])),
   "/members/new": "Enrol a member",
+  "/members/import": "Import members",
   "/groups/new": "New group",
   "/messages/new": "New message",
   "/messages/sent": "Sent",
