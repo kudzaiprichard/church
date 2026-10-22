@@ -765,7 +765,7 @@ and sees statuses → Apostle creates a project, member pledges and contributes 
       `deleteSermon` (removes storage objects, audit).
 - [x] `src/lib/data/notes.ts` using **`selfScope` only**; note editor with autosave on sermon
       detail; `/notes` index; `saveNote`, `deleteNote`.
-- [ ] `src/lib/data/devotions.ts`; `/devotions` (feed + Draft/Scheduled tabs for Apostles),
+- [x] `src/lib/data/devotions.ts`; `/devotions` (feed + Draft/Scheduled tabs for Apostles),
       `/devotions/new`, `/devotions/[id]`, `/devotions/[id]/edit`; derived status.
 - [ ] Landing: latest 3 sermons and blurred devotion teaser from DB; dashboard devotion + latest
       sermon cards.
