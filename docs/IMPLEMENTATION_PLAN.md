@@ -922,8 +922,12 @@ performance passes, the member import tool and the README — while the services
       every route.
 - [ ] Performance pass: indexes confirmed against slow queries; dashboard queries batched.
 - [ ] Real church details in settings seed; placeholder copy removed.
-- [ ] Member import script (`prisma/import-members.ts`) with dry-run mode, validation report and
+- [x] Member import script (`prisma/import-members.ts`) with dry-run mode, validation report and
       audit entries; invites sent in batches.
+      *`npm run members:import`. Tested on a sample file against a verify database: the dry
+      run, the refusal without `--as`, the commit (records, groups, audit, invitation tokens)
+      and the rerun, which finds everyone already on the roll. The real list has not been
+      imported yet — it is an entry criterion.*
 - [ ] Production checklist: env vars, pooled `DATABASE_URL`, `APP_URL`, Resend domain verified,
       storage, `CRON_SECRET`, bootstrap variables removed after first sign-in.
 - [ ] Cloudflare R2 set up (bucket, public URL, CORS for the portal's origins, read/write token,

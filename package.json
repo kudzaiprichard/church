@@ -18,7 +18,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:integration": "vitest run --config vitest.integration.config.ts",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "members:import": "tsx --conditions=react-server prisma/import-members.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.7.1",
