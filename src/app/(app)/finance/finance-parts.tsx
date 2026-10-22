@@ -86,23 +86,34 @@ export function Progress({ value, label }: { value: number; label: string }) {
   );
 }
 
-/** The year's chema as twelve labelled cells. */
+/**
+ * The year's chema as a strip of twelve months. The state is carried by a
+ * coloured bar under each month and spelled out beside it, so an unpaid year
+ * reads as a list to catch up on rather than a wall of alarms.
+ */
 export function ChemaGrid({ cells }: { cells: GridCell[] }) {
-  const tone = {
-    PAID: "border-success/40 bg-success/10",
-    PENDING: "border-brass/50 bg-brass/15",
-    UNPAID: "border-destructive/30 bg-destructive/5",
-    FUTURE: "border-border bg-muted/40",
+  const bar = {
+    PAID: "bg-success",
+    PENDING: "bg-brass",
+    UNPAID: "bg-destructive/70",
+    FUTURE: "bg-muted",
   } as const;
+  const word = { PAID: "Paid", PENDING: "Pending", UNPAID: "Unpaid", FUTURE: "Not due" } as const;
 
   return (
-    <ol className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6">
+    <ol className="grid grid-cols-4 gap-x-2 gap-y-3 sm:grid-cols-6 xl:grid-cols-12">
       {cells.map((cell) => (
-        <li key={cell.month} className={cn("rounded-lg border px-3 py-2", tone[cell.status])}>
+        <li key={cell.month} className="min-w-0">
           <p className="text-foreground text-xs font-semibold">{cell.name.slice(0, 3)}</p>
-          <div className="mt-1">
-            <ChemaBadge status={cell.status} />
-          </div>
+          <span aria-hidden className={cn("mt-1.5 block h-1.5 rounded-full", bar[cell.status])} />
+          <p
+            className={cn(
+              "mt-1 text-[0.7rem]",
+              cell.status === "UNPAID" ? "text-destructive" : "text-muted-foreground",
+            )}
+          >
+            {word[cell.status]}
+          </p>
         </li>
       ))}
     </ol>
@@ -118,11 +129,11 @@ export function TypeTotals({
   pending: Record<(typeof TYPES)[number], Cents>;
 }) {
   return (
-    <dl className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <dl className="divide-border grid grid-cols-2 gap-y-4 lg:grid-cols-4 lg:divide-x">
       {TYPES.map((type) => (
-        <div key={type} className="bg-card border-border rounded-xl border p-4">
-          <dt className="text-muted-foreground text-xs font-semibold uppercase">{TYPE_LABELS[type]}</dt>
-          <dd className="mt-2 text-xl font-semibold">
+        <div key={type} className="min-w-0 lg:px-4 lg:first:pl-0 lg:last:pr-0">
+          <dt className="text-muted-foreground text-xs font-medium">{TYPE_LABELS[type]}</dt>
+          <dd className="font-title mt-1 text-xl font-semibold">
             <Money cents={confirmed[type]} />
           </dd>
           {pending[type] !== 0 && (
@@ -176,7 +187,11 @@ export function HistoryTable({
             <th scope="col" className="px-3 py-2 text-left font-semibold">
               Status
             </th>
-            {actions && <th scope="col" className="sr-only">Actions</th>}
+            {actions && (
+              <th scope="col" className="sr-only">
+                Actions
+              </th>
+            )}
           </tr>
         </thead>
         <tbody className="divide-border divide-y">
@@ -187,7 +202,9 @@ export function HistoryTable({
                 <td className="px-3 py-2.5">
                   <span className="text-foreground font-medium">{row.member.name}</span>
                   {row.groups.length > 0 && (
-                    <span className="text-muted-foreground block text-xs">{row.groups.join(", ")}</span>
+                    <span className="text-muted-foreground block text-xs">
+                      {row.groups.join(", ")}
+                    </span>
                   )}
                 </td>
               )}
@@ -196,8 +213,12 @@ export function HistoryTable({
                 {rowDetail(row) && (
                   <span className="text-muted-foreground block text-xs">{rowDetail(row)}</span>
                 )}
-                {row.note && <span className="text-muted-foreground block text-xs italic">{row.note}</span>}
-                {row.isReversal && <span className="text-destructive block text-xs">Reversing entry</span>}
+                {row.note && (
+                  <span className="text-muted-foreground block text-xs italic">{row.note}</span>
+                )}
+                {row.isReversal && (
+                  <span className="text-destructive block text-xs">Reversing entry</span>
+                )}
                 {row.reversed && <span className="text-destructive block text-xs">Reversed</span>}
               </td>
               <td className="px-3 py-2.5 text-right">
