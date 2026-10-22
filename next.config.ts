@@ -5,6 +5,26 @@ import { protectedSegmentPattern } from "./src/lib/routes";
 const isDev = process.env.NODE_ENV !== "production";
 
 /**
+ * Where uploaded files live (Cloudflare R2, docs/SCOPE.md §9.20): the bucket's
+ * public address serves audio, PDFs and avatars, and its S3 endpoint receives
+ * direct uploads. Read from `process.env` directly — this file loads outside
+ * the app's module graph, so it cannot use `src/lib/env.ts` — and left out of
+ * the policy entirely when storage is not configured.
+ */
+function origin(value: string | undefined) {
+  try {
+    return value ? new URL(value).origin : "";
+  } catch {
+    return "";
+  }
+}
+const mediaOrigin = origin(process.env.R2_PUBLIC_URL);
+const uploadOrigin = process.env.R2_ACCOUNT_ID
+  ? `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
+  : "";
+const extra = (value: string) => (value ? ` ${value}` : "");
+
+/**
  * Content Security Policy.
  *
  * `script-src` has to allow `'unsafe-inline'`: Next streams the RSC payload
@@ -21,6 +41,7 @@ const isDev = process.env.NODE_ENV !== "production";
  *   base-uri         a <base> tag cannot re-point every relative URL
  *   object-src       no plugins, no legacy embed vectors
  *   default-src      anything not named below is same-origin only
+ *   media-src        audio plays from this site or the storage bucket only
  *
  * The upgrade to a nonce-based policy is a proxy change plus accepting dynamic
  * rendering on the public routes; noted here so the decision is visible.
@@ -33,10 +54,11 @@ const csp = [
   "form-action 'self'",
   `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  `img-src 'self' data: blob:${extra(mediaOrigin)}`,
+  `media-src 'self'${extra(mediaOrigin)}`,
   "font-src 'self' data:",
   // The dev server talks to itself over a websocket for hot reload.
-  `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
+  `connect-src 'self'${extra(uploadOrigin)}${isDev ? " ws: wss:" : ""}`,
   ...(isDev ? [] : ["upgrade-insecure-requests"]),
 ].join("; ");
 

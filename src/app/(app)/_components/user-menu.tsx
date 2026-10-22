@@ -42,12 +42,18 @@ export function UserMenu({
           "transition-colors focus-visible:ring-2 focus-visible:outline-none",
         )}
       >
-        <span
-          aria-hidden
-          className="bg-primary text-primary-foreground grid size-7 shrink-0 place-items-center rounded-full text-[0.65rem] font-bold"
-        >
-          {initials}
-        </span>
+        {user.avatarUrl ? (
+          // A plain img: the photo is a 512 px file from the storage bucket.
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={user.avatarUrl} alt="" className="size-7 shrink-0 rounded-full object-cover" />
+        ) : (
+          <span
+            aria-hidden
+            className="bg-primary text-primary-foreground grid size-7 shrink-0 place-items-center rounded-full text-[0.65rem] font-bold"
+          >
+            {initials}
+          </span>
+        )}
         <span className="hidden text-left leading-tight md:block">
           <span className="block text-sm font-semibold">
             {user.firstName} {user.lastName}

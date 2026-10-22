@@ -3,6 +3,8 @@ import Link from "next/link";
 import { ROLES, ROLE_LABELS } from "@/lib/auth/permissions";
 import type { MemberListRow } from "@/lib/data/members";
 
+import { PersonAvatar } from "../_components/person-avatar";
+
 import { resendInvitation, sendPasswordReset, setActive, setRole } from "./actions";
 
 const joined = new Intl.DateTimeFormat("en-GB", {
@@ -38,10 +40,6 @@ export function memberStatus(member: ControlledMember) {
   };
 }
 
-export function initialsOf(member: { firstName: string; lastName: string }) {
-  return `${member.firstName.charAt(0)}${member.lastName.charAt(0)}`.toUpperCase();
-}
-
 /**
  * One person in the directory: who they are, their groups, and what the
  * viewer's office lets them do to the account.
@@ -60,14 +58,7 @@ export function MemberRow({
   return (
     <li className="grid gap-x-6 gap-y-3 px-5 py-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
       <div className="flex min-w-0 items-start gap-3">
-        <span
-          aria-hidden
-          className={`grid size-9 shrink-0 place-items-center rounded-full text-xs font-bold ${
-            member.isActive ? "bg-secondary text-primary" : "bg-muted text-muted-foreground"
-          }`}
-        >
-          {initialsOf(member)}
-        </span>
+        <PersonAvatar person={member} muted={!member.isActive} />
 
         <div className="min-w-0">
           <p className="flex flex-wrap items-center gap-x-2 gap-y-1">

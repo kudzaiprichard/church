@@ -19,6 +19,7 @@ import { requireSession } from "@/lib/auth/dal";
 import { can } from "@/lib/auth/permissions";
 import { formatRate } from "@/lib/attendance/rules";
 import { lastEventAttendance, ownAttendance } from "@/lib/data/attendance";
+import { todaysDevotion } from "@/lib/data/devotions";
 import { upcomingEvents } from "@/lib/data/events";
 import {
   chemaCompliance,
@@ -30,6 +31,7 @@ import {
 import { ledGroups } from "@/lib/data/groups";
 import { unreadMessageCount } from "@/lib/data/messages";
 import { listProjects, myPledges } from "@/lib/data/partnerships";
+import { latestSermon } from "@/lib/data/sermons";
 import { formatDateOnly, harareToday } from "@/lib/dates";
 import { MONTHS } from "@/lib/finance/chema";
 import { formatMoney } from "@/lib/finance/money";
@@ -102,6 +104,8 @@ export default async function DashboardPage() {
     pending,
     projects,
     roll,
+    devotion,
+    sermon,
   ] = await Promise.all([
     myGiving(user, { year }),
     myChemaThisMonth(user),
@@ -120,6 +124,8 @@ export default async function DashboardPage() {
           prisma.user.count({ where: { joinedAt: { gte: monthStart } } }),
         ])
       : null,
+    todaysDevotion(),
+    latestSermon(),
   ]);
   const myGroups = await Promise.all(
     led.map(async (group) => ({
@@ -423,6 +429,52 @@ export default async function DashboardPage() {
           </Link>
         </Panel>
       </div>
+
+      {(devotion || sermon) && (
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          {devotion && (
+            <Panel title="Today's devotion" description={devotion.author}>
+              <p className="text-foreground text-base font-bold">{devotion.title}</p>
+              <p className="text-accent-foreground mt-1 text-xs font-semibold tracking-wide uppercase">
+                {devotion.scriptureRef}
+              </p>
+              <p className="text-muted-foreground mt-2 line-clamp-2 text-sm leading-relaxed">
+                {devotion.firstParagraph}
+              </p>
+              <Link
+                href={`/devotions/${devotion.id}`}
+                className="text-primary mt-3 inline-flex items-center gap-1 text-sm font-semibold hover:underline"
+              >
+                Read more
+                <ArrowUpRightIcon className="size-3.5" aria-hidden />
+              </Link>
+            </Panel>
+          )}
+          {sermon && (
+            <Panel title="Latest sermon" description={formatDateOnly(sermon.preachedAt)}>
+              <p className="text-foreground text-base font-bold">{sermon.title}</p>
+              <p className="text-muted-foreground mt-1 text-sm">
+                {sermon.preacher}
+                {sermon.scriptureRef && (
+                  <span className="text-accent-foreground ml-2 text-xs font-semibold uppercase">
+                    {sermon.scriptureRef}
+                  </span>
+                )}
+              </p>
+              <p className="text-muted-foreground mt-2 line-clamp-2 text-sm leading-relaxed">
+                {sermon.summary}
+              </p>
+              <Link
+                href={`/sermons/${sermon.id}`}
+                className="text-primary mt-3 inline-flex items-center gap-1 text-sm font-semibold hover:underline"
+              >
+                {sermon.audioUrl ? "Listen" : "Open"}
+                <ArrowUpRightIcon className="size-3.5" aria-hidden />
+              </Link>
+            </Panel>
+          )}
+        </div>
+      )}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <Panel title="Quick links" bodyClassName="p-2">

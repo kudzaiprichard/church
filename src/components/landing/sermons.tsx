@@ -1,7 +1,7 @@
 import { Play } from "lucide-react";
 import Link from "next/link";
 
-import { recentSermons } from "@/lib/church";
+import type { PublicSermon } from "@/lib/data/sermons";
 
 import { ActionLink } from "./action";
 import { Reveal } from "./reveal";
@@ -14,16 +14,20 @@ const dayMonth = new Intl.DateTimeFormat("en-GB", {
 });
 
 /**
- * The three latest messages. Each card leads with its date and passage, so a
- * reader looking for "last Sunday's sermon" finds it without reading titles.
+ * The three latest published messages. Each card leads with its date and
+ * passage, so a reader looking for "last Sunday's sermon" finds it without
+ * reading titles. Words only: audio, video and handouts are for members, so
+ * the play button leads to sign-in (SCOPE §9.11). Left out when there are none.
  */
-export function Sermons() {
+export function Sermons({ sermons }: { sermons: PublicSermon[] }) {
+  if (sermons.length === 0) return null;
+
   return (
     <Section id="sermons">
       <SectionHeader
         eyebrow="Recent sermons"
         title="Latest messages"
-        description="From the current series, Kingdom Expressions 2026."
+        description="The most recent messages preached at KMMI."
         action={
           <ActionLink href="/login" tone="quiet" arrow>
             Full archive in the portal
@@ -32,24 +36,26 @@ export function Sermons() {
       />
 
       <ul className="grid gap-4 md:grid-cols-3">
-        {recentSermons.map((sermon, index) => (
+        {sermons.map((sermon, index) => (
           <li key={sermon.title}>
             <Reveal delay={index * 80} className="h-full">
               <article className="group bg-card border-border hover:border-primary/30 flex h-full flex-col rounded-xl border p-6 transition-colors">
                 <div className="flex items-center justify-between gap-3 text-xs">
-                  <time dateTime={sermon.date} className="numeric text-muted-foreground">
-                    {dayMonth.format(new Date(sermon.date))}
+                  <time dateTime={sermon.preachedAt} className="numeric text-muted-foreground">
+                    {dayMonth.format(new Date(sermon.preachedAt))}
                   </time>
-                  <span className="bg-secondary text-primary rounded-md px-2 py-0.5 font-medium">
-                    {sermon.passage}
-                  </span>
+                  {sermon.scriptureRef && (
+                    <span className="bg-secondary text-primary rounded-md px-2 py-0.5 font-medium">
+                      {sermon.scriptureRef}
+                    </span>
+                  )}
                 </div>
 
                 <h3 className="text-foreground mt-4 text-lg leading-snug font-bold text-balance">
                   {sermon.title}
                 </h3>
                 <p className="text-muted-foreground mt-2 line-clamp-2 text-sm leading-relaxed">
-                  {sermon.summary}
+                  {sermon.excerpt}
                 </p>
 
                 <div className="border-border mt-auto flex items-center justify-between gap-3 border-t pt-4">

@@ -658,6 +658,7 @@ model Sermon {
   audioKey     String?                        // storage key, for deletion
   videoUrl     String?                        // YouTube link
   notesUrl     String?                        // optional PDF handout
+  notesKey     String?                        // its storage key, for deletion
   tags         String[]
   isPublished  Boolean   @default(true)
   uploadedById String

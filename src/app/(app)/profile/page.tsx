@@ -5,9 +5,11 @@ import { requireSession } from "@/lib/auth/dal";
 import { ROLE_LABELS } from "@/lib/auth/permissions";
 import { getOwnProfile } from "@/lib/data/members";
 import { formatDateOnly, harareToday } from "@/lib/dates";
+import { storageIsConfigured } from "@/lib/storage";
 
 import { PageHeader, Panel } from "../_components/page-parts";
 
+import { AvatarForm } from "./avatar-form";
 import { ProfileForm } from "./profile-form";
 
 export const metadata: Metadata = { title: "Profile" };
@@ -55,6 +57,13 @@ export default async function ProfilePage() {
         </Panel>
 
         <div className="grid gap-4">
+          <Panel title="Photo" description="Shown beside your name to your groups and the church office.">
+            <AvatarForm
+              avatarUrl={user.avatarUrl}
+              initials={`${profile.firstName.charAt(0)}${profile.lastName.charAt(0)}`.toUpperCase()}
+              uploads={storageIsConfigured}
+            />
+          </Panel>
           <Panel title="On the roll">
             <dl className="grid gap-4">
               <Detail label="Name">

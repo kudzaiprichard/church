@@ -18,8 +18,8 @@ import { prayerBoard } from "@/lib/data/prayer";
 import { cn } from "@/lib/utils";
 
 import { EmptyState, PageHeader, Panel } from "../../_components/page-parts";
+import { PersonAvatar } from "../../_components/person-avatar";
 import { EventListItem } from "../../events/event-parts";
-import { initialsOf } from "../../members/member-row";
 import { PrayerList } from "../../prayer/prayer-board";
 import { PrayerForm } from "../../prayer/prayer-form";
 import { removeMember } from "../actions";
@@ -158,15 +158,7 @@ export default async function GroupPage(props: PageProps<"/groups/[id]">) {
                   key={member.id}
                   className="flex flex-wrap items-center gap-x-4 gap-y-2 px-5 py-3"
                 >
-                  <span
-                    aria-hidden
-                    className={cn(
-                      "grid size-9 shrink-0 place-items-center rounded-full text-xs font-bold",
-                      member.isActive ? "bg-secondary text-primary" : "bg-muted text-muted-foreground",
-                    )}
-                  >
-                    {initialsOf(member)}
-                  </span>
+                  <PersonAvatar person={member} muted={!member.isActive} />
                   <div className="min-w-0 flex-1">
                     <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
                       {group.viewer.leads ? (

@@ -92,6 +92,7 @@ model User {
   notifications         Notification[]
   createdEvents         Event[]              @relation("EventCreator")
   uploadedSermons       Sermon[]             @relation("SermonUploader")
+  devotions             Devotion[]           @relation("DevotionAuthor")
 
   @@index([role])
   @@index([isActive])
@@ -193,6 +194,8 @@ enum AuditAction {
   PROJECT_COMPLETED
   PLEDGE_CANCELLED
   FINANCE_EXPORTED
+  SERMON_DELETED
+  DEVOTION_DELETED
 }
 
 /// Who did what to whom.
@@ -546,35 +549,43 @@ model Pledge {
 }
 
 // ---------------------------------------------------------------------------
-// Modules 10 & 11 — Sermons and Personal Notes
+// Modules 10, 11 & 14 — Sermons, personal notes and daily devotions
+// (docs/SCOPE.md §9.11, §9.12, §9.14)
 // ---------------------------------------------------------------------------
 
-enum SermonMediaType {
-  AUDIO
-  VIDEO
-}
-
+/// A preached sermon. Audio and the handout PDF live in storage under their
+/// keys, which are what deleting a sermon removes; the video is a YouTube link.
 model Sermon {
-  id           String          @id @default(cuid())
+  id           String   @id @default(cuid())
   title        String
-  speaker      String?
-  description  String?
-  mediaType    SermonMediaType
-  mediaUrl     String
-  thumbnailUrl String?
-  preachedAt   DateTime?
-  isPublished  Boolean         @default(false)
+  /// "Apostle Takura James Makamba", "Apostle Edna Makamba" or a guest's name.
+  preacher     String
+  preachedAt   DateTime @db.Date
+  seriesName   String?
+  scriptureRef String?
+  /// Up to two paragraphs.
+  summary      String
+  audioUrl     String?
+  audioKey     String?
+  videoUrl     String?
+  notesUrl     String?
+  notesKey     String?
+  tags         String[] @default([])
+  /// False is a draft, seen only by those who manage sermons.
+  isPublished  Boolean  @default(true)
   uploadedById String
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   uploadedBy User         @relation("SermonUploader", fields: [uploadedById], references: [id])
   notes      SermonNote[]
 
   @@index([isPublished, preachedAt])
+  @@index([seriesName])
 }
 
-// Personal to the author — the spec says notes are not shared.
+/// Private to its author — read and written through `selfScope` only, by
+/// everyone including Apostles. No screen lists other people's notes.
 model SermonNote {
   id        String   @id @default(cuid())
   userId    String
@@ -587,6 +598,26 @@ model SermonNote {
   sermon Sermon @relation(fields: [sermonId], references: [id], onDelete: Cascade)
 
   @@unique([userId, sermonId])
+}
+
+/// A daily devotion. Its status is derived from `publishOn`, in Harare time:
+/// null is a draft, a future day is scheduled, today or earlier is published.
+/// No job publishes anything — members' queries filter on the date.
+model Devotion {
+  id             String    @id @default(cuid())
+  title          String
+  authorId       String
+  scriptureRef   String
+  scriptureQuote String
+  /// Paragraphs separated by a blank line; three are expected.
+  body           String
+  publishOn      DateTime? @db.Date
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  author User @relation("DevotionAuthor", fields: [authorId], references: [id])
+
+  @@index([publishOn])
 }
 
 // ---------------------------------------------------------------------------
