@@ -281,10 +281,10 @@ function Entry({
         "focus-visible:ring-ring focus-visible:ring-2 focus-visible:outline-none",
         iconOnly === "always" && "justify-center",
         iconOnly === "below-lg" && "justify-center lg:justify-start",
-        // The current section: a neutral fill, the label in bold and its icon
-        // in blue — no edge marker, and no block of blue.
+        // The current section: a neutral fill and a gold marker at its edge,
+        // rather than a block of blue beside a page already full of it.
         active
-          ? "bg-muted text-foreground font-semibold"
+          ? "bg-muted text-foreground before:bg-indicator font-semibold before:absolute before:inset-y-2 before:left-0 before:w-[3px] before:rounded-full"
           : "text-foreground/80 hover:bg-muted hover:text-foreground",
       )}
     >
