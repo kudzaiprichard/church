@@ -31,6 +31,10 @@ const DESCRIPTIONS: Record<AuditAction, { label: string; weight: "high" | "norma
   MEMBER_UPDATED: { label: "Member record edited", weight: "normal" },
   THEME_UPDATED: { label: "Theme of the Year changed", weight: "normal" },
   SETTINGS_UPDATED: { label: "Church settings changed", weight: "normal" },
+  GROUP_LEADER_CHANGED: { label: "Group leader changed", weight: "high" },
+  GROUP_CREATED: { label: "Group created", weight: "normal" },
+  GROUP_UPDATED: { label: "Group edited", weight: "normal" },
+  GROUP_DELETED: { label: "Group deleted", weight: "normal" },
 };
 
 /**

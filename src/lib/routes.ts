@@ -22,6 +22,9 @@
 export const PROTECTED_PREFIXES = [
   "/dashboard",
   "/members",
+  "/groups",
+  "/messages",
+  "/notifications",
   "/profile",
   "/settings",
   "/account",
