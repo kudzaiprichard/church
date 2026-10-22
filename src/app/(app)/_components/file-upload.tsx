@@ -93,7 +93,9 @@ export function FileUpload({
       </p>
 
       {state.stage === "done" && <input type="hidden" name={name} value={state.key} />}
-      {removed && state.stage !== "done" && <input type="hidden" name={`${name}Remove`} value="1" />}
+      {removed && state.stage !== "done" && (
+        <input type="hidden" name={`${name}Remove`} value="1" />
+      )}
 
       {!enabled ? (
         <p className="text-muted-foreground bg-muted/50 mt-1.5 rounded-lg px-3 py-2.5 text-xs">
@@ -103,7 +105,12 @@ export function FileUpload({
         <div className="mt-1.5 grid gap-2">
           {current && !removed && state.stage !== "done" && (
             <p className="flex items-center gap-2 text-xs">
-              <a href={current.href} target="_blank" rel="noreferrer" className="text-primary hover:underline">
+              <a
+                href={current.href}
+                target="_blank"
+                rel="noreferrer"
+                className="text-primary hover:underline"
+              >
                 {current.label}
               </a>
               <button

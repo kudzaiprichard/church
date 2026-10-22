@@ -54,7 +54,8 @@ export function newKey(folder: Folder, contentType: string, random: string): str
 
 /** True for a key the app could have written into this folder — nothing else is accepted. */
 export function isKeyIn(folder: Folder, key: unknown): key is string {
-  return typeof key === "string" && new RegExp(`^${folder}/[A-Za-z0-9_-]{16,64}\\.[a-z0-9]{2,4}$`).test(key);
+  const pattern = new RegExp(`^${folder}/[A-Za-z0-9_-]{16,64}\\.[a-z0-9]{2,4}$`);
+  return typeof key === "string" && pattern.test(key);
 }
 
 /** The public URL for a key, under the bucket's public address. */

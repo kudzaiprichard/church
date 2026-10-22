@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { isKeyIn, isYouTubeUrl, keyFromUrl, newKey, publicUrl, uploadProblem } from "./storage-rules";
+import {
+  isKeyIn,
+  isYouTubeUrl,
+  keyFromUrl,
+  newKey,
+  publicUrl,
+  uploadProblem,
+} from "./storage-rules";
 
 const MB = 1024 * 1024;
 
