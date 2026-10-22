@@ -127,13 +127,8 @@ export function TypeTotals({
           </dd>
           {pending[type] !== 0 && (
             <dd className="mt-1 text-xs">
-              <Money
-                cents={pending[type]}
-                pending
-                />
-                <span
-                className="text-muted-foreground">pending</span
-              >
+              <Money cents={pending[type]} pending />{" "}
+              <span className="text-muted-foreground">pending</span>
             </dd>
           )}
         </div>
@@ -214,11 +209,9 @@ export function HistoryTable({
                   <span className="text-muted-foreground block text-xs">{row.rejectReason}</span>
                 )}
                 {row.recordedByOfficer && (
-                  <span
-                    className="text-muted-foreground block text-xs">Recorded
-                    by
-                    {row.recordedBy}</span
-                  >
+                  <span className="text-muted-foreground block text-xs">
+                    Recorded by {row.recordedBy}
+                  </span>
                 )}
               </td>
               {actions && <td className="px-5 py-2.5 text-right">{actions(row)}</td>}
