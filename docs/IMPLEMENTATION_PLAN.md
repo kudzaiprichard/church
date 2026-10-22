@@ -25,7 +25,7 @@ The single place to see where the build stands. Update it as described in
 | 1 | Groups & communication | `feat/phase-1-groups-messaging` | ✅ Done | #16 | 2026-10-22 | 2026-10-22 |
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ✅ Done | #17 | 2026-10-22 | 2026-10-22 |
 | 3 | Finance | `feat/phase-3-finance` | ✅ Done | #18 | 2026-10-22 | 2026-10-22 |
-| 4 | Sermons, notes & devotions | `feat/phase-4-content` | 🟡 In progress | — | 2026-10-22 | — |
+| 4 | Sermons, notes & devotions | `feat/phase-4-content` | 🟡 In progress | #19 | 2026-10-22 | — |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ⬜ Not started | — | — | — |
 | 6 | Hardening & launch | `feat/phase-6-hardening` | ⬜ Not started | — | — | — |
 
@@ -754,8 +754,10 @@ and sees statuses → Apostle creates a project, member pledges and contributes 
       real uploads have been tested; until then it cannot be marked ✅.*
 
 ### Deliverables
-- [ ] Storage env vars in `env.ts` + `.env.example`; `src/lib/storage.ts`; client-direct upload
+- [x] Storage env vars in `env.ts` + `.env.example`; `src/lib/storage.ts`; client-direct upload
       for audio; CSP `media-src`/`img-src`/`connect-src` updated in `next.config.ts`.
+      *Built for Cloudflare R2 with `aws4fetch`; not yet exercised against a real bucket (see
+      the entry criterion).*
 - [ ] Avatar upload on `/profile` (uses storage).
 - [ ] Migration `phase4_content`: reshaped `Sermon`, `SermonNote`, `Devotion`.
 - [ ] `src/lib/data/sermons.ts`; `/sermons` (search + series/preacher/tag filters), `/sermons/new`,
