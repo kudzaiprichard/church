@@ -26,7 +26,7 @@ The single place to see where the build stands. Update it as described in
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ✅ Done | #17 | 2026-10-22 | 2026-10-22 |
 | 3 | Finance | `feat/phase-3-finance` | ✅ Done | #18 | 2026-10-22 | 2026-10-22 |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ✅ Done | #19 | 2026-10-22 | 2026-10-22 |
-| 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ⬜ Not started | — | — | — |
+| 5 | Records, celebration & automation | `feat/phase-5-records-automation` | 🟡 In progress | — | 2026-10-22 | — |
 | 6 | Hardening & launch | `feat/phase-6-hardening` | ⬜ Not started | — | — | — |
 
 **Legend:** ⬜ Not started · 🟡 In progress · ✅ Done · ⛔ Blocked (reason in the phase section)
@@ -813,7 +813,7 @@ teaser.
 
 ## Phase 5 — Records, celebration & automation
 
-**Status:** ⬜ Not started
+**Status:** 🟡 In progress
 **Branch:** `feat/phase-5-records-automation`
 **Goal:** Baptism administration, birthdays, scheduled reminders and the installable app.
 **Scope:** §6 (Baptism candidates/classes), §9.13 (cron sources), §9.15, §9.16, §9.21, §9.22,
@@ -821,8 +821,10 @@ teaser.
 **Depends on:** Phases 1–4.
 
 ### Entry criteria
-- [ ] Phase 4 ✅ and merged.
-- [ ] **Q3** (public birthdays) and **Q4** (baptism candidates) answered or defaults accepted.
+- [x] Phase 4 ✅ and merged.
+- [x] **Q3** (public birthdays) and **Q4** (baptism candidates) answered or defaults accepted.
+      *Defaults accepted by the maintainer on 2026-10-22: birthdays stay inside the portal, and
+      candidates are separate, non-user records.*
 
 ### Deliverables
 - [ ] Migration `phase5_baptism`: `BaptismCandidate`, `BaptismalClass`,
