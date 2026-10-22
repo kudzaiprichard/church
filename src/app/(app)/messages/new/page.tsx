@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 
 import { ledGroupIds, requireSession } from "@/lib/auth/dal";
+import { can } from "@/lib/auth/permissions";
+import { todaysCelebrants } from "@/lib/data/birthdays";
 import { composeOptions } from "@/lib/data/messages";
 import { mayCompose } from "@/lib/messages/rules";
 
@@ -15,7 +17,9 @@ export const metadata: Metadata = { title: "New message" };
  * Compose (docs/SCOPE.md §9.5). Apostles and group leaders only — members
  * reply, they do not start messages. `?group=` and `?to=` preselect a target
  * from the group page, and are honoured only when they name a target this
- * person may use.
+ * person may use. `?template=birthdays` (Apostles, `birthdays.announce`)
+ * pre-fills an all-church message naming today's celebrants, to edit before
+ * sending (SCOPE §9.15).
  */
 export default async function ComposePage(props: PageProps<"/messages/new">) {
   const user = await requireSession();
@@ -38,6 +42,22 @@ export default async function ComposePage(props: PageProps<"/messages/new">) {
   if (groupId) audience = "GROUP";
   if (recipientId) audience = "INDIVIDUAL";
 
+  let subject: string | undefined;
+  let body: string | undefined;
+  if (one(params.template) === "birthdays" && can(user, "birthdays.announce")) {
+    const celebrants = await todaysCelebrants();
+    if (celebrants.length > 0) {
+      audience = "ALL";
+      const names = celebrants.map((person) => person.name);
+      const list =
+        names.length === 1 ? names[0] : `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+      subject = names.length === 1 ? `Happy birthday, ${names[0]}!` : "Happy birthday!";
+      body = `Today we celebrate ${list}. Please join us in wishing ${
+        names.length === 1 ? "them" : "them all"
+      } a blessed birthday.`;
+    }
+  }
+
   return (
     <>
       <PageHeader
@@ -50,7 +70,10 @@ export default async function ComposePage(props: PageProps<"/messages/new">) {
         }
       />
       <Panel className="max-w-3xl">
-        <ComposeForm options={options} initial={{ audience, groupId, recipientId }} />
+        <ComposeForm
+          options={options}
+          initial={{ audience, groupId, recipientId, subject, body }}
+        />
       </Panel>
     </>
   );

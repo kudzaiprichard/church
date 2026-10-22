@@ -834,7 +834,7 @@ teaser.
       `/baptism/candidates` (+ "Enrol as member" pre-filling `/members/new`),
       `/baptism/classes`, `/baptism/classes/[id]`.
 - [ ] Profile shows own baptism and certificate status.
-- [ ] `src/lib/dates.ts` birthday helpers (Harare, 29 Feb rule); `src/lib/data/birthdays.ts`;
+- [x] `src/lib/dates.ts` birthday helpers (Harare, 29 Feb rule); `src/lib/data/birthdays.ts`;
       `/birthdays` (Today / Week / Month / All by month, search, group filter); dashboard banner
       and week card; `announceBirthdays` action.
 - [ ] `CRON_SECRET` in env; `vercel.json` crons; `/api/cron/daily` (birthdays, devotion of the

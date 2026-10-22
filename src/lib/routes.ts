@@ -33,6 +33,8 @@ export const PROTECTED_PREFIXES = [
   "/sermons",
   "/notes",
   "/devotions",
+  "/birthdays",
+  "/baptism",
   "/profile",
   "/settings",
   "/account",

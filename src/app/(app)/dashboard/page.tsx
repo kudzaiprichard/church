@@ -19,6 +19,7 @@ import { requireSession } from "@/lib/auth/dal";
 import { can } from "@/lib/auth/permissions";
 import { formatRate } from "@/lib/attendance/rules";
 import { lastEventAttendance, ownAttendance } from "@/lib/data/attendance";
+import { birthdaysThisWeek, isMyBirthday } from "@/lib/data/birthdays";
 import { todaysDevotion } from "@/lib/data/devotions";
 import { upcomingEvents } from "@/lib/data/events";
 import {
@@ -45,6 +46,8 @@ import { NavIcon } from "../_components/nav-icon";
 import { PageHeader, Panel, StatCard } from "../_components/page-parts";
 import { Progress, TypeTotals } from "../finance/finance-parts";
 import { PledgeList } from "../finance/pledges/pledge-list";
+
+import { BirthdayBanner } from "./birthday-banner";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -106,6 +109,8 @@ export default async function DashboardPage() {
     roll,
     devotion,
     sermon,
+    birthdayToday,
+    birthdays,
   ] = await Promise.all([
     myGiving(user, { year }),
     myChemaThisMonth(user),
@@ -126,6 +131,8 @@ export default async function DashboardPage() {
       : null,
     todaysDevotion(),
     latestSermon(),
+    isMyBirthday(user),
+    birthdaysThisWeek(user),
   ]);
   const myGroups = await Promise.all(
     led.map(async (group) => ({
@@ -223,6 +230,8 @@ export default async function DashboardPage() {
             : "These are your own records. Nobody else's data is visible here, and yours is visible only to you and the church office."
         }
       />
+
+      {birthdayToday && <BirthdayBanner firstName={user.firstName} year={year} />}
 
       <div className="grid gap-4 sm:grid-cols-3">
         {figures.map((figure) => (
@@ -326,6 +335,37 @@ export default async function DashboardPage() {
                 ))}
             </ul>
           )}
+        </Panel>
+      )}
+
+      {birthdays.length > 0 && (
+        <Panel
+          title="Birthdays this week"
+          action={
+            <Link href="/birthdays" className="text-primary text-xs font-semibold hover:underline">
+              All birthdays
+            </Link>
+          }
+          className="mt-4"
+        >
+          <ul className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+            {birthdays.map((person) => (
+              <li key={person.id}>
+                <span className="text-foreground font-medium">
+                  {person.firstName} {person.lastName}
+                </span>
+                <span className="text-muted-foreground">
+                  {" · "}
+                  {person.inDays === 0
+                    ? "today"
+                    : `${Number(person.monthDay.slice(3))} ${
+                        MONTHS[Number(person.monthDay.slice(0, 2)) - 1]
+                      }`}
+                  {person.groups[0] && ` · ${person.groups[0]}`}
+                </span>
+              </li>
+            ))}
+          </ul>
         </Panel>
       )}
 
