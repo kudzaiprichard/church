@@ -5,6 +5,7 @@ import {
   IdCardIcon,
   KeyRoundIcon,
   ScrollTextIcon,
+  SendIcon,
   UserIcon,
   UsersIcon,
   WalletIcon,
@@ -14,8 +15,10 @@ import Link from "next/link";
 
 import { Logo } from "@/components/brand/logo";
 import { NextGatheringLine } from "@/components/landing/next-gathering-line";
-import { ledGroupIds, ownerScope, requireSession, selfScope } from "@/lib/auth/dal";
+import { ownerScope, requireSession } from "@/lib/auth/dal";
 import { can } from "@/lib/auth/permissions";
+import { ledGroups } from "@/lib/data/groups";
+import { unreadMessageCount } from "@/lib/data/messages";
 import { lastUpdatedLine } from "@/lib/last-updated";
 import { prisma } from "@/lib/prisma";
 import { getThemes } from "@/lib/settings";
@@ -65,12 +68,14 @@ export default async function DashboardPage() {
   const seesChurchAttendance = can(user, "attendance.viewAll");
   const now = new Date();
 
-  const [contributions, attendance, unreadMessages, { current: theme }] = await Promise.all([
-    prisma.contribution.count({ where: ownerScope(user, "finance.viewAll") }),
-    prisma.attendanceRecord.count({ where: ownerScope(user, "attendance.viewAll") }),
-    prisma.messageRecipient.count({ where: { ...selfScope(user), readAt: null } }),
-    getThemes(),
-  ]);
+  const [contributions, attendance, unreadMessages, { current: theme }, myGroups] =
+    await Promise.all([
+      prisma.contribution.count({ where: ownerScope(user, "finance.viewAll") }),
+      prisma.attendanceRecord.count({ where: ownerScope(user, "attendance.viewAll") }),
+      unreadMessageCount(user),
+      getThemes(),
+      ledGroups(user),
+    ]);
 
   const figures = [
     {
@@ -87,6 +92,7 @@ export default async function DashboardPage() {
       label: "Unread messages",
       value: unreadMessages,
       icon: <InboxIcon className="size-4" aria-hidden />,
+      hint: unreadMessages > 0 ? "Messages and replies waiting in your inbox." : undefined,
     },
   ];
 
@@ -131,7 +137,10 @@ export default async function DashboardPage() {
     },
   ];
 
-  const comingSoon = railFor(user, await ledGroupIds(user))
+  const comingSoon = railFor(
+    user,
+    myGroups.map((group) => group.id),
+  )
     .flatMap((section) => section.items)
     .filter((item) => item.soon);
 
@@ -152,6 +161,43 @@ export default async function DashboardPage() {
           <StatCard key={figure.label} {...figure} />
         ))}
       </div>
+
+      {myGroups.length > 0 && (
+        <Panel
+          title={myGroups.length === 1 ? "My group" : "My groups"}
+          description="The groups you lead. Attendance and chema figures join as those modules arrive."
+          className="mt-4"
+          bodyClassName="p-0"
+        >
+          <ul className="divide-border divide-y">
+            {myGroups.map((group) => (
+              <li
+                key={group.id}
+                className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-5 py-3.5"
+              >
+                <div className="min-w-0">
+                  <Link
+                    href={`/groups/${group.id}`}
+                    className="text-foreground rounded-sm text-sm font-semibold hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+                  >
+                    {group.name}
+                  </Link>
+                  <p className="text-muted-foreground numeric mt-0.5 text-xs">
+                    {group.memberCount} active {group.memberCount === 1 ? "member" : "members"}
+                  </p>
+                </div>
+                <Link
+                  href={`/messages/new?group=${group.id}`}
+                  className="border-border hover:bg-muted inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+                >
+                  <SendIcon className="size-3.5" aria-hidden />
+                  Message the group
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      )}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
         {/* The theme of the year, on the blue the public site opens with. */}
