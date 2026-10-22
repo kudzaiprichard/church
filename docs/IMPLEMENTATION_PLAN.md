@@ -692,7 +692,7 @@ CSV.
 - [x] `/finance/church`: filters, KPIs, Recharts bar (type × group) and line (monthly), table.
 - [x] `/finance/chema`: compliance by month, leaders limited to their groups.
 - [x] `/finance/export` CSV route (`src/lib/csv.ts`, formula-injection safe, audited).
-- [ ] `/partnerships`, `/partnerships/[id]`: progress, contributor table, complete-project dialog.
+- [x] `/partnerships`, `/partnerships/[id]`: progress, contributor table, complete-project dialog.
 - [ ] `/finance/pledges`: create, progress, auto-fulfil, cancel, derived Overdue.
 - [ ] Member detail Giving + Pledges tabs; dashboard finance cards per role.
 - [ ] Tests: `expectedChema` for all 12 months; duplicate chema rejected; totals count CONFIRMED

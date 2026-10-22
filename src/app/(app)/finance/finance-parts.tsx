@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import type { ContributionStatus } from "@/generated/prisma/enums";
+import type { ContributionStatus, ProjectStatus } from "@/generated/prisma/enums";
 import type { ContributionRow } from "@/lib/data/finance";
 import { formatDateOnly } from "@/lib/dates";
 import { MONTHS, type ChemaStatus, type GridCell } from "@/lib/finance/chema";
@@ -56,6 +56,12 @@ export function PledgeBadge({ state }: { state: PledgeState }) {
   if (state === "OVERDUE") return <Badge tone="red">Overdue</Badge>;
   if (state === "CANCELLED") return <Badge tone="grey">Cancelled</Badge>;
   return <Badge tone="blue">Active</Badge>;
+}
+
+export function ProjectStatusBadge({ status }: { status: ProjectStatus }) {
+  if (status === "ACTIVE") return <Badge tone="green">Active</Badge>;
+  if (status === "COMPLETED") return <Badge tone="blue">Completed</Badge>;
+  return <Badge tone="grey">Cancelled</Badge>;
 }
 
 /** A progress bar capped at full, with the real percentage beside it. */
