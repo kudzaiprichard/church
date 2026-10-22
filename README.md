@@ -95,6 +95,14 @@ it against a Postgres service container.
 
 ## Importing the member list
 
+In the portal: **Members → Import**, for an Apostle or the Matron. Download the template, fill
+it in Excel or Google Sheets and save it as CSV, then check it — every row is read against the
+enrolment rules and nothing is saved. Import the rows that are ready, then **Send
+invitations**, which emails imported members who have not had one, in batches the mail service
+accepts. Run it again until none are left.
+
+The same is available from the command line, sharing the same code:
+
 ```bash
 npm run members:import -- --template members.csv      # a blank template with the columns
 npm run members:import -- members.csv                 # dry run: check every row, change nothing
@@ -105,8 +113,9 @@ npm run members:import -- members.csv --commit --as apostle@example.org --invite
 Dates may be `2015-03-14` or `14/03/2015`; groups are names separated by `;`. Every member needs
 a baptism date, exactly as enrolment in the portal does. The dry run writes
 `members.csv.report.csv`, listing every line as ready or skipped and why. `--commit` enrols
-all valid rows in one transaction, each with an audit entry; `--invite` then sends the
-invitations 20 at a time. The report holds names and emails, so keep it with the spreadsheet.
+all valid rows in one transaction, each with an audit entry; `--invite` then invites every
+imported member not yet invited. The report holds names and emails, so keep it with the
+spreadsheet.
 
 ## Theme
 

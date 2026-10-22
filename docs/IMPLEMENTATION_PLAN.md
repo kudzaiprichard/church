@@ -902,7 +902,9 @@ performance passes, the member import tool and the README — while the services
 ### Entry criteria
 - [x] Phase 5 ✅ and merged.
 - [ ] Q6 and Q7 answered (real project targets and real church contact details).
-      *Outstanding; the maintainer approved starting without them (see Started early).*
+      *Outstanding; the maintainer approved starting without them (see Started early). Neither
+      needs a code change: an Apostle sets each project's target on its page and the church
+      details in Settings, both audited.*
 - [ ] Existing member list available for import (spreadsheet), with baptism dates.
       *Outstanding; the import tool is built and tested against a sample file meanwhile.*
 
@@ -944,6 +946,14 @@ performance passes, the member import tool and the README — while the services
       run, the refusal without `--as`, the commit (records, groups, audit, invitation tokens)
       and the rerun, which finds everyone already on the roll. The real list has not been
       imported yet — it is an entry criterion.*
+      *Also in the portal at **Members → Import** (2026-10-22, at the maintainer's request), for
+      whoever may enrol (Apostle, Matron): download the template, check a CSV (every row, saved
+      nothing), import the ready rows in one transaction, then send invitations in batches of
+      120 at the mail service's pace. The page and the command share
+      `src/lib/members/import-run.ts`. Invitations go only to imported members never invited,
+      judged by the audit log, so a purged token never brings a second email.
+      `import-run.it.test.ts` covers the check, the all-or-nothing import and resumable
+      invitations; walked in the browser as an Apostle, the Matron and a member at 360 px.*
 - [ ] Production checklist: env vars, pooled `DATABASE_URL`, `APP_URL`, Resend domain verified,
       storage, `CRON_SECRET`, bootstrap variables removed after first sign-in.
       *Written as [`docs/PRODUCTION.md`](./PRODUCTION.md), each step with its check; ticked once
@@ -957,8 +967,12 @@ performance passes, the member import tool and the README — while the services
       *Also: first sign-in through the bootstrap variables, the integration tests, the member
       import, the current theme (it still described the first palette) and what production
       needs.*
-- [ ] Decision recorded on enforcing branch protection (public repo or GitHub Pro), per
+- [x] Decision recorded on enforcing branch protection (public repo or GitHub Pro), per
       `.docs/BRANCH_PROTECTION.md`.
+      *2026-10-22: the repository was made public, after a scan of the whole history found no
+      secrets. The maintainer chose not to create the "main protection" ruleset yet, so
+      merging still follows the documented workflow by convention. Public repos also run
+      GitHub Actions without a minutes budget.*
 - [ ] `docs(plan): complete phase 6`.
 
 ### Exit criteria
