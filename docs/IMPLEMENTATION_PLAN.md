@@ -27,7 +27,8 @@ The single place to see where the build stands. Update it as described in
 | 3 | Finance | `feat/phase-3-finance` | ✅ Done | #18 | 2026-10-22 | 2026-10-22 |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ✅ Done | #19 | 2026-10-22 | 2026-10-22 |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ✅ Done | #20 | 2026-10-22 | 2026-10-22 |
-| 6 | Hardening & launch | `feat/phase-6-hardening` | ⬜ Not started | — | — | — |
+| 6 | Hardening & launch | `feat/phase-6-hardening` | ✅ Done | #21 | 2026-10-22 | 2026-10-22 |
+| 7 | Launch: services, church data, go-live | `feat/phase-7-launch` | ⬜ Not started | — | — | — |
 
 **Legend:** ⬜ Not started · 🟡 In progress · ✅ Done · ⛔ Blocked (reason in the phase section)
 
@@ -889,49 +890,169 @@ and run `/api/cron/daily` twice: one notification → install the PWA on a phone
 
 ## Phase 6 — Hardening & launch
 
-**Status:** ⬜ Not started
+**Status:** ✅ Done
+**Started early:** on 2026-10-22 the maintainer chose to begin with the work that needs no
+external service or church data — the scope integration tests, the accessibility, 360 px and
+performance passes, the member import tool and the README — while the services and the data
+(below) are gathered. The phase is completed only once every entry criterion is met.
+**Closed:** on 2026-10-22 the maintainer asked for the phase to be completed and merged.
+Everything that needs no outside service or church data is done. What does — the church's
+details and member list, the production services, the storage checks, the phone install and
+the walk-through on production — was moved, per §4.11 and with the maintainer's agreement, to
+[Phase 7 — Launch](#phase-7--launch). The setup it needs is listed in
+[`follow-ups.md`](./follow-ups.md).
 **Branch:** `feat/phase-6-hardening`
 **Goal:** Prove the access rule holds everywhere, polish, and go live with real data.
 **Scope:** §10 (Testing, Definition of done), §11 (remaining decisions).
 **Depends on:** Phases 0–5.
 
 ### Entry criteria
-- [ ] Phase 5 ✅ and merged.
-- [ ] Q6 and Q7 answered (real project targets and real church contact details).
-- [ ] Existing member list available for import (spreadsheet), with baptism dates.
+- [x] Phase 5 ✅ and merged.
+- [x] ~~Q6 and Q7 answered (real project targets and real church contact details).~~
+      **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11).
+      *The maintainer approved starting without them (see Started early). Neither
+      needs a code change: an Apostle sets each project's target on its page and the church
+      details in Settings, both audited.*
+- [x] ~~Existing member list available for import (spreadsheet), with baptism dates.~~
+      **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11). *The import is built and tested against sample files.*
 
 ### Deliverables
-- [ ] Integration test harness against Docker Postgres (separate test database, migrated and
+- [x] Integration test harness against Docker Postgres (separate test database, migrated and
       seeded per run); CI service container for it.
-- [ ] Scope integration tests: for **every** `src/lib/data/*` function, a Member, a leader of
+      *`npm run test:integration` creates a throwaway `church_it_<random>` database on the
+      configured server, migrates and seeds it, and drops it afterwards. CI has a Postgres
+      service and an integration step, green in CI since the repository went public.*
+- [x] Scope integration tests: for **every** `src/lib/data/*` function, a Member, a leader of
       another group, the Matron, the Elder and an Apostle each receive exactly the rows
       `SCOPE.md` §4.3 allows.
-- [ ] Accessibility pass (keyboard, focus, labels, contrast in both themes) and 360 px pass on
+      *108 tests in `src/lib/data/scopes.it.test.ts`, passing locally. Breaking the group
+      content scope on purpose fails six of them. The public, cached teasers (`getPublicSermons`,
+      `getPublicDevotion`) need Next's cache and are covered by the Phase 4 demo instead.*
+- [x] Accessibility pass (keyboard, focus, labels, contrast in both themes) and 360 px pass on
       every route.
-- [ ] Performance pass: indexes confirmed against slow queries; dashboard queries batched.
-- [ ] Real church details in settings seed; placeholder copy removed.
-- [ ] Member import script (`prisma/import-members.ts`) with dry-run mode, validation report and
+      *Every route (57 with the public pages) was loaded at 360 px in headless Chrome as an
+      Apostle, the Elder, a group leader and a member, with the live DOM checked for horizontal
+      overflow, unnamed controls, unlabelled fields, duplicate ids, the h1, heading order, the
+      main landmark and target size, and 25 Tab presses checked for a visible focus mark. No
+      route overflows at 360 px. Fixed: form borders and success text were below AA in the light
+      theme (1.39:1 and 4.36:1) and translucent white text on the hero below 4.5:1, so all
+      three were raised; sign-in screens had no main landmark; member forms skipped from h1 to
+      h3; three fields marked focus by a border tint alone; two small text buttons were raised
+      to 24 px; and the portal gained a skip link. Theme tokens were checked by computed
+      contrast in both modes.*
+- [x] Performance pass: indexes confirmed against slow queries; dashboard queries batched.
+      *Against a volume database (1,500 members, 20,000 contributions, 300 events with
+      ~17,600 attendance records, 30,000 message recipients, 40,000 notifications) every data
+      read was timed for an Apostle, the Elder, a leader and a member. All but one took 1–62 ms.
+      Church finance took ~500 ms and drew every row; it now totals one lean read and pages the
+      table at 50 (150–190 ms for a year). EXPLAIN showed the heaviest SQL at 0.1–7 ms with
+      sensible plans, so no index was added. Dashboard reads were already batched.*
+- [x] ~~Real church details in settings seed; placeholder copy removed.~~ **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11).
+- [x] Member import script (`prisma/import-members.ts`) with dry-run mode, validation report and
       audit entries; invites sent in batches.
-- [ ] Production checklist: env vars, pooled `DATABASE_URL`, `APP_URL`, Resend domain verified,
+      *`npm run members:import`. Tested on a sample file against a verify database: the dry
+      run, the refusal without `--as`, the commit (records, groups, audit, invitation tokens)
+      and the rerun, which finds everyone already on the roll. The real list has not been
+      imported yet — it is an entry criterion.*
+      *Also in the portal at **Members → Import** (2026-10-22, at the maintainer's request), for
+      whoever may enrol (Apostle, Matron): download the template, check a CSV (every row, saved
+      nothing), import the ready rows in one transaction, then send invitations in batches of
+      120 at the mail service's pace. The page and the command share
+      `src/lib/members/import-run.ts`. Invitations go only to imported members never invited,
+      judged by the audit log, so a purged token never brings a second email.
+      `import-run.it.test.ts` covers the check, the all-or-nothing import and resumable
+      invitations; walked in the browser as an Apostle, the Matron and a member at 360 px.*
+      *Excel workbooks too (2026-10-22, at the maintainer's request), in both: the first sheet of
+      an `.xlsx` is read with `read-excel-file` — in the browser on the portal, so the server
+      only ever receives text — and turned into the same CSV text, so a workbook and a CSV meet
+      one set of rules. Date cells become dates and number cells text (`cellText`, tested). A
+      generated workbook with date cells, a phone as a number and a comma in an address was
+      checked and imported through both the page and the command, and every value stored
+      exactly; `.xls` and corrupt files are refused with what to do.*
+- [x] Production checklist: env vars, pooled `DATABASE_URL`, `APP_URL`, Resend domain verified,
       storage, `CRON_SECRET`, bootstrap variables removed after first sign-in.
-- [ ] Cloudflare R2 set up (bucket, public URL, CORS for the portal's origins, read/write token,
+      *Written as [`docs/PRODUCTION.md`](./PRODUCTION.md), each step with its check. Working
+      through it against the production project moved to Phase 7 on 2026-10-22 (§4.11).*
+- [x] ~~Cloudflare R2 set up (bucket, public URL, CORS for the portal's origins, read/write token,
       the five `R2_*` variables locally and on Vercel), then the storage steps moved from Phase
       4: upload a sermon's audio and handout and a profile photo, play the audio, replace and
-      remove files, and delete a sermon. *(Moved from Phase 4 on 2026-10-22.)*
-- [ ] `README.md` updated (stack, scripts incl. `db:seed`/`test`, roles, links to `SCOPE.md` and
+      remove files, and delete a sermon.~~ *(Moved from Phase 4 on 2026-10-22.)*
+      **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11).
+- [x] `README.md` updated (stack, scripts incl. `db:seed`/`test`, roles, links to `SCOPE.md` and
       this plan).
-- [ ] Decision recorded on enforcing branch protection (public repo or GitHub Pro), per
+      *Also: first sign-in through the bootstrap variables, the integration tests, the member
+      import, the current theme (it still described the first palette) and what production
+      needs.*
+- [x] Decision recorded on enforcing branch protection (public repo or GitHub Pro), per
       `.docs/BRANCH_PROTECTION.md`.
-- [ ] `docs(plan): complete phase 6`.
+      *2026-10-22: the repository was made public, after a scan of the whole history found no
+      secrets. The maintainer chose not to create the "main protection" ruleset yet, so
+      merging still follows the documented workflow by convention. Public repos also run
+      GitHub Actions without a minutes budget.*
+- [x] `docs(plan): complete phase 6`.
 
 ### Exit criteria
-- [ ] All scope integration tests pass in CI.
-- [ ] Deleting a sermon removes its audio from storage — its URL stops resolving. *(Moved from
-      Phase 4 on 2026-10-22.)*
+- [x] All scope integration tests pass in CI.
+      *[Run 39828105085](https://github.com/kudzaiprichard/church/actions/runs/39828105085) on
+      `a9690c5`: typecheck, lint, unit, integration and build all green. The first CI run of
+      them had found a flaky assertion — a random id containing "4000" — fixed in `a9690c5`.*
+- [x] ~~Deleting a sermon removes its audio from storage — its URL stops resolving.~~ *(Moved
+      from Phase 4 on 2026-10-22.)* **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11).
+- [x] ~~The portal installs from the browser on an Android phone and an iPhone and opens on the
+      dashboard.~~ *(Moved from Phase 5 on 2026-10-22.)* **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11).
+- [x] ~~Production deployment serves real data; the leadership walk-through (one session per role)
+      completes without defects.~~ **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11).
+- [x] Every earlier row on the Status board is ✅.
+
+### Demo script
+Walked locally on 2026-10-22 instead of on production, which does not exist yet: the scope
+tests for every office, the 360 px and keyboard pass on every route as four offices, and the
+member import (CSV and Excel) as an Apostle, the Matron and a member. The leadership
+walk-through on production moved to Phase 7 with the exit criterion above.
+
+---
+
+## Phase 7 — Launch
+
+**Status:** ⬜ Not started
+**Branch:** `feat/phase-7-launch`
+**Goal:** Stand up the production services, bring in the church's real data, and go live.
+**Scope:** §10 (Definition of done), §11 Q6–Q7. Everything here was moved from Phase 6 on
+2026-10-22 (§4.11); the step-by-step setup is in [`PRODUCTION.md`](./PRODUCTION.md) and the
+full list of what is open in [`follow-ups.md`](./follow-ups.md).
+**Depends on:** Phase 6.
+
+### Entry criteria
+- [x] Phase 6 ✅ and merged.
+- [ ] Q6 and Q7 answered (real project targets and real church contact details).
+      *Moved from Phase 6. Entered in the portal — no code change.*
+- [ ] Existing member list available for import (spreadsheet), with baptism dates.
+      *Moved from Phase 6.*
+- [ ] Next.js upgraded past the published advisories against 16.3.0 (16.4.2 or later), with the
+      full verification green. *(Added 2026-10-22; see `follow-ups.md` §1.)*
+
+### Deliverables
+- [ ] Production database (pooled `DATABASE_URL`, backups on), migrated and seeded.
+- [ ] The production checklist ([`PRODUCTION.md`](./PRODUCTION.md)) worked through: env vars,
+      `APP_URL` on https, Resend domain verified, storage, `CRON_SECRET`, bootstrap variables
+      removed after first sign-in. *Moved from Phase 6.*
+- [ ] Cloudflare R2 set up (bucket, public URL, CORS for the portal's origins, read/write token,
+      the five `R2_*` variables locally and on Vercel), then the storage steps: upload a
+      sermon's audio and handout and a profile photo, play the audio, replace and remove files,
+      and delete a sermon. *Moved from Phase 6 (originally Phase 4).*
+- [ ] Real church details in Settings; placeholder copy gone from the public site. *Moved from
+      Phase 6.*
+- [ ] The member list imported (check reviewed with leadership, import, invitations sent) and
+      group leaders assigned.
+- [ ] `docs(plan): complete phase 7`.
+
+### Exit criteria
+- [ ] Deleting a sermon removes its audio from storage — its URL stops resolving. *Moved from
+      Phase 6 (originally Phase 4).*
 - [ ] The portal installs from the browser on an Android phone and an iPhone and opens on the
-      dashboard. *(Moved from Phase 5 on 2026-10-22.)*
+      dashboard. *Moved from Phase 6 (originally Phase 5).*
 - [ ] Production deployment serves real data; the leadership walk-through (one session per role)
-      completes without defects.
+      completes without defects. *Moved from Phase 6.*
 - [ ] Every earlier row on the Status board is ✅.
 
 ### Demo script

@@ -1,4 +1,4 @@
-import { SearchIcon, UserPlusIcon, UsersIcon } from "lucide-react";
+import { SearchIcon, UploadIcon, UserPlusIcon, UsersIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import type { ReactNode } from "react";
@@ -94,13 +94,22 @@ export default async function MembersPage(props: PageProps<"/members">) {
         }
         actions={
           abilities.enroll && (
-            <Link
-              href="/members/new"
-              className="action-solid inline-flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
-            >
-              <UserPlusIcon className="size-4" aria-hidden />
-              Enrol a member
-            </Link>
+            <div className="flex flex-wrap gap-2">
+              <Link
+                href="/members/import"
+                className="border-border bg-card hover:bg-muted inline-flex h-9 items-center gap-2 rounded-lg border px-3.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+              >
+                <UploadIcon className="size-4" aria-hidden />
+                Import
+              </Link>
+              <Link
+                href="/members/new"
+                className="action-solid inline-flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
+              >
+                <UserPlusIcon className="size-4" aria-hidden />
+                Enrol a member
+              </Link>
+            </div>
           )
         }
       />

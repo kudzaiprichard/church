@@ -140,7 +140,7 @@ export default async function AboutPage() {
                 <figcaption className="text-brass relative mt-3 text-xs font-semibold tracking-[0.16em] uppercase">
                   {current.scriptureRef}
                 </figcaption>
-                <p className="relative mt-6 text-xs text-white/45">
+                <p className="relative mt-6 text-xs text-white/75">
                   {lastUpdatedLine(current.updatedBy, current.updatedAt)}
                 </p>
               </figure>

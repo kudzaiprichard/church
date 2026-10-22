@@ -102,6 +102,13 @@ export function AppShell({
 
   return (
     <div className="bg-canvas relative h-svh w-full overflow-hidden">
+      {/* First stop for the keyboard: past the rail, panel and top bar. */}
+      <a
+        href="#content"
+        className="bg-primary text-primary-foreground sr-only z-50 rounded-lg text-sm font-semibold focus:not-sr-only focus:absolute focus:px-4 focus:py-2 focus:top-3 focus:left-3 focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
+      >
+        Skip to content
+      </a>
       <div className="flex h-full">
         {/* Zone 1 — the rail. Hidden below md, where the drawer takes over. */}
         <div className="hidden h-full md:block">
@@ -144,7 +151,7 @@ export function AppShell({
             onOpenMobileMenu={() => setDrawerOpen(true)}
           />
 
-          <main className="min-h-0 min-w-0 flex-1">
+          <main id="content" tabIndex={-1} className="min-h-0 min-w-0 flex-1 outline-none">
             <ScrollArea className="h-full w-full">
               <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">{children}</div>
             </ScrollArea>

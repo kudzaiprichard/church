@@ -29,7 +29,7 @@ const columnsFor = (email: string | null) => [
 ];
 
 const linkClass =
-  "rounded-sm text-sm text-white/65 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ink)] focus-visible:outline-none";
+  "rounded-sm text-sm text-white/75 transition-colors hover:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--ink)] focus-visible:outline-none";
 
 /**
  * The KMMI footer: the crest and name, two columns of links, and the bulletin.
@@ -57,7 +57,7 @@ export async function Closing() {
               </div>
             </div>
             {church.tagline && (
-              <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/60">
+              <p className="mt-5 max-w-xs text-sm leading-relaxed text-white/75">
                 {church.tagline}
               </p>
             )}
@@ -85,12 +85,12 @@ export async function Closing() {
             <h2 className="text-brass text-xs font-semibold tracking-[0.16em] uppercase">
               {bulletin.heading}
             </h2>
-            <p className="mt-4 mb-4 text-sm leading-relaxed text-white/60">{bulletin.blurb}</p>
+            <p className="mt-4 mb-4 text-sm leading-relaxed text-white/75">{bulletin.blurb}</p>
             <BulletinForm />
           </div>
         </div>
 
-        <div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-14 flex flex-col gap-3 border-t border-white/10 pt-6 text-xs text-white/75 sm:flex-row sm:items-center sm:justify-between">
           <p>
             &copy; {new Date().getFullYear()} {church.name}
           </p>

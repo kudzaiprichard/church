@@ -20,7 +20,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
         <ThemeToggle />
       </div>
 
-      <div className="relative w-full max-w-sm">
+      <main className="relative w-full max-w-sm">
         <Link
           href="/"
           className="focus-visible:ring-ring mx-auto mb-6 flex w-fit items-center gap-3 rounded-md focus-visible:ring-2 focus-visible:outline-none"
@@ -37,7 +37,7 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
         </Link>
 
         <div className="bg-card border-border rounded-2xl border p-6 sm:p-8">{children}</div>
-      </div>
+      </main>
     </div>
   );
 }

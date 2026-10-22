@@ -50,7 +50,7 @@ export function MemberFields({
 }) {
   return (
     <div className="grid gap-6">
-      <FormSection title="Personal details">
+      <FormSection level={2} title="Personal details">
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField
             id="firstName"
@@ -117,6 +117,7 @@ export function MemberFields({
       </FormSection>
 
       <FormSection
+        level={2}
         title="Church"
         description="Which connect groups they belong to. A member may be in more than one."
       >
@@ -151,6 +152,7 @@ export function MemberFields({
       </FormSection>
 
       <FormSection
+        level={2}
         title="Baptism"
         description={
           baptismRequired

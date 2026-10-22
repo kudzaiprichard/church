@@ -8,8 +8,8 @@ import { defineConfig } from "vitest/config";
  *
  * Node environment, not jsdom: nothing under test renders, and Next's own
  * guidance is that async Server Components belong to end-to-end tests rather
- * than Vitest. Integration tests against Postgres arrive in Phase 6 with their
- * own config.
+ * than Vitest. Integration tests against Postgres have their own config,
+ * vitest.integration.config.ts.
  *
  * `server-only` throws on import outside the react-server condition, which is
  * exactly what it is for in the app and exactly wrong here, so it resolves to
@@ -23,5 +23,7 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
+    // Integration tests need Postgres; they run with `npm run test:integration`.
+    exclude: ["src/**/*.it.test.ts", "node_modules/**"],
   },
 });

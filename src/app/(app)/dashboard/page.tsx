@@ -401,7 +401,7 @@ export default async function DashboardPage() {
               <p className="text-brass mt-2 text-xs font-semibold tracking-[0.14em] uppercase">
                 {theme.scriptureRef}
               </p>
-              <p className="mt-4 text-xs text-white/50">
+              <p className="mt-4 text-xs text-white/75">
                 {lastUpdatedLine(theme.updatedBy, theme.updatedAt)}
               </p>
             </div>
