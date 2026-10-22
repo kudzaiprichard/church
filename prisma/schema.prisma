@@ -67,28 +67,31 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  sessions         Session[]
-  authTokens       AuthToken[]
-  auditActions     AuditLog[]         @relation("AuditActor")
-  auditSubjects    AuditLog[]         @relation("AuditTarget")
-  groupMemberships GroupMembership[]
-  ledGroups        Group[]            @relation("GroupLeader")
-  baptismalRecord  BaptismalRecord?
-  settingsUpdates  ChurchSettings[]   @relation("SettingsUpdater")
-  themeUpdates     ThemeOfYear[]      @relation("ThemeUpdater")
-  sentMessages     Message[]          @relation("MessageSender")
-  receivedMessages MessageRecipient[]
-  repliesWritten   MessageReply[]     @relation("ReplyAuthor")
-  replyThreads     MessageReply[]     @relation("ReplyThread")
-  attendance       AttendanceRecord[]
-  attendanceMarked AttendanceRecord[] @relation("AttendanceMarker")
-  contributions    Contribution[]
-  partnerships     Partnership[]
-  prayerRequests   PrayerRequest[]
-  sermonNotes      SermonNote[]
-  notifications    Notification[]
-  createdEvents    Event[]            @relation("EventCreator")
-  uploadedSermons  Sermon[]           @relation("SermonUploader")
+  sessions              Session[]
+  authTokens            AuthToken[]
+  auditActions          AuditLog[]           @relation("AuditActor")
+  auditSubjects         AuditLog[]           @relation("AuditTarget")
+  groupMemberships      GroupMembership[]
+  ledGroups             Group[]              @relation("GroupLeader")
+  baptismalRecord       BaptismalRecord?
+  settingsUpdates       ChurchSettings[]     @relation("SettingsUpdater")
+  themeUpdates          ThemeOfYear[]        @relation("ThemeUpdater")
+  sentMessages          Message[]            @relation("MessageSender")
+  receivedMessages      MessageRecipient[]
+  repliesWritten        MessageReply[]       @relation("ReplyAuthor")
+  replyThreads          MessageReply[]       @relation("ReplyThread")
+  attendance            AttendanceRecord[]
+  attendanceMarked      AttendanceRecord[]   @relation("AttendanceMarker")
+  contributions         Contribution[]
+  contributionsRecorded Contribution[]       @relation("ContributionRecorder")
+  contributionsReviewed Contribution[]       @relation("ContributionReviewer")
+  pledges               Pledge[]
+  createdProjects       PartnershipProject[] @relation("ProjectCreator")
+  prayerRequests        PrayerRequest[]
+  sermonNotes           SermonNote[]
+  notifications         Notification[]
+  createdEvents         Event[]              @relation("EventCreator")
+  uploadedSermons       Sermon[]             @relation("SermonUploader")
 
   @@index([role])
   @@index([isActive])
@@ -182,6 +185,14 @@ enum AuditAction {
   GROUP_LEADER_CHANGED
   EVENT_DELETED
   PRAYER_REQUEST_REMOVED
+  CONTRIBUTION_CONFIRMED
+  CONTRIBUTION_REJECTED
+  CONTRIBUTION_RECORDED_FOR_MEMBER
+  PROJECT_CREATED
+  PROJECT_UPDATED
+  PROJECT_COMPLETED
+  PLEDGE_CANCELLED
+  FINANCE_EXPORTED
 }
 
 /// Who did what to whom.
@@ -415,69 +426,123 @@ model AttendanceRecord {
 }
 
 // ---------------------------------------------------------------------------
-// Module 8 — Tithes & Offerings
+// Modules 8 & 9 — Finance: contributions, partnership projects and pledges
+// (docs/SCOPE.md §9.9–9.10). Money is Decimal(12,2) in USD. Amounts raised and
+// paid are always computed from CONFIRMED contributions, never stored.
 // ---------------------------------------------------------------------------
 
 enum ContributionType {
+  CHEMA
+  WELFARE
   TITHE
-  OFFERING
+  PARTNERSHIP
 }
 
+enum ContributionStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+/// One payment by one member. Members log their own (PENDING until an Apostle
+/// or the Elder confirms, SCOPE §11 Q2); officers record cash handed in
+/// (CONFIRMED). A confirmed row is never edited or deleted: a mistake is
+/// corrected by an officer's reversing entry — a negative amount pointing at
+/// the row it reverses through `reversalOfId`.
+///
+/// Enforced in the migration's raw SQL, not expressible here:
+///   * one non-rejected chema per member per month (a partial unique index
+///     that ignores reversals)
+///   * CHEMA rows carry a year and a 1–12 month, others carry neither; a
+///     PARTNERSHIP row names a project
 model Contribution {
-  id        String           @id @default(cuid())
-  userId    String
-  type      ContributionType
-  amount    Decimal          @db.Decimal(12, 2)
-  currency  String           @default("USD")
-  note      String?
-  givenAt   DateTime         @default(now())
-  createdAt DateTime         @default(now())
+  id           String             @id @default(cuid())
+  userId       String
+  type         ContributionType
+  amount       Decimal            @db.Decimal(12, 2)
+  currency     String             @default("USD")
+  paidAt       DateTime           @db.Date
+  note         String?
+  chemaYear    Int?
+  chemaMonth   Int?
+  projectId    String?
+  pledgeId     String?
+  status       ContributionStatus @default(PENDING)
+  recordedById String
+  reviewedById String?
+  reviewedAt   DateTime?
+  rejectReason String?
+  /// Set on a reversing entry: the confirmed contribution it cancels out.
+  reversalOfId String?            @unique
+  createdAt    DateTime           @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user       User                @relation(fields: [userId], references: [id], onDelete: Restrict)
+  project    PartnershipProject? @relation(fields: [projectId], references: [id], onDelete: Restrict)
+  pledge     Pledge?             @relation(fields: [pledgeId], references: [id], onDelete: SetNull)
+  recordedBy User                @relation("ContributionRecorder", fields: [recordedById], references: [id])
+  reviewedBy User?               @relation("ContributionReviewer", fields: [reviewedById], references: [id])
+  reversalOf Contribution?       @relation("Reversal", fields: [reversalOfId], references: [id], onDelete: Restrict)
+  reversedBy Contribution?       @relation("Reversal")
 
-  @@index([userId, givenAt])
-  @@index([type])
+  @@index([userId, paidAt])
+  @@index([type, status, paidAt])
+  @@index([chemaYear, chemaMonth])
+  @@index([projectId])
+  @@index([pledgeId])
 }
 
-// ---------------------------------------------------------------------------
-// Module 9 — Partnerships & Promises
-// ---------------------------------------------------------------------------
-
-enum PartnershipStatus {
+enum ProjectStatus {
   ACTIVE
-  FULFILLED
-  LAPSED
+  COMPLETED
   CANCELLED
 }
 
-model Partnership {
-  id            String            @id @default(cuid())
-  userId        String
-  title         String
-  pledgedAmount Decimal           @db.Decimal(12, 2)
-  currency      String            @default("USD")
-  status        PartnershipStatus @default(ACTIVE)
-  startedAt     DateTime          @default(now())
-  dueAt         DateTime?
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+/// A church fundraising goal. Progress is confirmed partnership giving ÷ target.
+model PartnershipProject {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  description  String?
+  targetAmount Decimal       @db.Decimal(12, 2)
+  startDate    DateTime      @db.Date
+  endDate      DateTime?     @db.Date
+  status       ProjectStatus @default(ACTIVE)
+  completedAt  DateTime?
+  /// Null for the projects the seed creates before any account exists.
+  createdById  String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
-  user     User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  payments PartnershipPayment[]
-
-  @@index([userId, status])
+  contributions Contribution[]
+  pledges       Pledge[]
+  createdBy     User?          @relation("ProjectCreator", fields: [createdById], references: [id], onDelete: SetNull)
 }
 
-model PartnershipPayment {
-  id            String   @id @default(cuid())
-  partnershipId String
-  amount        Decimal  @db.Decimal(12, 2)
-  paidAt        DateTime @default(now())
-  note          String?
+/// "Overdue" is derived (active, past due, not fully paid), never stored.
+enum PledgeStatus {
+  ACTIVE
+  FULFILLED
+  CANCELLED
+}
 
-  partnership Partnership @relation(fields: [partnershipId], references: [id], onDelete: Cascade)
+/// A member's promise to give a total by a date. Paid = confirmed
+/// contributions linked to it; FULFILLED is set when paid reaches the total.
+model Pledge {
+  id          String       @id @default(cuid())
+  userId      String
+  projectId   String?
+  description String
+  totalAmount Decimal      @db.Decimal(12, 2)
+  dueDate     DateTime     @db.Date
+  status      PledgeStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
-  @@index([partnershipId])
+  user          User                @relation(fields: [userId], references: [id], onDelete: Restrict)
+  project       PartnershipProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  contributions Contribution[]
+
+  @@index([userId, status])
+  @@index([dueDate, status])
 }
 
 // ---------------------------------------------------------------------------

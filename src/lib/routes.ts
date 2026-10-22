@@ -28,6 +28,8 @@ export const PROTECTED_PREFIXES = [
   "/events",
   "/attendance",
   "/prayer",
+  "/finance",
+  "/partnerships",
   "/profile",
   "/settings",
   "/account",

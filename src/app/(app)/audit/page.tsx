@@ -37,6 +37,14 @@ const DESCRIPTIONS: Record<AuditAction, { label: string; weight: "high" | "norma
   GROUP_DELETED: { label: "Group deleted", weight: "normal" },
   EVENT_DELETED: { label: "Event deleted", weight: "normal" },
   PRAYER_REQUEST_REMOVED: { label: "Prayer request removed", weight: "normal" },
+  CONTRIBUTION_CONFIRMED: { label: "Payment confirmed", weight: "high" },
+  CONTRIBUTION_REJECTED: { label: "Payment rejected", weight: "high" },
+  CONTRIBUTION_RECORDED_FOR_MEMBER: { label: "Payment recorded for a member", weight: "high" },
+  FINANCE_EXPORTED: { label: "Finance exported", weight: "high" },
+  PROJECT_CREATED: { label: "Partnership project created", weight: "normal" },
+  PROJECT_UPDATED: { label: "Partnership project edited", weight: "normal" },
+  PROJECT_COMPLETED: { label: "Partnership project completed", weight: "normal" },
+  PLEDGE_CANCELLED: { label: "Pledge cancelled by an officer", weight: "normal" },
 };
 
 /**

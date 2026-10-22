@@ -2,7 +2,8 @@
  * Seed a database with the church's starting content: `npm run db:seed`.
  *
  * Idempotent. Every row is an upsert keyed on something natural (the settings
- * row's fixed id, a theme's year, a platform, a group's slug), so running it
+ * row's fixed id, a theme's year, a platform, a group's slug, a project's
+ * name), so running it
  * twice changes nothing, and running it against a live database only ever
  * *creates what is missing* — it never overwrites what leadership has since
  * edited in the portal. That is why the `update` branches below are empty.
@@ -17,7 +18,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 
 import { PrismaClient } from "../src/generated/prisma/client";
 
-import { churchSettings, groups, socialLinks, themes } from "./seed-data";
+import { churchSettings, groups, projects, socialLinks, themes } from "./seed-data";
 
 const prisma = new PrismaClient({
   adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
@@ -46,15 +47,24 @@ async function main() {
     await prisma.group.upsert({ where: { slug: group.slug }, create: group, update: {} });
   }
 
-  const [settings, themeCount, linkCount, groupCount] = await Promise.all([
+  for (const project of projects) {
+    await prisma.partnershipProject.upsert({
+      where: { name: project.name },
+      create: project,
+      update: {},
+    });
+  }
+
+  const [settings, themeCount, linkCount, groupCount, projectCount] = await Promise.all([
     prisma.churchSettings.count(),
     prisma.themeOfYear.count(),
     prisma.socialLink.count(),
     prisma.group.count(),
+    prisma.partnershipProject.count(),
   ]);
 
   console.info(
-    `[seed] church settings: ${settings}, themes: ${themeCount}, social links: ${linkCount}, groups: ${groupCount}`,
+    `[seed] church settings: ${settings}, themes: ${themeCount}, social links: ${linkCount}, groups: ${groupCount}, projects: ${projectCount}`,
   );
 }
 
