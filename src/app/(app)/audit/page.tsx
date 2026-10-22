@@ -47,6 +47,8 @@ const DESCRIPTIONS: Record<AuditAction, { label: string; weight: "high" | "norma
   PLEDGE_CANCELLED: { label: "Pledge cancelled by an officer", weight: "normal" },
   SERMON_DELETED: { label: "Sermon deleted", weight: "normal" },
   DEVOTION_DELETED: { label: "Devotion deleted", weight: "normal" },
+  BAPTISM_RECORD_UPDATED: { label: "Baptismal record edited", weight: "normal" },
+  CERTIFICATE_ISSUED: { label: "Baptism certificate issued", weight: "high" },
 };
 
 /**

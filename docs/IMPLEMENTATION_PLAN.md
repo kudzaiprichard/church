@@ -26,7 +26,7 @@ The single place to see where the build stands. Update it as described in
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ✅ Done | #17 | 2026-10-22 | 2026-10-22 |
 | 3 | Finance | `feat/phase-3-finance` | ✅ Done | #18 | 2026-10-22 | 2026-10-22 |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ✅ Done | #19 | 2026-10-22 | 2026-10-22 |
-| 5 | Records, celebration & automation | `feat/phase-5-records-automation` | 🟡 In progress | — | 2026-10-22 | — |
+| 5 | Records, celebration & automation | `feat/phase-5-records-automation` | 🟡 In progress | #20 | 2026-10-22 | — |
 | 6 | Hardening & launch | `feat/phase-6-hardening` | ⬜ Not started | — | — | — |
 
 **Legend:** ⬜ Not started · 🟡 In progress · ✅ Done · ⛔ Blocked (reason in the phase section)
@@ -827,7 +827,7 @@ teaser.
       candidates are separate, non-user records.*
 
 ### Deliverables
-- [ ] Migration `phase5_baptism`: `BaptismCandidate`, `BaptismalClass`,
+- [x] Migration `phase5_baptism`: `BaptismCandidate`, `BaptismalClass`,
       `BaptismalClassEnrollment`; certificate fields on `BaptismalRecord`.
 - [ ] `src/lib/data/baptism.ts`; `/baptism` records (filters), `/baptism/[id]` + Issue certificate
       (numbering, audit, notify), `/baptism/[id]/certificate` printable page,
