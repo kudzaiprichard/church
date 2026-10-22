@@ -23,7 +23,7 @@ The single place to see where the build stands. Update it as described in
 | — | Pre-flight | `docs/implementation-plan` | ✅ Done | #13, #14 | 2026-10-21 | 2026-10-21 |
 | 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | ✅ Done | #15 | 2026-10-21 | 2026-10-21 |
 | 1 | Groups & communication | `feat/phase-1-groups-messaging` | ✅ Done | #16 | 2026-10-22 | 2026-10-22 |
-| 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | 🟡 In progress | — | 2026-10-22 | — |
+| 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | 🟡 In progress | #17 | 2026-10-22 | — |
 | 3 | Finance | `feat/phase-3-finance` | ⬜ Not started | — | — | — |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ⬜ Not started | — | — | — |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ⬜ Not started | — | — | — |
@@ -617,7 +617,7 @@ Apostle assigns Mai Madzana to Kingdom Total Women → she messages her group �
       *Default "No" accepted by the maintainer on 2026-10-22: only Apostles create events.*
 
 ### Deliverables
-- [ ] Migration `phase2_events`: `Event.groupId` + `reminderSentAt` (drop `EventScope`,
+- [x] Migration `phase2_events`: `Event.groupId` + `reminderSentAt` (drop `EventScope`,
       `EventAudience`); `AttendanceRecord` with `markedById`, `@@unique([userId, eventId])`,
       `PRESENT | ABSENT` (drop `serviceName`, `EXCUSED`); `PrayerRequest` index.
 - [ ] `src/lib/data/events.ts`; `/events` (calendar + list views, month param), `/events/new`,
