@@ -918,8 +918,18 @@ performance passes, the member import tool and the README — while the services
       *108 tests in `src/lib/data/scopes.it.test.ts`, passing locally. Breaking the group
       content scope on purpose fails six of them. The public, cached teasers (`getPublicSermons`,
       `getPublicDevotion`) need Next's cache and are covered by the Phase 4 demo instead.*
-- [ ] Accessibility pass (keyboard, focus, labels, contrast in both themes) and 360 px pass on
+- [x] Accessibility pass (keyboard, focus, labels, contrast in both themes) and 360 px pass on
       every route.
+      *Every route (57 with the public pages) was loaded at 360 px in headless Chrome as an
+      Apostle, the Elder, a group leader and a member, with the live DOM checked for horizontal
+      overflow, unnamed controls, unlabelled fields, duplicate ids, the h1, heading order, the
+      main landmark and target size, and 25 Tab presses checked for a visible focus mark. No
+      route overflows at 360 px. Fixed: form borders and success text were below AA in the light
+      theme (1.39:1 and 4.36:1) and translucent white text on the hero below 4.5:1, so all
+      three were raised; sign-in screens had no main landmark; member forms skipped from h1 to
+      h3; three fields marked focus by a border tint alone; two small text buttons were raised
+      to 24 px; and the portal gained a skip link. Theme tokens were checked by computed
+      contrast in both modes.*
 - [x] Performance pass: indexes confirmed against slow queries; dashboard queries batched.
       *Against a volume database (1,500 members, 20,000 contributions, 300 events with
       ~17,600 attendance records, 30,000 message recipients, 40,000 notifications) every data
@@ -940,8 +950,11 @@ performance passes, the member import tool and the README — while the services
       the five `R2_*` variables locally and on Vercel), then the storage steps moved from Phase
       4: upload a sermon's audio and handout and a profile photo, play the audio, replace and
       remove files, and delete a sermon. *(Moved from Phase 4 on 2026-10-22.)*
-- [ ] `README.md` updated (stack, scripts incl. `db:seed`/`test`, roles, links to `SCOPE.md` and
+- [x] `README.md` updated (stack, scripts incl. `db:seed`/`test`, roles, links to `SCOPE.md` and
       this plan).
+      *Also: first sign-in through the bootstrap variables, the integration tests, the member
+      import, the current theme (it still described the first palette) and what production
+      needs.*
 - [ ] Decision recorded on enforcing branch protection (public repo or GitHub Pro), per
       `.docs/BRANCH_PROTECTION.md`.
 - [ ] `docs(plan): complete phase 6`.

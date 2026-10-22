@@ -1,98 +1,144 @@
 # Church Management System
 
-Membership, groups, giving and communication for the local church. Requirements live in
-[`docs/SCOPE.md`](./docs/SCOPE.md); the phased build and its git rules are in
+The member portal of Kingdom Manifest Ministries International: membership, connect groups,
+events and attendance, giving, partnerships, sermons, devotions, prayer, baptism records and
+messages, plus the church's public site. Requirements live in [`docs/SCOPE.md`](./docs/SCOPE.md);
+the phased build, its status board and its git rules are in
 [`docs/IMPLEMENTATION_PLAN.md`](./docs/IMPLEMENTATION_PLAN.md).
 
 ## Stack
 
-| Concern      | Choice                                              |
-| ------------ | --------------------------------------------------- |
-| Framework    | Next.js 16 (App Router, TypeScript, `src/`)         |
-| UI           | Tailwind CSS v4 + shadcn/ui (Radix, `nova` preset)  |
-| Database     | PostgreSQL via Prisma 7 (`@prisma/adapter-pg`)      |
-| Email        | Resend                                               |
-| Validation   | Zod + React Hook Form                                |
+| Concern      | Choice                                                          |
+| ------------ | --------------------------------------------------------------- |
+| Framework    | Next.js 16 (App Router, Server Actions, TypeScript, `src/`)     |
+| UI           | Tailwind CSS v4 + shadcn/ui (Radix), Recharts for charts        |
+| Database     | PostgreSQL via Prisma 7 (`@prisma/adapter-pg`)                  |
+| Email        | Resend (optional locally — mail goes to the server log)         |
+| File storage | Cloudflare R2, S3-compatible (optional — uploads switch off)    |
+| Scheduling   | Vercel Cron, one daily job (`vercel.json`)                      |
+| Validation   | Zod + React Hook Form                                           |
+| Tests        | Vitest — unit tests, and integration tests against Postgres     |
 
 ## Getting started
 
-1. Copy the environment template and fill it in:
+1. Install, and copy the environment template:
 
    ```bash
+   npm install
    cp .env.example .env
    ```
 
-   - `DATABASE_URL` — a reachable Postgres instance. For a local one in Docker, run
-     `docker compose up -d` and use
-     `postgresql://church:church@localhost:5433/church?schema=public` (host port 5433, so it
-     does not clash with a natively installed Postgres).
-   - `RESEND_API_KEY` / `EMAIL_FROM` — from https://resend.com. `onboarding@resend.dev` works for
-     testing before a domain is verified.
+   Every variable is explained in [`.env.example`](./.env.example) and validated at boot by
+   `src/lib/env.ts`. Locally only `DATABASE_URL` is required. For a Postgres in Docker, run
+   `docker compose up -d` and use
+   `postgresql://church:church@localhost:5433/church?schema=public` (host port 5433, so it does
+   not clash with a natively installed Postgres).
 
-2. Create the schema:
+2. Create the schema and the church's starting content (settings, theme of the year, social
+   links, connect groups, partnership projects). The seed is idempotent and creates no people:
 
    ```bash
-   npm run db:migrate
+   npm run db:deploy
+   npm run db:seed
    ```
 
-3. Run the app:
+3. Set `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` (12+ characters), then run the
+   app. On first start, with no Apostle in the database, that account is created; it must change
+   its password at first sign-in. Remove the two variables afterwards.
 
    ```bash
    npm run dev
    ```
 
+4. Sign in at http://localhost:3000/login and enrol everyone else from **Members**, or import
+   the existing roll (below). Without `RESEND_API_KEY`, invitation links appear in the server log.
+
+## Roles
+
+Four offices, each with a fixed set of powers (`src/lib/auth/permissions.ts`, from SCOPE §4.2):
+
+| Office  | Can                                                                                 |
+| ------- | ----------------------------------------------------------------------------------- |
+| Apostle | Everything: members and roles, groups, events, messages to all, finance, sermons, devotions, settings, audit log |
+| Matron  | Enrol members; manage baptism candidates, classes and records                      |
+| Elder   | See, confirm and export all church finance                                          |
+| Member  | Their own profile, giving, pledges, attendance, notes and prayer; content sent to them or their groups |
+
+**Group leader** is not an office but an assignment on a group: a leader sees and manages their
+own group's members, attendance and messages, and nothing of any other group.
+
+The rule every read follows: leadership sees what its office covers; everyone else sees only
+their own data plus what is explicitly addressed to them. Each function in `src/lib/data/` scopes
+its query through the Data Access Layer (`src/lib/auth/dal.ts`), and
+`src/lib/data/scopes.it.test.ts` proves it for every office against a real database.
+
 ## Scripts
 
-| Script                | Purpose                                     |
-| --------------------- | ------------------------------------------- |
-| `npm run dev`         | Development server                          |
-| `npm run build`       | Production build (also typechecks)          |
-| `npm run typecheck`   | `tsc --noEmit`                              |
-| `npm run lint`        | ESLint                                      |
-| `npm run db:migrate`  | Create and apply a migration                |
-| `npm run db:push`     | Push the schema without a migration         |
-| `npm run db:studio`   | Prisma Studio                               |
-| `npm run db:generate` | Regenerate the Prisma client                |
+| Script                     | Purpose                                                         |
+| -------------------------- | --------------------------------------------------------------- |
+| `npm run dev`              | Development server                                              |
+| `npm run build`            | Production build                                                |
+| `npm run typecheck`        | Route types, then `tsc --noEmit`                                |
+| `npm run lint`             | ESLint                                                          |
+| `npm test`                 | Unit tests (rules, validation, money, dates, CSV, …)            |
+| `npm run test:integration` | Scope tests: every data read, for every office, against Postgres |
+| `npm run db:deploy`        | Apply pending migrations                                        |
+| `npm run db:migrate`       | Create and apply a new migration (development)                  |
+| `npm run db:seed`          | Starting content; safe to re-run, never overwrites edits        |
+| `npm run db:studio`        | Prisma Studio                                                   |
+| `npm run db:generate`      | Regenerate the Prisma client                                    |
+| `npm run members:import`   | Import the existing member list from CSV (below)                |
+
+`test:integration` creates a throwaway database named `church_it_<random>` on the server in
+`TEST_DATABASE_URL` (or `DATABASE_URL`), migrates and seeds it, and drops it afterwards. CI runs
+it against a Postgres service container.
+
+## Importing the member list
+
+```bash
+npm run members:import -- --template members.csv      # a blank template with the columns
+npm run members:import -- members.csv                 # dry run: check every row, change nothing
+npm run members:import -- members.csv --commit --as apostle@example.org
+npm run members:import -- members.csv --commit --as apostle@example.org --invite
+```
+
+Dates may be `2015-03-14` or `14/03/2015`; groups are names separated by `;`. Every member needs
+a baptism date, exactly as enrolment in the portal does. The dry run writes
+`members.csv.report.csv`, listing every line as ready or skipped and why. `--commit` enrols
+all valid rows in one transaction, each with an audit entry; `--invite` then sends the
+invitations 20 at a time. The report holds names and emails, so keep it with the spreadsheet.
 
 ## Theme
 
-Deep plum on warm sand, with brass as the single accent. All tokens live in
-`src/app/globals.css` — change them there and every component follows.
+Royal blue and gold on white, with a deep navy for headings. All tokens live in
+`src/app/globals.css` (light under `:root`, dark under `.dark`); change them there and every
+component follows. Text, muted text, buttons, badges and form borders meet WCAG AA in both
+modes. Check any change against that before committing it.
 
-| Role         | Light                  | Dark                        |
-| ------------ | ---------------------- | --------------------------- |
-| Background   | sand `oklch(0.973 0.006 85)` | aubergine ink `oklch(0.185 0.014 350)` |
-| Primary      | plum `oklch(0.36 0.088 348)` | lifted plum `oklch(0.72 0.105 345)` |
-| Accent       | brass `oklch(0.918 0.036 80)` | `oklch(0.335 0.04 60)`   |
-
-Neutrals are warm (hue ~80) rather than grey, so the background reads as paper rather than as an
-off-white screen. Dark mode keeps the plum undertone in its neutrals instead of going to a neutral
-black. Both modes clear WCAG AA on body text, muted text, buttons and badges.
-
-Type has three roles:
-
-- **Fraunces** — headings (`font-heading`, applied to `h1`–`h4` automatically)
-- **Inter** — interface and body (`font-sans`)
-- **JetBrains Mono** — figures, via the `numeric` utility, which also forces tabular figures so
-  money and attendance counts line up in columns
-
-Light/dark is handled by `next-themes`; `ThemeToggle` in `src/components/theme-toggle.tsx` is the
-control, and it defaults to the system setting.
+Type: **Plus Jakarta Sans** for headings, **Inter** for interface and body, **Cinzel** for the
+wordmark, **Cormorant Garamond** for scripture, devotions and the baptism certificate, and **JetBrains Mono** for figures, via the
+`numeric` utility, which forces tabular figures so money and counts line up in columns.
+Light/dark follows the system setting by default; `ThemeToggle` switches it.
 
 ## Layout
 
 ```
-prisma/schema.prisma     data model for all 12 modules
-src/app/                 routes (App Router)
-src/components/ui/       shadcn/ui components
-src/lib/prisma.ts        Prisma client singleton
-src/lib/email.ts         Resend wrapper — all outbound email goes through sendEmail()
-src/lib/env.ts           validated server environment
-src/generated/prisma/    generated Prisma client (gitignored)
+prisma/schema.prisma       data model
+prisma/seed.ts             starting content (seed-data.ts holds the values)
+prisma/import-members.ts   member list import
+src/app/                   routes: public site, (auth) sign-in screens, (app) the portal, api/cron
+src/lib/auth/              sessions, permissions, the Data Access Layer, audit log
+src/lib/data/              every scoped read, returning plain objects for pages
+src/lib/<module>/          each module's pure rules and schemas, with their tests
+src/lib/email.ts           all outbound mail goes through sendEmail()
+src/lib/storage.ts         R2 uploads and deletes
+src/lib/env.ts             validated server environment
+src/test/integration/      the integration harness and its fixture
 ```
 
-## The one rule
+## Deploying
 
-From the spec, enforced at every module: **admins see all data; members see only their own data
-plus data explicitly targeted at them.** Every query that reads member data must be scoped by the
-caller's role and id.
+The Vercel build runs `prisma migrate deploy && next build` (`vercel-build`). Production needs
+`DATABASE_URL` (pooled), `APP_URL` (https), `RESEND_API_KEY` and `EMAIL_FROM` on a verified
+domain, `CRON_SECRET`, the five `R2_*` variables, and the bootstrap pair for the first sign-in
+only. The production checklist is in the Phase 6 section of the implementation plan.
