@@ -25,7 +25,7 @@ The single place to see where the build stands. Update it as described in
 | 1 | Groups & communication | `feat/phase-1-groups-messaging` | ✅ Done | #16 | 2026-10-22 | 2026-10-22 |
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ✅ Done | #17 | 2026-10-22 | 2026-10-22 |
 | 3 | Finance | `feat/phase-3-finance` | ✅ Done | #18 | 2026-10-22 | 2026-10-22 |
-| 4 | Sermons, notes & devotions | `feat/phase-4-content` | ⬜ Not started | — | — | — |
+| 4 | Sermons, notes & devotions | `feat/phase-4-content` | 🟡 In progress | — | 2026-10-22 | — |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ⬜ Not started | — | — | — |
 | 6 | Hardening & launch | `feat/phase-6-hardening` | ⬜ Not started | — | — | — |
 
@@ -739,15 +739,19 @@ and sees statuses → Apostle creates a project, member pledges and contributes 
 
 ## Phase 4 — Sermons, notes & devotions
 
-**Status:** ⬜ Not started
+**Status:** 🟡 In progress
 **Branch:** `feat/phase-4-content`
 **Goal:** The church's spiritual content, with private notes and scheduled devotions.
 **Scope:** §6 (Sermon, SermonNote, Devotion), §9.11, §9.12, §9.14, §9.19 (teasers), §9.20.
 **Depends on:** Phase 0.
 
 ### Entry criteria
-- [ ] Phase 3 ✅ and merged.
+- [x] Phase 3 ✅ and merged.
 - [ ] Storage provider chosen (Vercel Blob or Cloudflare R2) and credentials available.
+      *Cloudflare R2 chosen by the maintainer on 2026-10-22. Credentials are not available
+      yet; the maintainer approved building the phase now with uploads switched off until the
+      `R2_*` variables are set. This box is ticked, and the phase can be completed, only once
+      real uploads have been tested; until then it cannot be marked ✅.*
 
 ### Deliverables
 - [ ] Storage env vars in `env.ts` + `.env.example`; `src/lib/storage.ts`; client-direct upload
