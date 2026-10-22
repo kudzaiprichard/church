@@ -56,7 +56,17 @@ export default async function MyGivingPage(props: PageProps<"/finance">) {
         eyebrow="Records"
         title="My giving"
         description="Your own payments. Only you and the church's finance officers see them."
-        actions={<LogPaymentDialog options={options} today={today} />}
+        actions={
+          <>
+            <Link
+              href="/finance/pledges"
+              className="border-border bg-card hover:bg-muted inline-flex h-9 items-center rounded-lg border px-3.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+            >
+              Pledges
+            </Link>
+            <LogPaymentDialog options={options} today={today} />
+          </>
+        }
       />
 
       <h2 className="text-foreground mb-3 text-sm font-bold">{giving.year} so far</h2>

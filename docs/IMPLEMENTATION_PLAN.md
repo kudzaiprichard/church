@@ -688,16 +688,16 @@ CSV.
 - [x] `src/lib/data/finance.ts`, `partnerships.ts`.
 - [x] `/finance`: Log Payment dialog, totals, 12-month chema grid, history.
 - [x] `/finance/review`: pending queue, confirm / reject (reason) / bulk confirm; notify member.
-- [ ] Record-for-member and reversing entries for officers, with audit.
+- [x] Record-for-member and reversing entries for officers, with audit.
 - [x] `/finance/church`: filters, KPIs, Recharts bar (type × group) and line (monthly), table.
 - [x] `/finance/chema`: compliance by month, leaders limited to their groups.
 - [x] `/finance/export` CSV route (`src/lib/csv.ts`, formula-injection safe, audited).
 - [x] `/partnerships`, `/partnerships/[id]`: progress, contributor table, complete-project dialog.
 - [x] `/finance/pledges`: create, progress, auto-fulfil, cancel, derived Overdue.
-- [ ] Member detail Giving + Pledges tabs; dashboard finance cards per role.
-- [ ] Tests: `expectedChema` for all 12 months; duplicate chema rejected; totals count CONFIRMED
+- [x] Member detail Giving + Pledges tabs; dashboard finance cards per role.
+- [x] Tests: `expectedChema` for all 12 months; duplicate chema rejected; totals count CONFIRMED
       only; CSV escaping; leader sees no non-chema amounts.
-- [ ] Nav: My giving, Church finance, Chema compliance, Payment review, Partnerships live.
+- [x] Nav: My giving, Church finance, Chema compliance, Payment review, Partnerships live.
 - [ ] `docs(plan): complete phase 3`.
 
 ### Exit criteria
