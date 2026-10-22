@@ -15,14 +15,25 @@ import Link from "next/link";
 
 import { Logo } from "@/components/brand/logo";
 import { NextGatheringLine } from "@/components/landing/next-gathering-line";
-import { ownerScope, requireSession } from "@/lib/auth/dal";
+import { requireSession } from "@/lib/auth/dal";
 import { can } from "@/lib/auth/permissions";
 import { formatRate } from "@/lib/attendance/rules";
 import { lastEventAttendance, ownAttendance } from "@/lib/data/attendance";
 import { upcomingEvents } from "@/lib/data/events";
+import {
+  chemaCompliance,
+  churchThisMonth,
+  myChemaThisMonth,
+  myGiving,
+  pendingCount,
+} from "@/lib/data/finance";
 import { ledGroups } from "@/lib/data/groups";
 import { unreadMessageCount } from "@/lib/data/messages";
-import { formatDateOnly } from "@/lib/dates";
+import { listProjects, myPledges } from "@/lib/data/partnerships";
+import { formatDateOnly, harareToday } from "@/lib/dates";
+import { MONTHS } from "@/lib/finance/chema";
+import { formatMoney } from "@/lib/finance/money";
+import { progress } from "@/lib/finance/pledges";
 import { lastUpdatedLine } from "@/lib/last-updated";
 import { prisma } from "@/lib/prisma";
 import { getThemes } from "@/lib/settings";
@@ -30,6 +41,8 @@ import { getThemes } from "@/lib/settings";
 import { railFor } from "../_components/nav";
 import { NavIcon } from "../_components/nav-icon";
 import { PageHeader, Panel, StatCard } from "../_components/page-parts";
+import { Progress, TypeTotals } from "../finance/finance-parts";
+import { PledgeList } from "../finance/pledges/pledge-list";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
@@ -57,10 +70,10 @@ function greeting(now: Date) {
 }
 
 /**
- * The landing spot after sign-in, and the first worked example of the Key
- * System Rule: the same query serves every office, and `ownerScope` — given
- * the permission that widens it — decides whether it counts the whole church
- * or one person.
+ * The landing spot after sign-in (docs/SCOPE.md §9.2). Every figure comes
+ * from a scoped read: a member's cards are about them alone; a leader adds
+ * their groups; the finance officers add the church's month; Apostles add the
+ * roll. Nothing here is computed in the page.
  *
  * Everything else on the page is either the church's own content (the theme,
  * the next gathering) or read from the navigation itself (what is coming), so
@@ -71,24 +84,62 @@ export default async function DashboardPage() {
   const seesChurchGiving = can(user, "finance.viewAll");
   const now = new Date();
 
-  const [contributions, attendance, unreadMessages, { current: theme }, led, upcoming] =
-    await Promise.all([
-      prisma.contribution.count({ where: ownerScope(user, "finance.viewAll") }),
-      ownAttendance(user),
-      unreadMessageCount(user),
-      getThemes(),
-      ledGroups(user),
-      upcomingEvents(user, 3),
-    ]);
+  const todayIso = harareToday();
+  const year = Number(todayIso.slice(0, 4));
+  const month = Number(todayIso.slice(5, 7));
+  const monthStart = new Date(`${todayIso.slice(0, 7)}-01T00:00:00+02:00`);
+
+  const [
+    giving,
+    chema,
+    attendance,
+    unreadMessages,
+    { current: theme },
+    led,
+    upcoming,
+    pledges,
+    churchMonth,
+    pending,
+    projects,
+    roll,
+  ] = await Promise.all([
+    myGiving(user, { year }),
+    myChemaThisMonth(user),
+    ownAttendance(user),
+    unreadMessageCount(user),
+    getThemes(),
+    ledGroups(user),
+    upcomingEvents(user, 3),
+    myPledges(user),
+    churchThisMonth(user),
+    pendingCount(user),
+    seesChurchGiving ? listProjects(user) : Promise.resolve([]),
+    can(user, "members.viewAll")
+      ? Promise.all([
+          prisma.user.count({ where: { isActive: true } }),
+          prisma.user.count({ where: { joinedAt: { gte: monthStart } } }),
+        ])
+      : null,
+  ]);
   const myGroups = await Promise.all(
-    led.map(async (group) => ({ ...group, lastEvent: await lastEventAttendance(group.id) })),
+    led.map(async (group) => ({
+      ...group,
+      lastEvent: await lastEventAttendance(group.id),
+      chema: await chemaCompliance(user, { year, month, groupId: group.id }),
+    })),
+  );
+  const activePledges = pledges.filter(
+    (pledge) => pledge.state === "ACTIVE" || pledge.state === "OVERDUE",
   );
 
   const figures = [
     {
-      label: seesChurchGiving ? "Contributions recorded" : "Your contributions",
-      value: contributions,
+      label: `You have given in ${year}`,
+      value: formatMoney(giving.totals.total),
       icon: <WalletIcon className="size-4" aria-hidden />,
+      hint: `${MONTHS[chema.month - 1]} chema: ${
+        chema.status === "PAID" ? "paid" : chema.status === "PENDING" ? "pending" : "not paid yet"
+      }`,
     },
     {
       label: "Your attendance",
@@ -176,7 +227,7 @@ export default async function DashboardPage() {
       {myGroups.length > 0 && (
         <Panel
           title={myGroups.length === 1 ? "My group" : "My groups"}
-          description="The groups you lead. Chema compliance joins with the finance module."
+          description="The groups you lead: members, this month's chema and the last event."
           className="mt-4"
           bodyClassName="p-0"
         >
@@ -195,6 +246,11 @@ export default async function DashboardPage() {
                   </Link>
                   <p className="text-muted-foreground numeric mt-0.5 text-xs">
                     {group.memberCount} active {group.memberCount === 1 ? "member" : "members"}
+                    {group.chema && (
+                      <>
+                        {" · "}chema {group.chema.paid} of {group.chema.total} paid
+                      </>
+                    )}
                     {group.lastEvent && (
                       <>
                         {" · "}
@@ -216,6 +272,72 @@ export default async function DashboardPage() {
               </li>
             ))}
           </ul>
+        </Panel>
+      )}
+
+      {churchMonth && (
+        <Panel
+          title={`Church giving, ${MONTHS[month - 1]}`}
+          description="Confirmed this month; pending in amber."
+          action={
+            pending > 0 && (
+              <Link
+                href="/finance/review"
+                className="text-primary text-xs font-semibold hover:underline"
+              >
+                {pending} waiting for review
+              </Link>
+            )
+          }
+          className="mt-4"
+        >
+          <TypeTotals confirmed={churchMonth.confirmed} pending={churchMonth.pending} />
+          {roll && (
+            <p className="text-muted-foreground mt-4 text-sm">
+              <span className="numeric text-foreground font-semibold">{roll[0]}</span> active members
+              {" · "}
+              <span className="numeric text-foreground font-semibold">{roll[1]}</span> enrolled this
+              month
+            </p>
+          )}
+          {projects.some((project) => project.status === "ACTIVE") && (
+            <ul className="border-border mt-4 grid gap-3 border-t pt-4 sm:grid-cols-2">
+              {projects
+                .filter((project) => project.status === "ACTIVE")
+                .map((project) => (
+                  <li key={project.id}>
+                    <Link
+                      href={`/partnerships/${project.id}`}
+                      className="text-foreground text-sm font-semibold hover:underline"
+                    >
+                      {project.name}
+                    </Link>
+                    <Progress
+                      value={progress(project.raisedCents, project.targetCents).real}
+                      label={`${project.name} progress`}
+                    />
+                  </li>
+                ))}
+            </ul>
+          )}
+        </Panel>
+      )}
+
+      {activePledges.length > 0 && (
+        <Panel
+          title="Your pledges"
+          action={
+            <Link
+              href="/finance/pledges"
+              className="text-primary text-xs font-semibold hover:underline"
+            >
+              All pledges
+            </Link>
+          }
+          className="mt-4"
+          bodyClassName="p-0"
+        >
+          <PledgeList pledges={activePledges} />
         </Panel>
       )}
 

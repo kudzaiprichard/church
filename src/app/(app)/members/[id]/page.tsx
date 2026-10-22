@@ -14,11 +14,16 @@ import { formatRate } from "@/lib/attendance/rules";
 import { requireSession } from "@/lib/auth/dal";
 import { ROLE_LABELS, can } from "@/lib/auth/permissions";
 import { memberAttendance } from "@/lib/data/attendance";
+import { memberGiving } from "@/lib/data/finance";
 import { getMember } from "@/lib/data/members";
+import { memberPledges } from "@/lib/data/partnerships";
 import { formatDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 
 import { EmptyState, PageHeader, Panel } from "../../_components/page-parts";
+import { ChemaGrid, HistoryTable, TypeTotals } from "../../finance/finance-parts";
+import { PledgeList } from "../../finance/pledges/pledge-list";
+import { ReverseForm } from "../../finance/review/review-forms";
 import { MemberControls, initialsOf, memberStatus } from "../member-row";
 
 export const metadata: Metadata = { title: "Member" };
@@ -41,8 +46,8 @@ const GENDER = { MALE: "Male", FEMALE: "Female" } as const;
  *
  * Tabs are links (`?tab=`), so each view is its own address and the page stays
  * a Server Component. The Attendance tab appears only for the member, the
- * Apostles and the leaders of a group they are in. Giving and Pledges join in
- * Phase 3.
+ * Apostles and the leaders of a group they are in; Giving and Pledges only for
+ * holders of `finance.viewAll` — the data functions return `null` otherwise.
  */
 export default async function MemberPage(props: PageProps<"/members/[id]">) {
   const user = await requireSession();
@@ -51,12 +56,19 @@ export default async function MemberPage(props: PageProps<"/members/[id]">) {
 
   const member = await getMember(user, id);
   if (!member) notFound();
-  const attendance = await memberAttendance(user, member.id);
+  const [attendance, giving, pledges] = await Promise.all([
+    memberAttendance(user, member.id),
+    memberGiving(user, member.id),
+    memberPledges(user, member.id),
+  ]);
+  const reverses = can(user, "finance.confirm");
 
   const tabs = [
     { id: "profile", label: "Profile" },
     { id: "groups", label: "Groups" },
     ...(attendance ? [{ id: "attendance", label: "Attendance" }] : []),
+    ...(giving ? [{ id: "giving", label: "Giving" }] : []),
+    ...(pledges ? [{ id: "pledges", label: "Pledges" }] : []),
     ...(member.baptism !== "hidden" ? [{ id: "baptism", label: "Baptism" }] : []),
   ];
   const active = tabs.find((entry) => entry.id === tab)?.id ?? "profile";
@@ -222,6 +234,53 @@ export default async function MemberPage(props: PageProps<"/members/[id]">) {
                 </li>
               ))}
             </ul>
+          )}
+        </Panel>
+      )}
+
+      {active === "giving" && giving && (
+        <div className="grid max-w-5xl gap-4">
+          <TypeTotals confirmed={giving.totals.confirmed} pending={giving.totals.pending} />
+          <Panel title={`Chema ${giving.year}`}>
+            <ChemaGrid cells={giving.grid} />
+          </Panel>
+          <Panel
+            title={`${giving.year} history`}
+            description={
+              reverses
+                ? "Confirmed payments are never edited. Correct a mistake with a reversal, which records a negative entry beside it."
+                : undefined
+            }
+            bodyClassName="p-0"
+          >
+            {giving.history.length === 0 ? (
+              <EmptyState
+                icon={<ClipboardCheckIcon className="size-5" aria-hidden />}
+                title="Nothing this year"
+              />
+            ) : (
+              <HistoryTable
+                rows={giving.history}
+                actions={
+                  reverses
+                    ? (row) =>
+                        row.status === "CONFIRMED" && !row.isReversal && !row.reversed ? (
+                          <ReverseForm id={row.id} />
+                        ) : null
+                    : undefined
+                }
+              />
+            )}
+          </Panel>
+        </div>
+      )}
+
+      {active === "pledges" && pledges && (
+        <Panel title="Pledges" className="max-w-3xl" bodyClassName="p-0">
+          {pledges.length === 0 ? (
+            <EmptyState icon={<ClipboardCheckIcon className="size-5" aria-hidden />} title="No pledges" />
+          ) : (
+            <PledgeList pledges={pledges} />
           )}
         </Panel>
       )}
