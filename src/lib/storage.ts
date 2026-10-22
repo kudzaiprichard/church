@@ -92,15 +92,17 @@ export async function inspect(key: string): Promise<{ contentType: string; size:
  * A stored object that fits its folder's rules, as the URL to save — or why
  * not. The second check after `signUpload`: what arrived, not what was asked.
  */
-export async function acceptUpload(folder: Folder, key: string) {
+export type Accepted = { url: string; key: string } | { error: string };
+
+export async function acceptUpload(folder: Folder, key: string): Promise<Accepted> {
   const found = await inspect(key);
-  if (!found) return { error: "The upload did not finish. Choose the file again." } as const;
+  if (!found) return { error: "The upload did not finish. Choose the file again." };
   const problem = uploadProblem(folder, found.contentType, found.size);
   if (problem) {
     await remove(key);
-    return { error: problem } as const;
+    return { error: problem };
   }
-  return { url: publicUrl(env.R2_PUBLIC_URL!, key), key } as const;
+  return { url: publicUrl(env.R2_PUBLIC_URL!, key), key };
 }
 
 /**

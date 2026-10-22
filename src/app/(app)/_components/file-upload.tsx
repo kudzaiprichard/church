@@ -29,6 +29,7 @@ export function FileUpload({
   hint,
   error,
   prepare,
+  uploadedKey,
 }: {
   folder: Folder;
   /** The hidden field carrying the new key. */
@@ -40,13 +41,15 @@ export function FileUpload({
   hint?: string;
   error?: string;
   prepare?: (file: File) => Promise<Blob>;
+  /** A key uploaded before the form failed validation, kept so it need not be sent again. */
+  uploadedKey?: string;
 }) {
   const [state, setState] = useState<
     | { stage: "idle" }
     | { stage: "uploading"; progress: number; file: string }
     | { stage: "done"; key: string; file: string }
     | { stage: "failed"; message: string }
-  >({ stage: "idle" });
+  >(uploadedKey ? { stage: "done", key: uploadedKey, file: "File uploaded" } : { stage: "idle" });
   const [removed, setRemoved] = useState(false);
   const input = useRef<HTMLInputElement>(null);
   const rules = FOLDERS[folder];
