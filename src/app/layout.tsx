@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Cinzel, Cormorant_Garamond, Inter, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -54,7 +54,14 @@ export const metadata: Metadata = {
     template: `%s — ${churchIdentity.name}`,
   },
   description: churchIdentity.description,
+  // The installable app (src/app/manifest.ts), and its icon on iPhones, which
+  // read the touch icon rather than the manifest.
+  appleWebApp: { capable: true, title: "KMMI", statusBarStyle: "default" },
+  icons: { apple: "/icons/apple-touch-icon.png" },
 };
+
+/** The browser chrome in the church's blue on phones that tint it. */
+export const viewport: Viewport = { themeColor: "#1a3fcc" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (

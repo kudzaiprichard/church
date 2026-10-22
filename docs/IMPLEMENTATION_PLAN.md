@@ -840,7 +840,7 @@ teaser.
 - [x] `CRON_SECRET` in env; `vercel.json` crons; `/api/cron/daily` (birthdays, devotion of the
       day, pledge reminders, notification and session/token purges) and `/api/cron/reminders`
       (event reminders); all idempotent via `dedupeKey`.
-- [ ] PWA: manifest, icons (192, 512, maskable), linked from root layout; no caching of private
+- [x] PWA: manifest, icons (192, 512, maskable), linked from root layout; no caching of private
       routes.
 - [ ] Audit log filters (action, actor, date range).
 - [ ] Tests: next-birthday calculation incl. 29 Feb and year boundary; cron handlers reject
