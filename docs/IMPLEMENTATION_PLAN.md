@@ -842,7 +842,7 @@ teaser.
       (event reminders); all idempotent via `dedupeKey`.
 - [x] PWA: manifest, icons (192, 512, maskable), linked from root layout; no caching of private
       routes.
-- [ ] Audit log filters (action, actor, date range).
+- [x] Audit log filters (action, actor, date range).
 - [ ] Tests: next-birthday calculation incl. 29 Feb and year boundary; cron handlers reject
       missing/wrong secret; running a cron twice creates no duplicate notifications.
 - [ ] Nav: Birthdays, Baptism records live — **no `soon: true` items remain**.

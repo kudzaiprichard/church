@@ -1,11 +1,14 @@
 import { ScrollTextIcon } from "lucide-react";
 import type { Metadata } from "next";
 
+import type { Prisma } from "@/generated/prisma/client";
 import type { AuditAction } from "@/generated/prisma/enums";
 import { requirePermission } from "@/lib/auth/dal";
+import { isDateOnly } from "@/lib/dates";
 import { prisma } from "@/lib/prisma";
 
 import { EmptyState, PageHeader, Panel } from "../_components/page-parts";
+import { Pagination } from "../_components/pagination";
 
 export const metadata: Metadata = { title: "Audit log" };
 
@@ -60,14 +63,53 @@ const DESCRIPTIONS: Record<AuditAction, { label: string; weight: "high" | "norma
  * There is no delete and no edit here, deliberately: an audit log an
  * administrator can tidy up is not evidence of anything. The only way to remove
  * a line is at the database.
+ *
+ * Filters — action, actor (by email) and a Harare date range — live in the URL,
+ * and the list pages through in fifties (docs/SCOPE.md §9.23).
  */
-export default async function AuditPage() {
-  await requirePermission("audit.view");
+const PAGE_SIZE = 50;
 
-  const entries = await prisma.auditLog.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 200,
-  });
+export default async function AuditPage(props: PageProps<"/audit">) {
+  await requirePermission("audit.view");
+  const params = await props.searchParams;
+  const one = (key: string) => {
+    const value = params[key];
+    return typeof value === "string" && value.length > 0 ? value.slice(0, 100) : undefined;
+  };
+  const ACTIONS = Object.keys(DESCRIPTIONS) as AuditAction[];
+  const action = ACTIONS.find((value) => value === one("action"));
+  const actor = one("actor");
+  const from = isDateOnly(one("from") ?? "") ? one("from") : undefined;
+  const to = isDateOnly(one("to") ?? "") ? one("to") : undefined;
+  const page = Math.max(1, Number(one("page")) || 1);
+
+  // Dates are Harare days: from midnight at the start of `from` (UTC+2) to
+  // midnight at the end of `to`.
+  const where: Prisma.AuditLogWhereInput = {
+    ...(action ? { action } : {}),
+    ...(actor ? { actorEmail: { contains: actor, mode: "insensitive" } } : {}),
+    ...(from || to
+      ? {
+          createdAt: {
+            ...(from ? { gte: new Date(`${from}T00:00:00+02:00`) } : {}),
+            ...(to
+              ? { lt: new Date(new Date(`${to}T00:00:00+02:00`).getTime() + 86_400_000) }
+              : {}),
+          },
+        }
+      : {}),
+  };
+  const [entries, total] = await Promise.all([
+    prisma.auditLog.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip: (page - 1) * PAGE_SIZE,
+      take: PAGE_SIZE,
+    }),
+    prisma.auditLog.count({ where }),
+  ]);
+  const filtered = Boolean(action || actor || from || to);
+  const control = "border-input bg-background mt-1.5 h-10 w-full rounded-lg border px-3 text-sm";
 
   return (
     <>
@@ -77,9 +119,61 @@ export default async function AuditPage() {
         description="Every privileged act on the system: who did it, to whom, and when. Nothing here can be edited or removed from inside the application."
       />
 
+      <form
+        method="get"
+        aria-label="Filter the audit log"
+        className="bg-card border-border mb-4 grid gap-3 rounded-xl border p-4 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto] lg:items-end"
+      >
+        <label className="text-xs font-semibold">
+          Action
+          <select name="action" defaultValue={action ?? ""} className={control}>
+            <option value="">Every action</option>
+            {ACTIONS.map((value) => (
+              <option key={value} value={value}>
+                {DESCRIPTIONS[value].label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-xs font-semibold">
+          Done by
+          <input
+            type="search"
+            name="actor"
+            defaultValue={actor}
+            placeholder="Email"
+            className={control}
+          />
+        </label>
+        <label className="text-xs font-semibold">
+          From
+          <input type="date" name="from" defaultValue={from} className={control} />
+        </label>
+        <label className="text-xs font-semibold">
+          To
+          <input type="date" name="to" defaultValue={to} className={control} />
+        </label>
+        <div className="flex gap-2">
+          <button
+            type="submit"
+            className="action-solid h-10 flex-1 cursor-pointer rounded-lg px-4 text-sm font-semibold"
+          >
+            Filter
+          </button>
+          {filtered && (
+            <a
+              href="/audit"
+              className="border-border hover:bg-muted inline-flex h-10 items-center rounded-lg border px-3 text-sm"
+            >
+              Clear
+            </a>
+          )}
+        </div>
+      </form>
+
       <Panel
-        title={`${entries.length} ${entries.length === 1 ? "entry" : "entries"}`}
-        description="Newest first, up to the latest 200."
+        title={`${total} ${total === 1 ? "entry" : "entries"}`}
+        description="Newest first."
         bodyClassName="p-0"
       >
         {entries.length === 0 ? (
@@ -137,6 +231,15 @@ export default async function AuditPage() {
             })}
           </ol>
         )}
+        <div className="border-border border-t">
+          <Pagination
+            page={page}
+            pageCount={Math.max(1, Math.ceil(total / PAGE_SIZE))}
+            total={total}
+            pathname="/audit"
+            params={{ action, actor, from, to }}
+          />
+        </div>
       </Panel>
     </>
   );
