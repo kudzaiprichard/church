@@ -81,6 +81,7 @@ model User {
   repliesWritten   MessageReply[]     @relation("ReplyAuthor")
   replyThreads     MessageReply[]     @relation("ReplyThread")
   attendance       AttendanceRecord[]
+  attendanceMarked AttendanceRecord[] @relation("AttendanceMarker")
   contributions    Contribution[]
   partnerships     Partnership[]
   prayerRequests   PrayerRequest[]
@@ -179,6 +180,8 @@ enum AuditAction {
   GROUP_UPDATED
   GROUP_DELETED
   GROUP_LEADER_CHANGED
+  EVENT_DELETED
+  PRAYER_REQUEST_REMOVED
 }
 
 /// Who did what to whom.
@@ -242,7 +245,7 @@ model Group {
   leader         User?             @relation("GroupLeader", fields: [leaderId], references: [id], onDelete: SetNull)
   members        GroupMembership[]
   messages       Message[]
-  events         EventAudience[]
+  events         Event[]
   prayerRequests PrayerRequest[]
 
   @@index([leaderId])
@@ -335,45 +338,37 @@ model MessageReply {
 // Module 5 — Events
 // ---------------------------------------------------------------------------
 
-enum EventScope {
-  GENERAL
-  GROUP
-}
-
+/// An all-church event (`groupId` null) or one group's. Everyone sees the
+/// all-church ones and those of the groups they belong to; Apostles see all
+/// (`groupContentScope`). Only Apostles create them (docs/SCOPE.md §11 Q9).
 model Event {
-  id          String     @id @default(cuid())
-  title       String
-  description String?
-  location    String?
-  startsAt    DateTime
-  endsAt      DateTime?
-  scope       EventScope @default(GENERAL)
-  createdById String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id             String    @id @default(cuid())
+  title          String
+  description    String?
+  location       String?
+  startsAt       DateTime
+  endsAt         DateTime?
+  /// Null = All Church. Deleting a group keeps its past events, unassigned.
+  groupId        String?
+  createdById    String
+  /// Set by the reminder job (Phase 5) so a rerun does not remind twice.
+  reminderSentAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
+  group      Group?             @relation(fields: [groupId], references: [id], onDelete: SetNull)
   createdBy  User               @relation("EventCreator", fields: [createdById], references: [id])
-  audiences  EventAudience[]
   attendance AttendanceRecord[]
 
   @@index([startsAt])
-}
-
-model EventAudience {
-  id      String @id @default(cuid())
-  eventId String
-  groupId String
-
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
-
-  @@unique([eventId, groupId])
+  @@index([groupId, startsAt])
 }
 
 // ---------------------------------------------------------------------------
 // Module 6 — Prayer Requests
 // ---------------------------------------------------------------------------
 
+/// Visible only to members of the group and to Apostles (docs/SCOPE.md §9.8).
 model PrayerRequest {
   id         String   @id @default(cuid())
   authorId   String
@@ -387,31 +382,35 @@ model PrayerRequest {
   author User  @relation(fields: [authorId], references: [id], onDelete: Cascade)
   group  Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
 
-  @@index([groupId, isPinned])
+  @@index([groupId, isPinned, createdAt])
 }
 
 // ---------------------------------------------------------------------------
 // Module 7 — Attendance
 // ---------------------------------------------------------------------------
 
+/// "Excused" is deliberately not offered: the rate is present over marked,
+/// and a third state would leave every leader to decide what it counts as.
 enum AttendanceStatus {
   PRESENT
   ABSENT
-  EXCUSED
 }
 
+/// One person at one event. Marked by that group's leader or an Apostle; for
+/// an all-church event each leader marks their own group's members.
 model AttendanceRecord {
-  id          String           @id @default(cuid())
-  userId      String
-  eventId     String?
-  serviceName String?
-  status      AttendanceStatus @default(PRESENT)
-  recordedAt  DateTime         @default(now())
+  id         String           @id @default(cuid())
+  userId     String
+  eventId    String
+  status     AttendanceStatus
+  markedById String
+  markedAt   DateTime         @default(now())
 
-  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event Event? @relation(fields: [eventId], references: [id], onDelete: SetNull)
+  user     User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event    Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  markedBy User  @relation("AttendanceMarker", fields: [markedById], references: [id])
 
-  @@index([userId, recordedAt])
+  @@unique([userId, eventId])
   @@index([eventId])
 }
 

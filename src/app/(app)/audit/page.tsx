@@ -35,6 +35,8 @@ const DESCRIPTIONS: Record<AuditAction, { label: string; weight: "high" | "norma
   GROUP_CREATED: { label: "Group created", weight: "normal" },
   GROUP_UPDATED: { label: "Group edited", weight: "normal" },
   GROUP_DELETED: { label: "Group deleted", weight: "normal" },
+  EVENT_DELETED: { label: "Event deleted", weight: "normal" },
+  PRAYER_REQUEST_REMOVED: { label: "Prayer request removed", weight: "normal" },
 };
 
 /**

@@ -23,7 +23,7 @@ The single place to see where the build stands. Update it as described in
 | — | Pre-flight | `docs/implementation-plan` | ✅ Done | #13, #14 | 2026-10-21 | 2026-10-21 |
 | 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | ✅ Done | #15 | 2026-10-21 | 2026-10-21 |
 | 1 | Groups & communication | `feat/phase-1-groups-messaging` | ✅ Done | #16 | 2026-10-22 | 2026-10-22 |
-| 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ⬜ Not started | — | — | — |
+| 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ✅ Done | #17 | 2026-10-22 | 2026-10-22 |
 | 3 | Finance | `feat/phase-3-finance` | ⬜ Not started | — | — | — |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ⬜ Not started | — | — | — |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ⬜ Not started | — | — | — |
@@ -605,39 +605,52 @@ Apostle assigns Mai Madzana to Kingdom Total Women → she messages her group �
 
 ## Phase 2 — Events, attendance & prayer
 
-**Status:** ⬜ Not started
+**Status:** ✅ Done
 **Branch:** `feat/phase-2-events-attendance-prayer`
 **Goal:** The church calendar, attendance per event with rates, and group prayer.
 **Scope:** §6 (Event, AttendanceRecord, PrayerRequest), §9.6, §9.7, §9.8.
 **Depends on:** Phase 1 (groups, `notify()`).
 
 ### Entry criteria
-- [ ] Phase 1 ✅ and merged.
-- [ ] Q9 (leaders creating events) answered, or default "No" accepted.
+- [x] Phase 1 ✅ and merged.
+- [x] Q9 (leaders creating events) answered, or default "No" accepted.
+      *Default "No" accepted by the maintainer on 2026-10-22: only Apostles create events.*
 
 ### Deliverables
-- [ ] Migration `phase2_events`: `Event.groupId` + `reminderSentAt` (drop `EventScope`,
+- [x] Migration `phase2_events`: `Event.groupId` + `reminderSentAt` (drop `EventScope`,
       `EventAudience`); `AttendanceRecord` with `markedById`, `@@unique([userId, eventId])`,
       `PRESENT | ABSENT` (drop `serviceName`, `EXCUSED`); `PrayerRequest` index.
-- [ ] `src/lib/data/events.ts`; `/events` (calendar + list views, month param), `/events/new`,
+- [x] `src/lib/data/events.ts`; `/events` (calendar + list views, month param), `/events/new`,
       `/events/[id]`, `/events/[id]/edit`; `createEvent`, `updateEvent`, `deleteEvent`,
       `duplicateEvent` with notifications and audit.
-- [ ] `src/lib/data/attendance.ts`; `/events/[id]/attendance` sheet + `markAttendance`
+- [x] `src/lib/data/attendance.ts`; `/events/[id]/attendance` sheet + `markAttendance`
       (all-or-nothing scope check); `/attendance` overview per role; attendance rate helper.
-- [ ] `src/lib/data/prayer.ts`; `/prayer?group=` + `postRequest`, `togglePin`, `markAnswered`,
+- [x] `src/lib/data/prayer.ts`; `/prayer?group=` + `postRequest`, `togglePin`, `markAnswered`,
       `removeRequest`.
-- [ ] Group detail Events and Prayer tabs; member detail Attendance tab; dashboard upcoming
+- [x] Group detail Events and Prayer tabs; member detail Attendance tab; dashboard upcoming
       events and attendance rate.
-- [ ] Add shadcn `calendar`/`checkbox`/`switch` as needed.
-- [ ] Tests: event visibility by group; attendance marking scope; rate (incl. "—" with no
+- [x] Add shadcn `calendar`/`checkbox`/`switch` as needed.
+      *None were needed: the month grid is a server-rendered table of links, and the sheet and
+      forms use native radios, checkboxes and date/time inputs, which post without client state.*
+- [x] Tests: event visibility by group; attendance marking scope; rate (incl. "—" with no
       records); prayer visibility.
-- [ ] Nav: Events, Attendance, Prayer requests live.
-- [ ] `docs(plan): complete phase 2`.
+- [x] Nav: Events, Attendance, Prayer requests live.
+- [x] `docs(plan): complete phase 2`.
 
 ### Exit criteria
-- [ ] A Youth Alive member sees no Kingdom Total Women event or prayer request anywhere.
-- [ ] A leader submitting an outside `userId` in the attendance payload writes nothing.
-- [ ] §4.10 verification green locally; demo script walked.
+- [x] A Youth Alive member sees no Kingdom Total Women event or prayer request anywhere.
+- [x] A leader submitting an outside `userId` in the attendance payload writes nothing.
+- [x] §4.10 verification green locally; demo script walked.
+      *Verified on 2026-10-22 against a new, empty `church_verify_p2` database: all six
+      migrations from `0_init`, seed, `migrate status` up to date and no drift. The hand-edited
+      `phase2_events` backfill was also run against draft-shaped rows (a GROUP event with an
+      audience, an EXCUSED record, a duplicate and an event-less record) and gave the intended
+      result. Typecheck, lint, 132 tests and build green. Demo walked on a production build as
+      Apostle, Elder Mangezi (Youth Alive), Mai Zaranyika (Sunday School), Farai (Youth Alive) and
+      Chipo (Kingdom Total Women). The Elder's sheet with a Sunday School member's id added was
+      refused and the database shows no record written by him for that member. Eleven pages and
+      direct URLs checked as Chipo showed no Youth Alive event or request, and Farai saw none of
+      KTW's. Not verified visually: the 360 px pass (screenshots time out in the test browser).*
 
 ### Demo script
 Apostle creates a Sunday service (all church) and a Youth Alive meeting → Elder Mangezi marks

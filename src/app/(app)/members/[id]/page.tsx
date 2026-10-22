@@ -1,11 +1,19 @@
-import { ArrowLeftIcon, DropletsIcon, PencilIcon, UsersRoundIcon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ClipboardCheckIcon,
+  DropletsIcon,
+  PencilIcon,
+  UsersRoundIcon,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { formatRate } from "@/lib/attendance/rules";
 import { requireSession } from "@/lib/auth/dal";
 import { ROLE_LABELS, can } from "@/lib/auth/permissions";
+import { memberAttendance } from "@/lib/data/attendance";
 import { getMember } from "@/lib/data/members";
 import { formatDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
@@ -32,7 +40,9 @@ const GENDER = { MALE: "Male", FEMALE: "Female" } as const;
  * an id that does not exist, and gets the same 404.
  *
  * Tabs are links (`?tab=`), so each view is its own address and the page stays
- * a Server Component. Attendance, Giving and Pledges join in their phases.
+ * a Server Component. The Attendance tab appears only for the member, the
+ * Apostles and the leaders of a group they are in. Giving and Pledges join in
+ * Phase 3.
  */
 export default async function MemberPage(props: PageProps<"/members/[id]">) {
   const user = await requireSession();
@@ -41,10 +51,12 @@ export default async function MemberPage(props: PageProps<"/members/[id]">) {
 
   const member = await getMember(user, id);
   if (!member) notFound();
+  const attendance = await memberAttendance(user, member.id);
 
   const tabs = [
     { id: "profile", label: "Profile" },
     { id: "groups", label: "Groups" },
+    ...(attendance ? [{ id: "attendance", label: "Attendance" }] : []),
     ...(member.baptism !== "hidden" ? [{ id: "baptism", label: "Baptism" }] : []),
   ];
   const active = tabs.find((entry) => entry.id === tab)?.id ?? "profile";
@@ -165,6 +177,48 @@ export default async function MemberPage(props: PageProps<"/members/[id]">) {
               {member.groups.map((group) => (
                 <li key={group.id} className="text-foreground px-5 py-3 text-sm font-medium">
                   {group.name}
+                </li>
+              ))}
+            </ul>
+          )}
+        </Panel>
+      )}
+
+      {active === "attendance" && attendance && (
+        <Panel
+          title="Attendance"
+          description={`Rate over the last twelve months: ${formatRate(attendance.rate)}`}
+          className="max-w-3xl"
+          bodyClassName="p-0"
+        >
+          {attendance.rows.length === 0 ? (
+            <EmptyState
+              icon={<ClipboardCheckIcon className="size-5" aria-hidden />}
+              title="Nothing marked yet"
+            />
+          ) : (
+            <ul className="divide-border divide-y">
+              {attendance.rows.map((row) => (
+                <li
+                  key={row.eventId}
+                  className="flex items-center justify-between gap-3 px-5 py-3"
+                >
+                  <div className="min-w-0">
+                    <p className="text-foreground text-sm font-semibold">{row.title}</p>
+                    <p className="text-muted-foreground text-xs">
+                      {formatDateOnly(row.date)} · {row.group ?? "All Church"}
+                    </p>
+                  </div>
+                  <span
+                    className={cn(
+                      "rounded-md px-2 py-0.5 text-xs font-semibold",
+                      row.status === "PRESENT"
+                        ? "bg-success/15 text-success"
+                        : "bg-destructive/10 text-destructive",
+                    )}
+                  >
+                    {row.status === "PRESENT" ? "Present" : "Absent"}
+                  </span>
                 </li>
               ))}
             </ul>
