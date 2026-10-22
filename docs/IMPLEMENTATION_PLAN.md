@@ -946,6 +946,8 @@ performance passes, the member import tool and the README — while the services
       imported yet — it is an entry criterion.*
 - [ ] Production checklist: env vars, pooled `DATABASE_URL`, `APP_URL`, Resend domain verified,
       storage, `CRON_SECRET`, bootstrap variables removed after first sign-in.
+      *Written as [`docs/PRODUCTION.md`](./PRODUCTION.md), each step with its check; ticked once
+      it has been worked through against the production project.*
 - [ ] Cloudflare R2 set up (bucket, public URL, CORS for the portal's origins, read/write token,
       the five `R2_*` variables locally and on Vercel), then the storage steps moved from Phase
       4: upload a sermon's audio and handout and a profile photo, play the audio, replace and
