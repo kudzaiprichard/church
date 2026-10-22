@@ -575,9 +575,9 @@ change the theme and check the landing page.
       `/messages/[id]`; `sendMessage` (audience guard, send-time fan-out), `reply`, `markRead`,
       `markAllRead`.
 - [x] Notification bell: mark one / all read, 60 s refresh; `/notifications` page with type filter.
-- [ ] Dashboard: unread messages, "My group" card for leaders.
-- [ ] Tests: audience guard per role; reply-thread visibility; recipients resolved at send time.
-- [ ] Nav: Connect groups, Messages, Notifications live.
+- [x] Dashboard: unread messages, "My group" card for leaders.
+- [x] Tests: audience guard per role; reply-thread visibility; recipients resolved at send time.
+- [x] Nav: Connect groups, Messages, Notifications live.
 - [ ] `docs(plan): complete phase 1`.
 
 ### Exit criteria

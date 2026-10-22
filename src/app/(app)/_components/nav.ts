@@ -98,7 +98,7 @@ export const RAIL: RailSection[] = [
         icon: "users",
         access: { permissions: ["members.viewAll", "members.enroll"], leaders: true },
       },
-      { href: "/groups", label: "Connect groups", icon: "groups", soon: true },
+      { href: "/groups", label: "Connect groups", icon: "groups" },
       { href: "/birthdays", label: "Birthdays", icon: "birthday", soon: true },
       {
         href: "/baptism",
@@ -115,7 +115,7 @@ export const RAIL: RailSection[] = [
     icon: "life",
     href: "/messages",
     items: [
-      { href: "/messages", label: "Messages", icon: "inbox", soon: true },
+      { href: "/messages", label: "Messages", icon: "inbox" },
       { href: "/events", label: "Events", icon: "calendar", soon: true },
       { href: "/prayer", label: "Prayer requests", icon: "prayer", soon: true },
       { href: "/sermons", label: "Sermons", icon: "sermons", soon: true },
@@ -162,7 +162,7 @@ export const RAIL: RailSection[] = [
     items: [
       { href: "/profile", label: "Profile", icon: "profile" },
       { href: "/notes", label: "My sermon notes", icon: "notes", soon: true },
-      { href: "/notifications", label: "Notifications", icon: "bell", soon: true },
+      { href: "/notifications", label: "Notifications", icon: "bell" },
       { href: "/account", label: "Account", icon: "account" },
     ],
   },
@@ -243,6 +243,9 @@ export function sectionFor(pathname: string, rail: RailSection[]) {
 export const LABELS: Record<string, string> = {
   ...Object.fromEntries(RAIL.flatMap((s) => s.items).map((item) => [item.href, item.label])),
   "/members/new": "Enrol a member",
+  "/groups/new": "New group",
+  "/messages/new": "New message",
+  "/messages/sent": "Sent",
   "/settings/theme": "Theme of the Year",
   "/settings/social": "Social media",
   "/change-password": "Change password",
