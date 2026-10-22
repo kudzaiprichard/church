@@ -63,12 +63,12 @@ export function ThemeConnect({
                 </figure>
 
                 {theme.description && (
-                  <p className="mt-6 max-w-lg text-sm leading-relaxed text-white/65">
+                  <p className="mt-6 max-w-lg text-sm leading-relaxed text-white/75">
                     {theme.description}
                   </p>
                 )}
 
-                <p className="mt-6 text-xs text-white/45">
+                <p className="mt-6 text-xs text-white/75">
                   {lastUpdatedLine(theme.updatedBy, theme.updatedAt)}
                 </p>
               </div>

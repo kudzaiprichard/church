@@ -197,7 +197,7 @@ export function SiteNav({ session, contact }: { session: NavSession; contact: Na
                 <ThemeToggle tone="onBlue" />
               </div>
 
-              <div className="mt-auto grid gap-1.5 pt-8 text-sm text-white/60">
+              <div className="mt-auto grid gap-1.5 pt-8 text-sm text-white/75">
                 {contact.phone && (
                   <a
                     href={`tel:${contact.phone.replace(/\s/g, "")}`}

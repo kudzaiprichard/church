@@ -47,7 +47,7 @@ export function BulletinForm() {
           className={cn(
             "h-10 min-w-0 flex-1 rounded-lg border bg-white/10 px-3 text-sm text-white",
             "placeholder:text-white/40 transition-[border-color,background-color] duration-200 outline-none",
-            "focus:bg-white/15",
+            "focus:bg-white/15 focus-visible:ring-2 focus-visible:ring-white/70",
             error ? "border-red-300" : "border-white/15 focus:border-white/50",
           )}
         />

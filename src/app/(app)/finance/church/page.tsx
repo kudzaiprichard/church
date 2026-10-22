@@ -46,7 +46,7 @@ export default async function ChurchFinancePage(props: PageProps<"/finance/churc
 
   const query = new URLSearchParams({ from, to, ...(groupId ? { group: groupId } : {}) });
   const control =
-    "border-input bg-background mt-1.5 h-10 w-full rounded-lg border px-3 text-sm outline-none focus:border-[var(--ring)]";
+    "border-input bg-background mt-1.5 h-10 w-full rounded-lg border px-3 text-sm outline-none focus:border-[var(--ring)] focus:ring-4 focus:ring-[color-mix(in_oklab,var(--ring)_18%,transparent)]";
 
   return (
     <>

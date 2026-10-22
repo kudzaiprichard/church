@@ -83,7 +83,7 @@ export default async function DevotionsPage(props: PageProps<"/devotions">) {
             name="q"
             defaultValue={q}
             placeholder="Search by title or scripture"
-            className="border-input bg-background h-10 w-full rounded-lg border pr-3 pl-9 text-sm outline-none focus:border-[var(--ring)]"
+            className="border-input bg-background h-10 w-full rounded-lg border pr-3 pl-9 text-sm outline-none focus:border-[var(--ring)] focus:ring-4 focus:ring-[color-mix(in_oklab,var(--ring)_18%,transparent)]"
           />
         </label>
       </form>

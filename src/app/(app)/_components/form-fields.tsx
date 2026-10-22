@@ -241,20 +241,27 @@ export function CheckboxGroupField({
   );
 }
 
-/** A titled block inside a long form, so it reads as a few short ones. */
+/**
+ * A titled block inside a long form, so it reads as a few short ones. Its
+ * heading sits one level under whatever holds the form: an h3 inside a panel,
+ * an h2 when the form is the page's own content.
+ */
 export function FormSection({
   title,
   description,
+  level = 3,
   children,
 }: {
   title: string;
   description?: ReactNode;
+  level?: 2 | 3;
   children: ReactNode;
 }) {
+  const Heading = level === 2 ? "h2" : "h3";
   return (
     <section className="border-border grid gap-4 border-t pt-5 first:border-t-0 first:pt-0">
       <div>
-        <h3 className="text-foreground text-sm font-bold">{title}</h3>
+        <Heading className="text-foreground text-sm font-bold">{title}</Heading>
         {description && (
           <p className="text-muted-foreground mt-1 text-xs leading-relaxed text-pretty">
             {description}

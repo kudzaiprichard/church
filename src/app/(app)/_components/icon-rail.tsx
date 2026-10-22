@@ -71,7 +71,7 @@ export function IconRail({
                 aria-pressed={panelCollapsed}
                 aria-controls="context-panel"
                 className={cn(
-                  "grid size-10 cursor-pointer place-items-center rounded-lg text-white/60",
+                  "grid size-10 cursor-pointer place-items-center rounded-lg text-white/75",
                   "transition-colors duration-150 hover:bg-white/10 hover:text-white",
                   "focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none",
                 )}
@@ -104,7 +104,7 @@ function RailButton({ section, active }: { section: RailSection; active: boolean
           className={cn(
             "grid size-10 place-items-center rounded-lg transition-colors duration-150",
             "focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none",
-            active ? cn("bg-white", ROYAL) : "text-white/65 hover:bg-white/10 hover:text-white",
+            active ? cn("bg-white", ROYAL) : "text-white/75 hover:bg-white/10 hover:text-white",
           )}
         >
           <NavIcon name={section.icon} className="size-[18px]" />

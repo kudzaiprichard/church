@@ -98,7 +98,7 @@ export function NoteEditor({
               setBody("");
               setStatus({ kind: "idle" });
             }}
-            className="text-destructive cursor-pointer text-xs font-semibold hover:underline"
+            className="text-destructive min-h-6 cursor-pointer text-xs font-semibold hover:underline"
           >
             Delete note
           </button>

@@ -70,7 +70,7 @@ export default async function NotificationsPage(props: PageProps<"/notifications
             <form action={markAllNotificationsRead}>
               <button
                 type="submit"
-                className="text-primary inline-flex cursor-pointer items-center gap-1.5 rounded-sm text-xs font-semibold hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+                className="text-primary inline-flex min-h-6 cursor-pointer items-center gap-1.5 rounded-sm text-xs font-semibold hover:underline focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
               >
                 <CheckCheckIcon className="size-3.5" aria-hidden />
                 Mark all read

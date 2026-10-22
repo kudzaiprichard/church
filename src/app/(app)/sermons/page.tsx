@@ -36,7 +36,7 @@ export default async function SermonsPage(props: PageProps<"/sermons">) {
   const [result, facets] = await Promise.all([listSermons(user, filters), sermonFacets(user)]);
   const filtered = Boolean(filters.q || filters.series || filters.preacher || filters.tag);
   const control =
-    "border-input bg-background mt-1.5 h-10 w-full rounded-lg border px-3 text-sm outline-none focus:border-[var(--ring)]";
+    "border-input bg-background mt-1.5 h-10 w-full rounded-lg border px-3 text-sm outline-none focus:border-[var(--ring)] focus:ring-4 focus:ring-[color-mix(in_oklab,var(--ring)_18%,transparent)]";
 
   return (
     <>
