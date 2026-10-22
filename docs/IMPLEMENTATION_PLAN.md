@@ -24,7 +24,7 @@ The single place to see where the build stands. Update it as described in
 | 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | ✅ Done | #15 | 2026-10-21 | 2026-10-21 |
 | 1 | Groups & communication | `feat/phase-1-groups-messaging` | ✅ Done | #16 | 2026-10-22 | 2026-10-22 |
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ✅ Done | #17 | 2026-10-22 | 2026-10-22 |
-| 3 | Finance | `feat/phase-3-finance` | ⬜ Not started | — | — | — |
+| 3 | Finance | `feat/phase-3-finance` | 🟡 In progress | — | 2026-10-22 | — |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ⬜ Not started | — | — | — |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ⬜ Not started | — | — | — |
 | 6 | Hardening & launch | `feat/phase-6-hardening` | ⬜ Not started | — | — | — |
@@ -661,7 +661,7 @@ sees own history and rate → member posts a prayer request, leader pins it.
 
 ## Phase 3 — Finance
 
-**Status:** ⬜ Not started
+**Status:** 🟡 In progress
 **Branch:** `feat/phase-3-finance`
 **Goal:** Chema, welfare, tithe and partnership giving, with review, projects, pledges, charts and
 CSV.
@@ -669,10 +669,13 @@ CSV.
 **Depends on:** Phase 1 (`notify()`); Phase 0 (permissions).
 
 ### Entry criteria
-- [ ] Phase 2 ✅ and merged.
-- [ ] **Q1** (Elder's finance reach) and **Q2** (confirmation of self-logged payments) answered or
+- [x] Phase 2 ✅ and merged.
+- [x] **Q1** (Elder's finance reach) and **Q2** (confirmation of self-logged payments) answered or
       defaults accepted in writing.
-- [ ] Q6 project targets supplied, or placeholder targets agreed for seeding.
+      *Defaults accepted by the maintainer on 2026-10-22: the Elder has full church finance and
+      export; member-logged payments are PENDING until an Apostle or the Elder confirms them.*
+- [x] Q6 project targets supplied, or placeholder targets agreed for seeding.
+      *Placeholder targets agreed on 2026-10-22; Phase 6 replaces them with real ones.*
 
 ### Deliverables
 - [ ] Migration `phase3_finance`: `ContributionType`/`ContributionStatus`, reshaped
