@@ -6,7 +6,7 @@ import { requireSession } from "@/lib/auth/dal";
 import { prayerBoard } from "@/lib/data/prayer";
 import { cn } from "@/lib/utils";
 
-import { EmptyState, PageHeader, Panel } from "../_components/page-parts";
+import { EmptyState, FactList, PageGrid, PageHeader, Panel } from "../_components/page-parts";
 
 import { PrayerList } from "./prayer-board";
 import { PrayerForm } from "./prayer-form";
@@ -44,13 +44,12 @@ export default async function PrayerPage(props: PageProps<"/prayer">) {
   return (
     <>
       <PageHeader
-        eyebrow="Church life"
         title="Prayer requests"
         description="Requests stay within each connect group. Your group's leader is told when you post."
       />
 
       {board.groups.length === 0 ? (
-        <div className="bg-card border-border max-w-3xl rounded-xl border">
+        <div className="bg-card border-border max-w-3xl rounded-lg border">
           <EmptyState
             icon={<HandHeartIcon className="size-5" aria-hidden />}
             title="You are not in a group yet"
@@ -63,18 +62,39 @@ export default async function PrayerPage(props: PageProps<"/prayer">) {
         <>
           <nav
             aria-label="Groups"
-            className="border-border mb-4 flex max-w-3xl gap-1 overflow-x-auto border-b"
+            className="border-border mb-4 flex gap-1 overflow-x-auto border-b"
           >
             {apostle && tab(null, "All")}
             {board.groups.map((entry) => tab(entry.id, entry.name))}
           </nav>
 
-          <div className="grid max-w-3xl gap-4">
-            {board.canPost && board.selected && selectedName && (
-              <Panel>
-                <PrayerForm groupId={board.selected} groupName={selectedName} />
-              </Panel>
-            )}
+          <PageGrid
+            asideFirst
+            aside={
+              <>
+                {board.canPost && board.selected && selectedName && (
+                  <Panel title="Share a request" description={`Seen only by ${selectedName}.`}>
+                    <PrayerForm groupId={board.selected} groupName={selectedName} />
+                  </Panel>
+                )}
+                <Panel title={selectedName ?? "Every group"}>
+                  <FactList
+                    facts={[
+                      { label: "Requests", value: board.items.length },
+                      {
+                        label: "Pinned",
+                        value: board.items.filter((item) => item.isPinned).length,
+                      },
+                      {
+                        label: "Answered",
+                        value: board.items.filter((item) => item.isAnswered).length,
+                      },
+                    ]}
+                  />
+                </Panel>
+              </>
+            }
+          >
             <Panel
               title={selectedName ?? "Every group"}
               description="Pinned first, then newest."
@@ -82,7 +102,7 @@ export default async function PrayerPage(props: PageProps<"/prayer">) {
             >
               <PrayerList items={board.items} showGroup={board.selected === null} />
             </Panel>
-          </div>
+          </PageGrid>
         </>
       )}
     </>

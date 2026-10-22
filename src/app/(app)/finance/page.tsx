@@ -5,13 +5,16 @@ import Link from "next/link";
 import type { ContributionType } from "@/generated/prisma/enums";
 import { requireSession } from "@/lib/auth/dal";
 import { myGiving, paymentOptions } from "@/lib/data/finance";
-import { harareToday } from "@/lib/dates";
+import { myPledges } from "@/lib/data/partnerships";
+import { formatDateOnly, harareToday } from "@/lib/dates";
+import { formatMoney } from "@/lib/finance/money";
+import { progress } from "@/lib/finance/pledges";
 import { TYPE_LABELS, TYPES } from "@/lib/finance/totals";
 import { cn } from "@/lib/utils";
 
-import { EmptyState, PageHeader, Panel } from "../_components/page-parts";
+import { EmptyState, PageGrid, PageHeader, Panel, PanelLink } from "../_components/page-parts";
 
-import { ChemaGrid, HistoryTable, TypeTotals } from "./finance-parts";
+import { ChemaGrid, HistoryTable, PledgeBadge, Progress, TypeTotals } from "./finance-parts";
 import { LogPaymentDialog } from "./payment-form";
 
 export const metadata: Metadata = { title: "My giving" };
@@ -28,10 +31,14 @@ export default async function MyGivingPage(props: PageProps<"/finance">) {
   const year = Number(params.year) || undefined;
   const type = TYPES.find((value) => value === params.type) as ContributionType | undefined;
 
-  const [giving, options] = await Promise.all([
+  const [giving, options, pledges] = await Promise.all([
     myGiving(user, { year, type }),
     paymentOptions(user),
+    myPledges(user),
   ]);
+  const openPledges = pledges.filter(
+    (pledge) => pledge.state === "ACTIVE" || pledge.state === "OVERDUE",
+  );
   const today = harareToday();
 
   const chip = (active: boolean) =>
@@ -53,14 +60,13 @@ export default async function MyGivingPage(props: PageProps<"/finance">) {
   return (
     <>
       <PageHeader
-        eyebrow="Records"
         title="My giving"
         description="Your own payments. Only you and the church's finance officers see them."
         actions={
           <>
             <Link
               href="/finance/pledges"
-              className="border-border bg-card hover:bg-muted inline-flex h-9 items-center rounded-lg border px-3.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+              className="border-border bg-card hover:bg-muted inline-flex h-9 items-center rounded-md border px-3.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
             >
               Pledges
             </Link>
@@ -69,58 +75,111 @@ export default async function MyGivingPage(props: PageProps<"/finance">) {
         }
       />
 
-      <h2 className="text-foreground mb-3 text-sm font-bold">{giving.year} so far</h2>
-      <TypeTotals confirmed={giving.totals.confirmed} pending={giving.totals.pending} />
+      <PageGrid
+        aside={
+          <>
+            <Panel title="Your pledges" action={<PanelLink href="/finance/pledges">All</PanelLink>}>
+              {openPledges.length === 0 ? (
+                <p className="text-muted-foreground text-sm">
+                  No open pledges.{" "}
+                  <Link
+                    href="/finance/pledges"
+                    className="text-primary font-semibold hover:underline"
+                  >
+                    Make one
+                  </Link>
+                </p>
+              ) : (
+                <ul className="grid gap-4">
+                  {openPledges.map((pledge) => (
+                    <li key={pledge.id} className="min-w-0">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="text-foreground truncate text-sm font-medium">
+                          {pledge.description}
+                        </p>
+                        <PledgeBadge state={pledge.state} />
+                      </div>
+                      <p className="text-muted-foreground numeric mt-0.5 text-xs">
+                        {formatMoney(pledge.paidCents)} of {formatMoney(pledge.totalCents)} · due{" "}
+                        {formatDateOnly(pledge.dueDate)}
+                      </p>
+                      <div className="mt-1.5">
+                        <Progress
+                          value={progress(pledge.paidCents, pledge.totalCents).real}
+                          label={`${pledge.description} progress`}
+                        />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Panel>
 
-      <Panel
-        title={`Chema ${giving.year}`}
-        description="$5 in January, $1 in other months."
-        className="mt-4"
-      >
-        <ChemaGrid cells={giving.grid} />
-      </Panel>
-
-      <Panel
-        title="History"
-        className="mt-4"
-        bodyClassName="p-0"
-        action={
-          giving.years.length > 1 && (
-            <nav aria-label="Year" className="flex gap-1">
-              {giving.years.map((option) => (
-                <Link
-                  key={option}
-                  href={href({ year: option, type })}
-                  className={chip(option === giving.year)}
-                >
-                  {option}
-                </Link>
-              ))}
-            </nav>
-          )
+            <Panel title="How giving works">
+              <ul className="text-muted-foreground grid gap-2 text-sm leading-relaxed">
+                <li>Chema is $5 in January and $1 in every other month.</li>
+                <li>A payment you log stays pending until a finance officer confirms it.</li>
+                <li>
+                  Give to a church project from{" "}
+                  <Link href="/partnerships" className="text-primary font-medium hover:underline">
+                    Partnerships
+                  </Link>
+                  , or pledge a total by a date.
+                </li>
+              </ul>
+            </Panel>
+          </>
         }
       >
-        <nav
-          aria-label="Filter by type"
-          className="border-border flex gap-1.5 overflow-x-auto border-b px-5 py-3"
+        <Panel title={`${giving.year} so far`}>
+          <TypeTotals confirmed={giving.totals.confirmed} pending={giving.totals.pending} />
+        </Panel>
+
+        <Panel title={`Chema ${giving.year}`} description="$5 in January, $1 in other months.">
+          <ChemaGrid cells={giving.grid} />
+        </Panel>
+
+        <Panel
+          title="History"
+          bodyClassName="p-0"
+          action={
+            giving.years.length > 1 && (
+              <nav aria-label="Year" className="flex gap-1">
+                {giving.years.map((option) => (
+                  <Link
+                    key={option}
+                    href={href({ year: option, type })}
+                    className={chip(option === giving.year)}
+                  >
+                    {option}
+                  </Link>
+                ))}
+              </nav>
+            )
+          }
         >
-          <Link href={href({})} className={chip(!type)}>
-            All
-          </Link>
-          {TYPES.map((value) => (
-            <Link key={value} href={href({ type: value })} className={chip(type === value)}>
-              {TYPE_LABELS[value]}
+          <nav
+            aria-label="Filter by type"
+            className="border-border flex gap-1.5 overflow-x-auto border-b px-4 py-2.5"
+          >
+            <Link href={href({})} className={chip(!type)}>
+              All
             </Link>
-          ))}
-        </nav>
-        {giving.history.length === 0 ? (
-          <EmptyState icon={<WalletIcon className="size-5" aria-hidden />} title="Nothing logged">
-            Log a payment and it appears here, pending until it is confirmed.
-          </EmptyState>
-        ) : (
-          <HistoryTable rows={giving.history} />
-        )}
-      </Panel>
+            {TYPES.map((value) => (
+              <Link key={value} href={href({ type: value })} className={chip(type === value)}>
+                {TYPE_LABELS[value]}
+              </Link>
+            ))}
+          </nav>
+          {giving.history.length === 0 ? (
+            <EmptyState icon={<WalletIcon className="size-5" aria-hidden />} title="Nothing logged">
+              Log a payment and it appears here, pending until it is confirmed.
+            </EmptyState>
+          ) : (
+            <HistoryTable rows={giving.history} />
+          )}
+        </Panel>
+      </PageGrid>
     </>
   );
 }

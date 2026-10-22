@@ -18,7 +18,7 @@ import { groupOptions } from "@/lib/data/members";
 import { formatDateOnly } from "@/lib/dates";
 import { cn } from "@/lib/utils";
 
-import { EmptyState, PageHeader, Panel, StatCard } from "../_components/page-parts";
+import { EmptyState, FactList, PageGrid, PageHeader, Panel } from "../_components/page-parts";
 import { dayLabel } from "../events/event-parts";
 
 export const metadata: Metadata = { title: "Attendance" };
@@ -47,39 +47,61 @@ export default async function AttendanceOverviewPage(props: PageProps<"/attendan
     Promise.all(led.map((groupId) => groupMatrix(user, groupId))),
   ]);
 
+  const present = own.rows.filter((row) => row.status === "PRESENT").length;
+  // Leaders and Apostles have the church's or their groups' tables to work
+  // with; everyone else's page is their own history.
+  const oversees = (apostle && church !== null) || matrices.some(Boolean);
+
   return (
     <>
       <PageHeader
-        eyebrow="Records"
         title="Attendance"
         description="Rates are present over marked, across the last twelve months."
       />
 
-      <div className="grid gap-4 sm:grid-cols-3">
-        <StatCard
-          label="Your attendance rate"
-          value={formatRate(own.rate)}
-          icon={<ClipboardCheckIcon className="size-4" aria-hidden />}
-          hint={own.rows.length === 0 ? "Nothing marked yet." : `${own.rows.length} events marked.`}
-        />
-      </div>
+      <PageGrid
+        aside={
+          <>
+            <Panel title="Your attendance">
+              <p className="font-title numeric text-foreground text-4xl leading-none font-semibold">
+                {formatRate(own.rate)}
+              </p>
+              <div className="mt-4">
+                <FactList
+                  facts={[
+                    { label: "Events marked", value: own.rows.length },
+                    { label: "Present", value: present },
+                    { label: "Absent", value: own.rows.length - present },
+                  ]}
+                />
+              </div>
+            </Panel>
+            {oversees ? (
+              <OwnHistory rows={own.rows} />
+            ) : (
+              <Panel title="How it is taken">
+                <p className="text-muted-foreground text-sm leading-relaxed">
+                  Your group leader marks who was there at each event, from a day before it starts.
+                  The rate is the events you were present at, over those marked.
+                </p>
+              </Panel>
+            )}
+          </>
+        }
+      >
+        {apostle && church && <ChurchPanel rows={church} groups={groups} groupId={filterGroup} />}
 
-      {apostle && church && (
-        <ChurchPanel rows={church} groups={groups} groupId={filterGroup} />
-      )}
+        {matrices.map((matrix) => matrix && <MatrixPanel key={matrix.group.id} matrix={matrix} />)}
 
-      {matrices.map(
-        (matrix) => matrix && <MatrixPanel key={matrix.group.id} matrix={matrix} />,
-      )}
-
-      <OwnHistory rows={own.rows} />
+        {!oversees && <OwnHistory rows={own.rows} />}
+      </PageGrid>
     </>
   );
 }
 
 function OwnHistory({ rows }: { rows: HistoryRow[] }) {
   return (
-    <Panel title="Your history" className="mt-4 max-w-3xl" bodyClassName="p-0">
+    <Panel title="Your history" bodyClassName="p-0">
       {rows.length === 0 ? (
         <EmptyState
           icon={<ClipboardCheckIcon className="size-5" aria-hidden />}
@@ -90,7 +112,7 @@ function OwnHistory({ rows }: { rows: HistoryRow[] }) {
       ) : (
         <ul className="divide-border divide-y">
           {rows.map((row) => (
-            <li key={row.eventId} className="flex items-center justify-between gap-3 px-5 py-3">
+            <li key={row.eventId} className="flex items-center justify-between gap-3 px-4 py-2.5">
               <div className="min-w-0">
                 <Link
                   href={`/events/${row.eventId}`}
@@ -129,7 +151,6 @@ function MatrixPanel({ matrix }: { matrix: GroupMatrix }) {
     <Panel
       title={matrix.group.name}
       description="Your group against its recent events and the all-church ones. P present, A absent."
-      className="mt-4"
       bodyClassName="p-0"
     >
       {matrix.members.length === 0 || matrix.events.length === 0 ? (
@@ -162,7 +183,9 @@ function MatrixPanel({ matrix }: { matrix: GroupMatrix }) {
                         title={event.title}
                         className="hover:underline"
                       >
-                        <span className="text-muted-foreground block text-[0.65rem]">{day.weekday}</span>
+                        <span className="text-muted-foreground block text-[0.65rem]">
+                          {day.weekday}
+                        </span>
                         <span className="numeric">{day.dayMonth}</span>
                       </Link>
                     </th>
@@ -261,7 +284,6 @@ function ChurchPanel({
           </button>
         </form>
       }
-      className="mt-4"
       bodyClassName="p-0"
     >
       {rows.length === 0 ? (
@@ -302,7 +324,9 @@ function ChurchPanel({
                     </span>
                   </td>
                   <td className="numeric px-3 py-2.5 text-right font-semibold">{row.present}</td>
-                  <td className="numeric text-muted-foreground px-5 py-2.5 text-right">{row.absent}</td>
+                  <td className="numeric text-muted-foreground px-5 py-2.5 text-right">
+                    {row.absent}
+                  </td>
                 </tr>
               ))}
             </tbody>

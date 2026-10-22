@@ -10,7 +10,7 @@ import { getOwnNote } from "@/lib/data/notes";
 import { getSermon } from "@/lib/data/sermons";
 import { formatDateOnly } from "@/lib/dates";
 
-import { PageHeader, Panel } from "../../_components/page-parts";
+import { FactList, PageGrid, PageHeader, Panel } from "../../_components/page-parts";
 
 import { NoteEditor } from "./note-editor";
 
@@ -40,22 +40,20 @@ export default async function SermonPage(props: PageProps<"/sermons/[id]">) {
       </Link>
 
       <PageHeader
-        eyebrow={[formatDateOnly(sermon.preachedAt), sermon.seriesName].filter(Boolean).join(" · ")}
         title={sermon.title}
         description={
           <>
-            {sermon.preacher}
-            {sermon.scriptureRef && (
-              <span className="text-accent-foreground ml-2 font-semibold">{sermon.scriptureRef}</span>
+            {sermon.preacher} · {formatDateOnly(sermon.preachedAt)}
+            {!sermon.isPublished && (
+              <span className="ml-2 italic">Draft — members cannot see it</span>
             )}
-            {!sermon.isPublished && <span className="ml-2 italic">Draft — members cannot see it</span>}
           </>
         }
         actions={
           can(user, "sermons.manage") && (
             <Link
               href={`/sermons/${sermon.id}/edit`}
-              className="border-border bg-card hover:bg-muted inline-flex h-9 items-center gap-2 rounded-lg border px-3.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+              className="border-border bg-card hover:bg-muted inline-flex h-9 items-center gap-2 rounded-md border px-3.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
             >
               <PencilIcon className="size-3.5" aria-hidden />
               Edit
@@ -64,23 +62,43 @@ export default async function SermonPage(props: PageProps<"/sermons/[id]">) {
         }
       />
 
-      <div className="grid max-w-3xl gap-4">
+      <PageGrid
+        aside={
+          <>
+            <Panel>
+              <NoteEditor sermonId={sermon.id} initial={note} />
+            </Panel>
+            <Panel title="About this sermon">
+              <FactList
+                facts={[
+                  { label: "Preached", value: formatDateOnly(sermon.preachedAt) },
+                  { label: "Preacher", value: sermon.preacher },
+                  ...(sermon.seriesName ? [{ label: "Series", value: sermon.seriesName }] : []),
+                  ...(sermon.scriptureRef
+                    ? [{ label: "Scripture", value: sermon.scriptureRef }]
+                    : []),
+                ]}
+              />
+            </Panel>
+          </>
+        }
+      >
         <Panel>
-          <div className="grid gap-3 text-sm leading-relaxed">
+          {sermon.audioUrl && (
+            <div id="listen" className="bg-muted mb-4 scroll-mt-24 rounded-md p-3">
+              <audio controls preload="none" src={sermon.audioUrl} className="w-full">
+                <a href={sermon.audioUrl}>Download the audio</a>
+              </audio>
+            </div>
+          )}
+
+          <div className="grid max-w-[68ch] gap-3 text-[0.95rem] leading-relaxed">
             {paragraphs(sermon.summary).map((paragraph) => (
               <p key={paragraph.slice(0, 40)} className="text-foreground">
                 {paragraph}
               </p>
             ))}
           </div>
-
-          {sermon.audioUrl && (
-            <div id="listen" className="mt-5 scroll-mt-24">
-              <audio controls preload="none" src={sermon.audioUrl} className="w-full">
-                <a href={sermon.audioUrl}>Download the audio</a>
-              </audio>
-            </div>
-          )}
 
           {(sermon.videoUrl || sermon.notesUrl) && (
             <div className="mt-4 flex flex-wrap gap-2">
@@ -113,14 +131,10 @@ export default async function SermonPage(props: PageProps<"/sermons/[id]">) {
             </p>
           )}
         </Panel>
-
-        <Panel description="Private to you. Nobody else — not the church office, not the Apostles — can read it.">
-          <NoteEditor sermonId={sermon.id} initial={note} />
-        </Panel>
-      </div>
+      </PageGrid>
     </>
   );
 }
 
 const button =
-  "border-border hover:bg-muted inline-flex h-9 items-center gap-1.5 rounded-lg border px-3.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none";
+  "border-border hover:bg-muted inline-flex h-9 items-center gap-1.5 rounded-md border px-3.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none";
