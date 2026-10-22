@@ -693,7 +693,7 @@ CSV.
 - [x] `/finance/chema`: compliance by month, leaders limited to their groups.
 - [x] `/finance/export` CSV route (`src/lib/csv.ts`, formula-injection safe, audited).
 - [x] `/partnerships`, `/partnerships/[id]`: progress, contributor table, complete-project dialog.
-- [ ] `/finance/pledges`: create, progress, auto-fulfil, cancel, derived Overdue.
+- [x] `/finance/pledges`: create, progress, auto-fulfil, cancel, derived Overdue.
 - [ ] Member detail Giving + Pledges tabs; dashboard finance cards per role.
 - [ ] Tests: `expectedChema` for all 12 months; duplicate chema rejected; totals count CONFIRMED
       only; CSV escaping; leader sees no non-chema amounts.
