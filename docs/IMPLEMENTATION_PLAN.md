@@ -685,7 +685,7 @@ CSV.
 - [x] Seed the five partnership projects.
 - [x] `src/lib/finance/chema.ts` (`expectedChema`, compliance) and `src/lib/finance/money.ts`;
       `<Money/>` component.
-- [ ] `src/lib/data/finance.ts`, `partnerships.ts`.
+- [x] `src/lib/data/finance.ts`, `partnerships.ts`.
 - [ ] `/finance`: Log Payment dialog, totals, 12-month chema grid, history.
 - [ ] `/finance/review`: pending queue, confirm / reject (reason) / bulk confirm; notify member.
 - [ ] Record-for-member and reversing entries for officers, with audit.
