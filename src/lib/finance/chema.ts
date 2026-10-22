@@ -86,3 +86,32 @@ export function chemaGrid(
     return { month, name, status: future && status === "UNPAID" ? "FUTURE" : status };
   });
 }
+
+export type ComplianceRow = {
+  member: { id: string; name: string };
+  groups: string[];
+  expectedCents: Cents;
+  status: ChemaStatus;
+  paidAt: string | null;
+};
+
+/**
+ * One member's line on the compliance page — built here so its shape is
+ * tested: the month's expected chema, a status and the date paid. No amount
+ * of anything else, which is what lets a group leader see it (SCOPE §4.2).
+ */
+export function complianceRow(
+  member: { id: string; name: string; groups: string[] },
+  month: number,
+  chema: readonly (ChemaRow & { paidAt: string })[],
+): ComplianceRow {
+  const status = chemaStatus(chema);
+  const paid = chema.find((row) => row.status === "CONFIRMED" && !row.reversed);
+  return {
+    member: { id: member.id, name: member.name },
+    groups: member.groups,
+    expectedCents: expectedChema(month),
+    status,
+    paidAt: status === "PAID" && paid ? paid.paidAt : null,
+  };
+}

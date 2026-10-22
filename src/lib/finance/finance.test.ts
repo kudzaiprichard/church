@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { chemaGrid, chemaStatus, compliance, expectedChema } from "./chema";
+import { chemaGrid, chemaStatus, complianceRow, compliance, expectedChema } from "./chema";
 import { amountSchema, formatMoney, fromCents, sumCents, toCents } from "./money";
 import { pledgeState, progress } from "./pledges";
 import { paymentSchema, projectSchema } from "./schema";
@@ -53,6 +53,27 @@ describe("chemaStatus and compliance", () => {
     expect(grid[0].status).toBe("PAID");
     expect(grid[9].status).toBe("UNPAID");
     expect(grid[10].status).toBe("FUTURE");
+  });
+});
+
+describe("complianceRow — what a leader sees", () => {
+  it("carries the expected chema, a status and a date, and no other amount", () => {
+    const row = complianceRow({ id: "m", name: "Farai", groups: ["Youth Alive"] }, 1, [
+      { status: "CONFIRMED", reversed: false, paidAt: "2026-01-04" },
+    ]);
+    expect(Object.keys(row).sort()).toEqual([
+      "expectedCents",
+      "groups",
+      "member",
+      "paidAt",
+      "status",
+    ]);
+    expect(row).toMatchObject({ expectedCents: 500, status: "PAID", paidAt: "2026-01-04" });
+    expect(Object.keys(row.member).sort()).toEqual(["id", "name"]);
+  });
+
+  it("gives no date for anything but a paid month", () => {
+    expect(complianceRow({ id: "m", name: "x", groups: [] }, 3, []).paidAt).toBeNull();
   });
 });
 

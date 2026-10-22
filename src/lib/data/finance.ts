@@ -5,13 +5,7 @@ import type { ContributionStatus, ContributionType } from "@/generated/prisma/en
 import { ledGroupIds, selfScope, type SessionUser } from "@/lib/auth/dal";
 import { can } from "@/lib/auth/permissions";
 import { fromDateOnly, harareToday, toDateOnly } from "@/lib/dates";
-import {
-  chemaGrid,
-  chemaStatus,
-  compliance,
-  expectedChema,
-  type ChemaStatus,
-} from "@/lib/finance/chema";
+import { chemaGrid, chemaStatus, compliance, complianceRow } from "@/lib/finance/chema";
 import { toCents, type Cents } from "@/lib/finance/money";
 import { byGroup, byMonth, summarise } from "@/lib/finance/totals";
 import { prisma } from "@/lib/prisma";
@@ -33,7 +27,7 @@ import { prisma } from "@/lib/prisma";
 
 export type ContributionRow = {
   id: string;
-  member: { id: string; name: string };
+  member: { id: string; name: string; email: string };
   type: ContributionType;
   cents: Cents;
   paidAt: string;
@@ -71,6 +65,7 @@ const rowSelect = {
     select: {
       firstName: true,
       lastName: true,
+      email: true,
       groupMemberships: { select: { group: { select: { name: true } } } },
     },
   },
@@ -89,7 +84,7 @@ const name = (person: { firstName: string; lastName: string }) =>
 function toRow(row: Row): ContributionRow {
   return {
     id: row.id,
-    member: { id: row.userId, name: name(row.user) },
+    member: { id: row.userId, name: name(row.user), email: row.user.email },
     type: row.type,
     cents: toCents(row.amount),
     paidAt: fromDateOnly(row.paidAt),
@@ -218,14 +213,6 @@ export async function churchFinance(user: SessionUser, filters: ChurchFilters) {
   };
 }
 
-export type ComplianceRow = {
-  member: { id: string; name: string };
-  groups: string[];
-  expectedCents: Cents;
-  status: ChemaStatus;
-  paidAt: string | null;
-};
-
 /**
  * Chema compliance for one month (SCOPE §9.9).
  *
@@ -273,24 +260,21 @@ export async function chemaCompliance(
     },
   });
 
-  const expectedCents = expectedChema(filters.month);
-  const rows: ComplianceRow[] = members.map((member) => {
-    const chema = member.contributions.map((row) => ({
-      status: row.status,
-      reversed: row.reversedBy !== null,
-    }));
-    const status = chemaStatus(chema);
-    const paid = member.contributions.find(
-      (row) => row.status === "CONFIRMED" && row.reversedBy === null,
-    );
-    return {
-      member: { id: member.id, name: name(member) },
-      groups: member.groupMemberships.map(({ group }) => group.name),
-      expectedCents,
-      status,
-      paidAt: status === "PAID" && paid ? fromDateOnly(paid.paidAt) : null,
-    };
-  });
+  const rows = members.map((member) =>
+    complianceRow(
+      {
+        id: member.id,
+        name: name(member),
+        groups: member.groupMemberships.map(({ group }) => group.name),
+      },
+      filters.month,
+      member.contributions.map((row) => ({
+        status: row.status,
+        reversed: row.reversedBy !== null,
+        paidAt: fromDateOnly(row.paidAt),
+      })),
+    ),
+  );
 
   return { rows, ...compliance(rows.map((row) => row.status)), officer, ledGroupIds: led };
 }
