@@ -17,7 +17,7 @@ export function MailboxTabs({ active, canSend }: { active: "inbox" | "sent"; can
   return (
     <nav
       aria-label="Mailbox"
-      className="border-border mb-4 flex gap-1 scrollbar-none overflow-x-auto border-b"
+      className="border-border mb-4 flex gap-1 scrollbar-none overflow-x-auto overflow-y-hidden border-b"
     >
       {tabs.map((tab) => (
         <Link

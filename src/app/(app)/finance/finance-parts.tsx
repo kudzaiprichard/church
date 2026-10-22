@@ -166,7 +166,7 @@ export function HistoryTable({
   actions?: (row: ContributionRow) => ReactNode;
 }) {
   return (
-    <div className="overflow-x-auto">
+    <div className="overflow-x-auto overflow-y-hidden">
       <table className="w-full text-sm">
         <thead>
           <tr className="border-border text-muted-foreground border-b text-xs">

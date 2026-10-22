@@ -178,7 +178,7 @@ export default async function MemberPage(props: PageProps<"/members/[id]">) {
         <div className="min-w-0">
           <nav
             aria-label="Member record"
-            className="border-border mb-4 flex gap-1 scrollbar-none overflow-x-auto border-b"
+            className="border-border mb-4 flex gap-1 scrollbar-none overflow-x-auto overflow-y-hidden border-b"
           >
             {tabs.map((entry) => (
               <Link

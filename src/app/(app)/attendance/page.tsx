@@ -163,7 +163,7 @@ function MatrixPanel({ matrix }: { matrix: GroupMatrix }) {
             : "No events in the last twelve months yet."}
         </EmptyState>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-hidden">
           <table className="w-full min-w-max text-sm">
             <thead>
               <tr className="border-border border-b">
@@ -294,7 +294,7 @@ function ChurchPanel({
           Past events appear here with their attendance.
         </EmptyState>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto overflow-y-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-border text-muted-foreground border-b text-xs">

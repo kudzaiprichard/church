@@ -18,7 +18,7 @@ export function SettingsTabs() {
   return (
     <nav
       aria-label="Settings"
-      className="border-border mb-5 flex gap-1 scrollbar-none overflow-x-auto border-b"
+      className="border-border mb-5 flex gap-1 scrollbar-none overflow-x-auto overflow-y-hidden border-b"
     >
       {TABS.map((tab) => {
         const active = pathname === tab.href;

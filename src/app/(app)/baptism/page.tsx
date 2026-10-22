@@ -77,7 +77,7 @@ export default async function BaptismRecordsPage(props: PageProps<"/baptism">) {
             Records are created when a member is enrolled.
           </EmptyState>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-border text-muted-foreground border-b text-xs">

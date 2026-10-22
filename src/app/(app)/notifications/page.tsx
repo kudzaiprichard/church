@@ -46,7 +46,7 @@ export default async function NotificationsPage(props: PageProps<"/notifications
         description="Messages, replies and group activity addressed to you. Only you see these."
       />
 
-      <nav aria-label="Filter by kind" className="mb-4 flex gap-1.5 overflow-x-auto pb-1">
+      <nav aria-label="Filter by kind" className="mb-4 flex gap-1.5 overflow-x-auto overflow-y-hidden pb-1">
         <Link href="/notifications" aria-current={!type ? "page" : undefined} className={chip(!type)}>
           All
         </Link>

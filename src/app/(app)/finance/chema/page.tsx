@@ -158,7 +158,7 @@ export default async function ChemaPage(props: PageProps<"/finance/chema">) {
               No active members match.
             </EmptyState>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto overflow-y-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-border text-muted-foreground border-b text-xs">

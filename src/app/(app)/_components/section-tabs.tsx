@@ -37,7 +37,7 @@ export function SectionTabs({
   return (
     <nav
       aria-label={`${section.label} pages`}
-      className="border-border bg-background flex h-12 shrink-0 items-stretch gap-1 scrollbar-none overflow-x-auto border-b px-3 sm:px-5"
+      className="border-border bg-background flex h-12 shrink-0 items-stretch gap-1 scrollbar-none overflow-x-auto overflow-y-hidden border-b px-3 sm:px-5"
     >
       {section.items.map((item) => {
         const active = item.href === current;

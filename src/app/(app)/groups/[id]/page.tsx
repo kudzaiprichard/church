@@ -232,7 +232,7 @@ export default async function GroupPage(props: PageProps<"/groups/[id]">) {
         <div className="min-w-0">
           <nav
             aria-label="Group"
-            className="border-border mb-4 flex gap-1 scrollbar-none overflow-x-auto border-b"
+            className="border-border mb-4 flex gap-1 scrollbar-none overflow-x-auto overflow-y-hidden border-b"
           >
             {tabs.map((entry) => (
               <Link

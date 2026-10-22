@@ -160,7 +160,7 @@ export default async function MyGivingPage(props: PageProps<"/finance">) {
         >
           <nav
             aria-label="Filter by type"
-            className="border-border flex gap-1.5 scrollbar-none overflow-x-auto border-b px-4 py-2.5"
+            className="border-border flex gap-1.5 scrollbar-none overflow-x-auto overflow-y-hidden border-b px-4 py-2.5"
           >
             <Link href={href({})} className={chip(!type)}>
               All

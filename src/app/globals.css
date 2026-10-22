@@ -335,9 +335,11 @@
   background: color-mix(in oklab, var(--muted-foreground) 35%, transparent);
   border-radius: 3px;
 }
-* {
-  scrollbar-color: color-mix(in oklab, var(--muted-foreground) 35%, transparent) transparent;
-  scrollbar-width: thin;
+@layer base {
+  * {
+    scrollbar-color: color-mix(in oklab, var(--muted-foreground) 35%, transparent) transparent;
+    scrollbar-width: thin;
+  }
 }
 
 /* A solid action, flat. No shelf, no shadow, no lift — nothing that suggests

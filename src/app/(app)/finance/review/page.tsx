@@ -54,7 +54,7 @@ export default async function ReviewPage() {
             Nothing is waiting for review.
           </EmptyState>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto overflow-y-hidden">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-border text-muted-foreground border-b text-xs">
