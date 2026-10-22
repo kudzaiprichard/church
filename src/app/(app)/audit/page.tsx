@@ -45,6 +45,8 @@ const DESCRIPTIONS: Record<AuditAction, { label: string; weight: "high" | "norma
   PROJECT_UPDATED: { label: "Partnership project edited", weight: "normal" },
   PROJECT_COMPLETED: { label: "Partnership project completed", weight: "normal" },
   PLEDGE_CANCELLED: { label: "Pledge cancelled by an officer", weight: "normal" },
+  SERMON_DELETED: { label: "Sermon deleted", weight: "normal" },
+  DEVOTION_DELETED: { label: "Devotion deleted", weight: "normal" },
 };
 
 /**
