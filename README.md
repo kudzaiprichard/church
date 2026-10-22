@@ -153,3 +153,5 @@ The Vercel build runs `prisma migrate deploy && next build` (`vercel-build`). Pr
 `DATABASE_URL` (pooled), `APP_URL` (https), `RESEND_API_KEY` and `EMAIL_FROM` on a verified
 domain, `CRON_SECRET`, the five `R2_*` variables, and the bootstrap pair for the first sign-in
 only. Work through [`docs/PRODUCTION.md`](./docs/PRODUCTION.md) before real members use it.
+Everything still open before launch — setup, church data and checks — is in
+[`docs/follow-ups.md`](./docs/follow-ups.md).

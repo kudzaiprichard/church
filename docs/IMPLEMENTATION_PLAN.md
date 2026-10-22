@@ -27,7 +27,7 @@ The single place to see where the build stands. Update it as described in
 | 3 | Finance | `feat/phase-3-finance` | ✅ Done | #18 | 2026-10-22 | 2026-10-22 |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ✅ Done | #19 | 2026-10-22 | 2026-10-22 |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ✅ Done | #20 | 2026-10-22 | 2026-10-22 |
-| 6 | Hardening & launch | `feat/phase-6-hardening` | 🟡 In progress | #21 | 2026-10-22 | — |
+| 6 | Hardening & launch | `feat/phase-6-hardening` | 🟡 Merged early — open items in `follow-ups.md` | #21 | 2026-10-22 | — |
 
 **Legend:** ⬜ Not started · 🟡 In progress · ✅ Done · ⛔ Blocked (reason in the phase section)
 
@@ -894,6 +894,10 @@ and run `/api/cron/daily` twice: one notification → install the PWA on a phone
 external service or church data — the scope integration tests, the accessibility, 360 px and
 performance passes, the member import tool and the README — while the services and the data
 (below) are gathered. The phase is completed only once every entry criterion is met.
+**Merged early:** on 2026-10-22, at the maintainer's request, PR #21 was merged to `main` with
+the work done so far and its branch deleted. The unticked items below stay open; they are
+gathered, with the setup they need, in [`follow-ups.md`](./follow-ups.md), and land on a new
+branch when the services and the church data are ready.
 **Branch:** `feat/phase-6-hardening`
 **Goal:** Prove the access rule holds everywhere, polish, and go live with real data.
 **Scope:** §10 (Testing, Definition of done), §11 (remaining decisions).
