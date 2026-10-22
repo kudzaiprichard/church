@@ -35,7 +35,7 @@ export default async function GroupsPage() {
           manages && (
             <Link
               href="/groups/new"
-              className="action-solid inline-flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
+              className="action-solid inline-flex h-9 items-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               <PlusIcon className="size-4" aria-hidden />
               New group
@@ -45,7 +45,7 @@ export default async function GroupsPage() {
       />
 
       {groups.length === 0 ? (
-        <div className="bg-card border-border rounded-xl border">
+        <div className="bg-card border-border rounded-lg border">
           <EmptyState
             icon={<UsersRoundIcon className="size-5" aria-hidden />}
             title={manages ? "No groups yet" : "You are not in a group yet"}
@@ -61,7 +61,7 @@ export default async function GroupsPage() {
             <li key={group.id}>
               <Link
                 href={`/groups/${group.id}`}
-                className="bg-card border-border hover:border-primary/40 flex h-full flex-col rounded-xl border p-5 transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+                className="bg-card border-border hover:border-primary/40 flex h-full flex-col rounded-lg border p-5 transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
               >
                 <div className="flex-1">
                   <div className="flex items-start justify-between gap-3">

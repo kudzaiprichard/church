@@ -64,7 +64,7 @@ export default async function EventsPage(props: PageProps<"/events">) {
           manages && (
             <Link
               href="/events/new"
-              className="action-solid inline-flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
+              className="action-solid inline-flex h-9 items-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               <PlusIcon className="size-4" aria-hidden />
               New event
@@ -158,7 +158,7 @@ function CalendarView({
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:items-start">
       <section
         aria-labelledby="month"
-        className="bg-card border-border rounded-xl border p-4 sm:p-5"
+        className="bg-card border-border rounded-lg border p-4 sm:p-5"
       >
         <header className="mb-4 flex items-center justify-between gap-3">
           <h2 id="month" className="text-foreground text-base font-bold">

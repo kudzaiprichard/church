@@ -11,7 +11,7 @@ import { formatDateOnly } from "@/lib/dates";
  */
 export function SermonCard({ sermon, latest }: { sermon: Sermon; latest: boolean }) {
   return (
-    <article className="bg-card border-border flex h-full flex-col rounded-xl border p-5">
+    <article className="bg-card border-border flex h-full flex-col rounded-lg border p-5">
       <p className="flex flex-wrap items-center gap-2 text-xs">
         <span className="bg-secondary text-primary numeric rounded-md px-1.5 py-0.5 font-semibold">
           {formatDateOnly(sermon.preachedAt)}
@@ -87,4 +87,4 @@ export function SermonCard({ sermon, latest }: { sermon: Sermon; latest: boolean
 }
 
 const button =
-  "border-border hover:bg-muted inline-flex h-8 items-center gap-1.5 rounded-lg border px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none";
+  "border-border hover:bg-muted inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none";

@@ -122,7 +122,7 @@ export default async function AuditPage(props: PageProps<"/audit">) {
       <form
         method="get"
         aria-label="Filter the audit log"
-        className="bg-card border-border mb-4 grid gap-3 rounded-xl border p-4 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto] lg:items-end"
+        className="bg-card border-border mb-4 grid gap-3 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-[repeat(4,minmax(0,1fr))_auto] lg:items-end"
       >
         <label className="text-xs font-semibold">
           Action

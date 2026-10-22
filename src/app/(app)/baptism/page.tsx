@@ -65,7 +65,7 @@ export default async function BaptismRecordsPage(props: PageProps<"/baptism">) {
         </label>
         <button
           type="submit"
-          className="action-solid h-9 cursor-pointer rounded-lg px-4 text-sm font-semibold"
+          className="action-solid h-9 cursor-pointer rounded-md px-4 text-sm font-semibold"
         >
           Filter
         </button>

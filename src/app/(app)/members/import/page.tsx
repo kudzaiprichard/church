@@ -49,7 +49,7 @@ export default async function ImportMembersPage() {
             <Link
               href="/members/import/template"
               prefetch={false}
-              className="border-border bg-card hover:bg-muted inline-flex h-9 items-center gap-2 rounded-lg border px-3.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+              className="border-border bg-card hover:bg-muted inline-flex h-9 items-center gap-2 rounded-md border px-3.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
             >
               <DownloadIcon className="size-4" aria-hidden />
               Template

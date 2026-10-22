@@ -48,7 +48,7 @@ export default async function SermonsPage(props: PageProps<"/sermons">) {
           can(user, "sermons.manage") && (
             <Link
               href="/sermons/new"
-              className="action-solid inline-flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
+              className="action-solid inline-flex h-9 items-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               <PlusIcon className="size-4" aria-hidden />
               Add sermon
@@ -61,7 +61,7 @@ export default async function SermonsPage(props: PageProps<"/sermons">) {
         method="get"
         role="search"
         aria-label="Search sermons"
-        className="bg-card border-border mb-4 grid gap-3 rounded-xl border p-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_auto] lg:items-end"
+        className="bg-card border-border mb-4 grid gap-3 rounded-lg border p-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,2fr)_repeat(3,minmax(0,1fr))_auto] lg:items-end"
       >
         <label className="text-xs font-semibold">
           Search
@@ -131,7 +131,7 @@ export default async function SermonsPage(props: PageProps<"/sermons">) {
       </form>
 
       {result.rows.length === 0 ? (
-        <div className="bg-card border-border rounded-xl border">
+        <div className="bg-card border-border rounded-lg border">
           <EmptyState
             icon={<BookOpenIcon className="size-5" aria-hidden />}
             title={filtered ? "No sermons match" : "No sermons yet"}
@@ -150,7 +150,7 @@ export default async function SermonsPage(props: PageProps<"/sermons">) {
               </li>
             ))}
           </ul>
-          <div className="bg-card border-border mt-4 rounded-xl border">
+          <div className="bg-card border-border mt-4 rounded-lg border">
             <Pagination
               page={result.page}
               pageCount={result.pageCount}

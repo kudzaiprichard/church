@@ -61,13 +61,13 @@ export function AttendanceSheet({ eventId, people }: { eventId: string; people: 
         <button
           type="button"
           onClick={markAllPresent}
-          className="border-border hover:bg-muted h-9 cursor-pointer rounded-lg border px-3.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+          className="border-border hover:bg-muted h-9 cursor-pointer rounded-md border px-3.5 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
         >
           Mark all present
         </button>
       </div>
 
-      <ul className="divide-border border-border divide-y rounded-xl border">
+      <ul className="divide-border border-border divide-y rounded-lg border">
         {people.map((person) => {
           const hidden =
             needle.length > 0 &&

@@ -60,7 +60,7 @@ export default async function BaptismRecordPage(props: PageProps<"/baptism/[id]"
               </p>
               <Link
                 href={`/baptism/${record.id}/certificate`}
-                className="border-border hover:bg-muted inline-flex h-9 items-center gap-2 rounded-lg border px-3.5 text-sm font-semibold"
+                className="border-border hover:bg-muted inline-flex h-9 items-center gap-2 rounded-md border px-3.5 text-sm font-semibold"
               >
                 <PrinterIcon className="size-4" aria-hidden />
                 Print certificate
@@ -76,7 +76,7 @@ export default async function BaptismRecordPage(props: PageProps<"/baptism/[id]"
               </p>
               <button
                 type="submit"
-                className="action-solid inline-flex h-9 cursor-pointer items-center gap-2 rounded-lg px-4 text-sm font-semibold"
+                className="action-solid inline-flex h-9 cursor-pointer items-center gap-2 rounded-md px-4 text-sm font-semibold"
               >
                 <AwardIcon className="size-4" aria-hidden />
                 Issue certificate

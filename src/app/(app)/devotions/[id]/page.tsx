@@ -35,7 +35,7 @@ export default async function DevotionPage(props: PageProps<"/devotions/[id]">) 
         {can(user, "devotions.manage") && (
           <Link
             href={`/devotions/${devotion.id}/edit`}
-            className="border-border bg-card hover:bg-muted inline-flex h-9 items-center gap-2 rounded-lg border px-3.5 text-sm font-semibold transition-colors"
+            className="border-border bg-card hover:bg-muted inline-flex h-9 items-center gap-2 rounded-md border px-3.5 text-sm font-semibold transition-colors"
           >
             <PencilIcon className="size-3.5" aria-hidden />
             Edit

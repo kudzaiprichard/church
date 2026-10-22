@@ -41,7 +41,7 @@ export default async function DevotionsPage(props: PageProps<"/devotions">) {
           feed.manages && (
             <Link
               href="/devotions/new"
-              className="action-solid inline-flex h-9 items-center gap-2 rounded-lg px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
+              className="action-solid inline-flex h-9 items-center gap-2 rounded-md px-4 text-sm font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 focus-visible:outline-none"
             >
               <PlusIcon className="size-4" aria-hidden />
               New devotion
@@ -89,7 +89,7 @@ export default async function DevotionsPage(props: PageProps<"/devotions">) {
       </form>
 
       {feed.rows.length === 0 ? (
-        <div className="bg-card border-border rounded-xl border">
+        <div className="bg-card border-border rounded-lg border">
           <EmptyState icon={<SunriseIcon className="size-5" aria-hidden />} title="Nothing here yet">
             {q
               ? "No devotion matches that search."
@@ -102,7 +102,7 @@ export default async function DevotionsPage(props: PageProps<"/devotions">) {
             <li key={devotion.id}>
               <Link
                 href={`/devotions/${devotion.id}`}
-                className="bg-card border-border hover:border-primary/40 flex h-full flex-col rounded-xl border p-5 transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
+                className="bg-card border-border hover:border-primary/40 flex h-full flex-col rounded-lg border p-5 transition-colors focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:outline-none"
               >
                 <p className="flex flex-wrap items-center gap-2 text-xs">
                   <span className="text-muted-foreground">
