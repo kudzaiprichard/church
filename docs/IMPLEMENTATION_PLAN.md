@@ -23,7 +23,7 @@ The single place to see where the build stands. Update it as described in
 | — | Pre-flight | `docs/implementation-plan` | ✅ Done | #13, #14 | 2026-10-21 | 2026-10-21 |
 | 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | ✅ Done | #15 | 2026-10-21 | 2026-10-21 |
 | 1 | Groups & communication | `feat/phase-1-groups-messaging` | ✅ Done | #16 | 2026-10-22 | 2026-10-22 |
-| 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | 🟡 In progress | #17 | 2026-10-22 | — |
+| 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ✅ Done | #17 | 2026-10-22 | 2026-10-22 |
 | 3 | Finance | `feat/phase-3-finance` | ⬜ Not started | — | — | — |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ⬜ Not started | — | — | — |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ⬜ Not started | — | — | — |
@@ -605,7 +605,7 @@ Apostle assigns Mai Madzana to Kingdom Total Women → she messages her group �
 
 ## Phase 2 — Events, attendance & prayer
 
-**Status:** 🟡 In progress
+**Status:** ✅ Done
 **Branch:** `feat/phase-2-events-attendance-prayer`
 **Goal:** The church calendar, attendance per event with rates, and group prayer.
 **Scope:** §6 (Event, AttendanceRecord, PrayerRequest), §9.6, §9.7, §9.8.
@@ -635,12 +635,22 @@ Apostle assigns Mai Madzana to Kingdom Total Women → she messages her group �
 - [x] Tests: event visibility by group; attendance marking scope; rate (incl. "—" with no
       records); prayer visibility.
 - [x] Nav: Events, Attendance, Prayer requests live.
-- [ ] `docs(plan): complete phase 2`.
+- [x] `docs(plan): complete phase 2`.
 
 ### Exit criteria
-- [ ] A Youth Alive member sees no Kingdom Total Women event or prayer request anywhere.
-- [ ] A leader submitting an outside `userId` in the attendance payload writes nothing.
-- [ ] §4.10 verification green locally; demo script walked.
+- [x] A Youth Alive member sees no Kingdom Total Women event or prayer request anywhere.
+- [x] A leader submitting an outside `userId` in the attendance payload writes nothing.
+- [x] §4.10 verification green locally; demo script walked.
+      *Verified on 2026-10-22 against a new, empty `church_verify_p2` database: all six
+      migrations from `0_init`, seed, `migrate status` up to date and no drift. The hand-edited
+      `phase2_events` backfill was also run against draft-shaped rows (a GROUP event with an
+      audience, an EXCUSED record, a duplicate and an event-less record) and gave the intended
+      result. Typecheck, lint, 132 tests and build green. Demo walked on a production build as
+      Apostle, Elder Mangezi (Youth Alive), Mai Zaranyika (Sunday School), Farai (Youth Alive) and
+      Chipo (Kingdom Total Women). The Elder's sheet with a Sunday School member's id added was
+      refused and the database shows no record written by him for that member. Eleven pages and
+      direct URLs checked as Chipo showed no Youth Alive event or request, and Farai saw none of
+      KTW's. Not verified visually: the 360 px pass (screenshots time out in the test browser).*
 
 ### Demo script
 Apostle creates a Sunday service (all church) and a Youth Alive meeting → Elder Mangezi marks
