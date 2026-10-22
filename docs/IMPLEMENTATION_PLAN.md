@@ -22,7 +22,7 @@ The single place to see where the build stands. Update it as described in
 |:-:|---|---|:-:|:-:|---|---|
 | — | Pre-flight | `docs/implementation-plan` | ✅ Done | #13, #14 | 2026-10-21 | 2026-10-21 |
 | 0 | Foundation: roles, permissions, people, settings | `feat/phase-0-foundation` | ✅ Done | #15 | 2026-10-21 | 2026-10-21 |
-| 1 | Groups & communication | `feat/phase-1-groups-messaging` | 🟡 In progress | #16 | 2026-10-22 | — |
+| 1 | Groups & communication | `feat/phase-1-groups-messaging` | ✅ Done | #16 | 2026-10-22 | 2026-10-22 |
 | 2 | Events, attendance & prayer | `feat/phase-2-events-attendance-prayer` | ⬜ Not started | — | — | — |
 | 3 | Finance | `feat/phase-3-finance` | ⬜ Not started | — | — | — |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ⬜ Not started | — | — | — |
@@ -552,7 +552,7 @@ change the theme and check the landing page.
 
 ## Phase 1 — Groups & communication
 
-**Status:** 🟡 In progress
+**Status:** ✅ Done
 **Branch:** `feat/phase-1-groups-messaging`
 **Goal:** Groups with leaders, a targeted inbox with private replies, and working notifications.
 **Scope:** §5.4, §6 (Messages, Notification), §9.4, §9.5, §9.13 (excluding cron sources).
@@ -578,13 +578,24 @@ change the theme and check the landing page.
 - [x] Dashboard: unread messages, "My group" card for leaders.
 - [x] Tests: audience guard per role; reply-thread visibility; recipients resolved at send time.
 - [x] Nav: Connect groups, Messages, Notifications live.
-- [ ] `docs(plan): complete phase 1`.
+- [x] `docs(plan): complete phase 1`.
 
 ### Exit criteria
-- [ ] Member A cannot see member B's reply to the same group message (test + manual).
-- [ ] A leader cannot target a group they do not lead by tampering with the form.
-- [ ] Changing a group's leader changes who can post to it on the next request.
-- [ ] §4.10 verification green locally; demo script walked.
+- [x] Member A cannot see member B's reply to the same group message (test + manual).
+- [x] A leader cannot target a group they do not lead by tampering with the form.
+- [x] Changing a group's leader changes who can post to it on the next request.
+- [x] §4.10 verification green locally; demo script walked.
+      *Verified on 2026-10-22 against a new, empty `church_verify` database (the developer's
+      `church` database was left untouched): all five migrations applied from `0_init`, seed,
+      `migrate status` up to date and no schema drift. `prisma migrate reset` refuses to run from
+      an AI agent without the maintainer's consent, so the fresh database was created and migrated
+      with `migrate deploy` instead, which is the same end state. Typecheck, lint, 106 tests and
+      build green. Demo walked on a production build as Apostle, Mai Madzana (leader), Tendai and
+      Chipo (members) and Farai (Youth Alive): a tampered group id was refused, a tampered
+      `threadUserId` still filed the reply in the member's own thread, Farai got the not-found page
+      for the KTW message and group, and vacating the leader took compose and the My group card
+      away on her next request. Not verified visually: the 360 px pass (screenshots timed out in
+      the test browser); Phase 6 has the formal 360 px pass.*
 
 ### Demo script
 Apostle assigns Mai Madzana to Kingdom Total Women → she messages her group → two members reply
