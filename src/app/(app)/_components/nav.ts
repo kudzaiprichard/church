@@ -118,8 +118,8 @@ export const RAIL: RailSection[] = [
       { href: "/messages", label: "Messages", icon: "inbox" },
       { href: "/events", label: "Events", icon: "calendar" },
       { href: "/prayer", label: "Prayer requests", icon: "prayer" },
-      { href: "/sermons", label: "Sermons", icon: "sermons", soon: true },
-      { href: "/devotions", label: "Devotions", icon: "devotion", soon: true },
+      { href: "/sermons", label: "Sermons", icon: "sermons" },
+      { href: "/devotions", label: "Devotions", icon: "devotion" },
     ],
   },
   {
@@ -158,7 +158,7 @@ export const RAIL: RailSection[] = [
     href: "/profile",
     items: [
       { href: "/profile", label: "Profile", icon: "profile" },
-      { href: "/notes", label: "My sermon notes", icon: "notes", soon: true },
+      { href: "/notes", label: "My sermon notes", icon: "notes" },
       { href: "/notifications", label: "Notifications", icon: "bell" },
       { href: "/account", label: "Account", icon: "account" },
     ],
@@ -245,6 +245,8 @@ export const LABELS: Record<string, string> = {
   "/messages/sent": "Sent",
   "/events/new": "New event",
   "/finance/pledges": "Pledges",
+  "/sermons/new": "Add sermon",
+  "/devotions/new": "New devotion",
   "/settings/theme": "Theme of the Year",
   "/settings/social": "Social media",
   "/change-password": "Change password",

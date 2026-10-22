@@ -768,11 +768,11 @@ and sees statuses → Apostle creates a project, member pledges and contributes 
       detail; `/notes` index; `saveNote`, `deleteNote`.
 - [x] `src/lib/data/devotions.ts`; `/devotions` (feed + Draft/Scheduled tabs for Apostles),
       `/devotions/new`, `/devotions/[id]`, `/devotions/[id]/edit`; derived status.
-- [ ] Landing: latest 3 sermons and blurred devotion teaser from DB; dashboard devotion + latest
+- [x] Landing: latest 3 sermons and blurred devotion teaser from DB; dashboard devotion + latest
       sermon cards.
-- [ ] Tests: an Apostle session cannot read another user's note through any data function;
+- [x] Tests: an Apostle session cannot read another user's note through any data function;
       scheduled devotion hidden before its Harare date; YouTube URL validation.
-- [ ] Nav: Sermons, Devotions, My sermon notes live.
+- [x] Nav: Sermons, Devotions, My sermon notes live.
 - [ ] `docs(plan): complete phase 4`.
 
 ### Exit criteria
