@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from "vitest";
 
 import { prisma } from "@/lib/prisma";
-import { loadCast, OFFICES, titles } from "@/test/integration/cast";
+import { loadCast, OFFICES, titles, valuesOf } from "@/test/integration/cast";
 import type { CastName } from "@/test/integration/fixture";
 
 import {
@@ -239,7 +239,7 @@ describe("finance (§9.9–9.10)", () => {
     expect(asLeader!.rows.map((row) => row.member.name).sort()).toEqual(
       ["Leader Test", "MemberK Test"].sort(),
     );
-    expect(titles(asLeader!.rows)).not.toMatch(/2000|4000/);
+    expect(valuesOf(asLeader!.rows)).not.toMatch(/2000|4000/);
     expect(await chemaCompliance(cast.memberK, { year, month: 1 })).toBeNull();
     expect(await chemaCompliance(cast.matron, { year, month: 1 })).toBeNull();
   });
@@ -284,7 +284,7 @@ describe("birthdays, baptism and notifications (§9.13, §9.15–9.16)", () => {
     for (const entry of everyone) {
       const allowed = name === "apostle" || entry.id === cast[name].id;
       expect(entry.age !== null).toBe(allowed);
-      expect(JSON.stringify(entry)).not.toMatch(/1990|1995/);
+      expect(valuesOf(entry)).not.toMatch(/1990|1995/);
     }
   });
 

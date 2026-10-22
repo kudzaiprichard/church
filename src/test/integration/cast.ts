@@ -30,3 +30,10 @@ export const OFFICES: CastName[] = ["apostle", "matron", "elder", "leader", "mem
 
 /** Text of every item, for "contains KTW" style assertions. */
 export const titles = (rows: unknown) => JSON.stringify(rows);
+
+/**
+ * The same without ids, for "never contains this number" assertions: a random
+ * cuid can contain any run of digits, which once made such a test fail in CI.
+ */
+export const valuesOf = (rows: unknown) =>
+  JSON.stringify(rows, (key, value) => (key === "id" ? undefined : value));
