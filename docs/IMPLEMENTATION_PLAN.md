@@ -921,7 +921,7 @@ the walk-through on production — was moved, per §4.11 and with the maintainer
       seeded per run); CI service container for it.
       *`npm run test:integration` creates a throwaway `church_it_<random>` database on the
       configured server, migrates and seeds it, and drops it afterwards. CI has a Postgres
-      service and an integration step, untested in CI while the Actions budget is exhausted.*
+      service and an integration step, green in CI since the repository went public.*
 - [x] Scope integration tests: for **every** `src/lib/data/*` function, a Member, a leader of
       another group, the Matron, the Elder and an Apostle each receive exactly the rows
       `SCOPE.md` §4.3 allows.
@@ -992,7 +992,10 @@ the walk-through on production — was moved, per §4.11 and with the maintainer
 - [x] `docs(plan): complete phase 6`.
 
 ### Exit criteria
-- [ ] All scope integration tests pass in CI.
+- [x] All scope integration tests pass in CI.
+      *[Run 39828105085](https://github.com/kudzaiprichard/church/actions/runs/39828105085) on
+      `a9690c5`: typecheck, lint, unit, integration and build all green. The first CI run of
+      them had found a flaky assertion — a random id containing "4000" — fixed in `a9690c5`.*
 - [x] ~~Deleting a sermon removes its audio from storage — its URL stops resolving.~~ *(Moved
       from Phase 4 on 2026-10-22.)* **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11).
 - [x] ~~The portal installs from the browser on an Android phone and an iPhone and opens on the
