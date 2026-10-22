@@ -837,7 +837,7 @@ teaser.
 - [x] `src/lib/dates.ts` birthday helpers (Harare, 29 Feb rule); `src/lib/data/birthdays.ts`;
       `/birthdays` (Today / Week / Month / All by month, search, group filter); dashboard banner
       and week card; `announceBirthdays` action.
-- [ ] `CRON_SECRET` in env; `vercel.json` crons; `/api/cron/daily` (birthdays, devotion of the
+- [x] `CRON_SECRET` in env; `vercel.json` crons; `/api/cron/daily` (birthdays, devotion of the
       day, pledge reminders, notification and session/token purges) and `/api/cron/reminders`
       (event reminders); all idempotent via `dedupeKey`.
 - [ ] PWA: manifest, icons (192, 512, maskable), linked from root layout; no caching of private

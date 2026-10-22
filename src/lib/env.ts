@@ -102,6 +102,13 @@ const schema = z
       z.string().regex(/^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$/, "must be a bucket name"),
     ),
     R2_PUBLIC_URL: blank(z.url({ protocol: /^https$/, error: "must be an https:// URL" })),
+
+    /**
+     * The shared secret Vercel Cron sends as `Authorization: Bearer …` to the
+     * scheduled jobs in `src/app/api/cron` (docs/SCOPE.md §9.21). Optional:
+     * without it the jobs refuse every call, so they simply do not run.
+     */
+    CRON_SECRET: blank(z.string().min(16, "must be at least 16 characters")),
   })
   .superRefine((value, ctx) => {
     const storage = [
@@ -184,6 +191,7 @@ function parseEnv(): Env {
       R2_SECRET_ACCESS_KEY: undefined,
       R2_BUCKET: undefined,
       R2_PUBLIC_URL: undefined,
+      CRON_SECRET: undefined,
     };
   }
 
