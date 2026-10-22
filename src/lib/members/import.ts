@@ -3,7 +3,8 @@ import { enrolmentSchema, type EnrolmentInput } from "./schema";
 /**
  * Reading the church's existing member list (docs/IMPLEMENTATION_PLAN.md,
  * Phase 6) — pure, so the rules are unit tested before anyone's real data
- * goes through them. `prisma/import-members.ts` is the command around it.
+ * goes through them. A CSV is read as it is; an Excel sheet is turned into
+ * the same text first (`cellText`, `encodeCsv`), so both meet one set of rules.
  *
  * Every row goes through the same `enrolmentSchema` as the enrolment form, so
  * an imported member meets exactly the rules a hand-enrolled one does: a
@@ -51,6 +52,30 @@ export function parseCsv(text: string): string[][] {
   }
   return rows.filter((cells) => cells.some((cell) => cell.trim() !== ""));
 }
+
+/** The inverse of `parseCsv`: quotes only the fields that need it, and changes nothing else. */
+export function encodeCsv(rows: readonly (readonly string[])[]): string {
+  const field = (value: string) =>
+    /[",\r\n]/.test(value) ? `"${value.replace(/"/g, '""')}"` : value;
+  return rows.map((row) => row.map(field).join(",")).join("\r\n") + "\r\n";
+}
+
+/**
+ * One cell of an Excel sheet as the text a CSV of it would hold. A cell
+ * formatted as a date arrives as a Date at UTC midnight of that day, so its
+ * UTC calendar date is the date that was typed; a number (a phone typed into a
+ * number cell) arrives as a number. Empty cells are null.
+ */
+export function cellText(value: unknown): string {
+  if (value === null || value === undefined) return "";
+  if (value instanceof Date)
+    return Number.isNaN(value.getTime()) ? "" : value.toISOString().slice(0, 10);
+  if (typeof value === "boolean") return value ? "TRUE" : "FALSE";
+  return String(value);
+}
+
+/** The largest spreadsheet the import reads, before it is turned into text. */
+export const XLSX_MAX_BYTES = 5_000_000;
 
 /** The columns the template uses, and the spellings people actually type. */
 const COLUMNS: Record<string, keyof RawRow> = {

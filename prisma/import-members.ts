@@ -1,5 +1,6 @@
 /**
- * Import the church's existing member list: `npm run members:import -- <file.csv> [flags]`.
+ * Import the church's existing member list: `npm run members:import -- <file> [flags]`,
+ * where the file is an Excel workbook (.xlsx, first sheet) or a CSV.
  *
  *   (no flags)        dry run — read and check every row, write a report, change nothing
  *   --commit --as <apostle email>
@@ -27,7 +28,7 @@ import "dotenv/config";
 import { readFileSync, statSync, writeFileSync } from "node:fs";
 
 import { toCsv } from "../src/lib/csv";
-import { TEMPLATE_HEADER } from "../src/lib/members/import";
+import { cellText, encodeCsv, TEMPLATE_HEADER, XLSX_MAX_BYTES } from "../src/lib/members/import";
 import {
   IMPORT_MAX_BYTES,
   checkImport,
@@ -54,6 +55,19 @@ async function actorFrom(email: string | undefined) {
   return actor;
 }
 
+/** The file as CSV text — an Excel workbook through the same conversion the portal uses. */
+async function readAsCsv(file: string) {
+  if (/\.xls$/i.test(file)) throw new Error("Save the .xls file as .xlsx (or CSV) first.");
+  if (!/\.xlsx$/i.test(file)) {
+    if (statSync(file).size > IMPORT_MAX_BYTES) throw new Error("The file is over 1 MB.");
+    return readFileSync(file, "utf8");
+  }
+  if (statSync(file).size > XLSX_MAX_BYTES) throw new Error("The workbook is over 5 MB.");
+  const { readSheet } = await import("read-excel-file/node");
+  const rows = await readSheet(file);
+  return encodeCsv(rows.map((row) => row.map(cellText)));
+}
+
 async function main() {
   const template = option("--template");
   if (template) {
@@ -68,8 +82,7 @@ async function main() {
   if (!file && !invite) throw new Error("Name the CSV file: npm run members:import -- members.csv");
 
   if (file) {
-    if (statSync(file).size > IMPORT_MAX_BYTES) throw new Error("The file is over 1 MB.");
-    const plan = await checkImport(readFileSync(file, "utf8"));
+    const plan = await checkImport(await readAsCsv(file));
 
     const report = `${file}.report.csv`;
     writeFileSync(

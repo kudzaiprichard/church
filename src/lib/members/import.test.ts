@@ -1,6 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import { normaliseDate, parseCsv, planImport, TEMPLATE_HEADER } from "./import";
+import {
+  cellText,
+  encodeCsv,
+  normaliseDate,
+  parseCsv,
+  planImport,
+  TEMPLATE_HEADER,
+} from "./import";
 
 const groups = new Map([
   ["youth alive", "g-youth"],
@@ -83,5 +90,54 @@ describe("planImport", () => {
   it("names columns it does not recognise, so a typo in the header is visible", () => {
     const plan = planImport(parseCsv("first_name,emial\nA,b"), groups, new Set());
     expect(plan.unknownColumns).toEqual(["emial"]);
+  });
+});
+
+describe("an Excel sheet", () => {
+  it("turns each kind of cell into the text a CSV would hold", () => {
+    expect(cellText(new Date(Date.UTC(2015, 2, 14)))).toBe("2015-03-14");
+    expect(cellText(263771234567)).toBe("263771234567");
+    expect(cellText(true)).toBe("TRUE");
+    expect(cellText(null)).toBe("");
+    expect(cellText("Youth Alive")).toBe("Youth Alive");
+  });
+
+  it("encodes rows that parseCsv reads back unchanged", () => {
+    const rows = [
+      ["a", 'say "hi"'],
+      ["x, y", "line\nbreak"],
+      ["+263 77", "=1+1"],
+    ];
+    expect(parseCsv(encodeCsv(rows))).toEqual(rows);
+  });
+
+  it("imports a sheet with date cells and a phone typed as a number", () => {
+    const header = TEMPLATE_HEADER.split(",");
+    const sheet: unknown[][] = [
+      header,
+      header.map(
+        (column) =>
+          ({
+            first_name: "Rudo",
+            last_name: "Moyo, Jr",
+            email: "rudo@example.org",
+            phone: 263771234567,
+            date_of_birth: new Date(Date.UTC(1990, 10, 3)),
+            groups: "Youth Alive",
+            baptism_date: new Date(Date.UTC(2015, 2, 14)),
+            baptism_location: "Main sanctuary",
+            conducted_by: "Apostle Takura James Makamba",
+          })[column] ?? null,
+      ),
+    ];
+    const text = encodeCsv(sheet.map((row) => row.map(cellText)));
+    const plan = planImport(parseCsv(text), groups, new Set());
+    expect(plan.problems).toEqual([]);
+    expect(plan.ready[0].input).toMatchObject({
+      lastName: "Moyo, Jr",
+      phone: "263771234567",
+      dateOfBirth: "1990-11-03",
+      baptismDate: "2015-03-14",
+    });
   });
 });

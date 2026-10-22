@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState, useTransition } from "react";
 
 import { FormError } from "@/app/(auth)/_components/form-parts";
+import { cellText, encodeCsv, XLSX_MAX_BYTES } from "@/lib/members/import";
 
 import { FormSuccess } from "../../_components/form-fields";
 import { Panel } from "../../_components/page-parts";
@@ -25,6 +26,29 @@ function plural(count: number, one: string, many = `${one}s`) {
   return `${count} ${count === 1 ? one : many}`;
 }
 
+/**
+ * The file's rows as CSV text. An Excel workbook is read here, in the
+ * browser — its first sheet only — so the server only ever receives text and
+ * holds a CSV and a workbook to exactly the same rules.
+ */
+async function readAsCsv(file: File): Promise<string> {
+  if (!/\.xlsx$/i.test(file.name)) {
+    if (/\.xls$/i.test(file.name)) {
+      throw new Error("That is an older Excel file (.xls). Open it in Excel and save it as .xlsx.");
+    }
+    return file.text();
+  }
+  if (file.size > XLSX_MAX_BYTES) throw new Error("That workbook is over 5 MB.");
+  const { readSheet } = await import("read-excel-file/browser");
+  let rows: unknown[][];
+  try {
+    rows = await readSheet(file);
+  } catch {
+    throw new Error("That workbook could not be read. Save it again as .xlsx, or as CSV.");
+  }
+  return encodeCsv(rows.map((row) => row.map(cellText)));
+}
+
 /** The check as a CSV the person can keep beside their spreadsheet, built in the browser. */
 function downloadReport(check: ImportCheck) {
   const cell = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
@@ -38,7 +62,7 @@ function downloadReport(check: ImportCheck) {
   });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
-  link.download = `${check.fileName.replace(/\.csv$/i, "")}-check.csv`;
+  link.download = `${check.fileName.replace(/\.(csv|xlsx)$/i, "")}-check.csv`;
   link.click();
   URL.revokeObjectURL(link.href);
 }
@@ -61,7 +85,13 @@ export function ImportForm({ notYetInvited: initialPending }: { notYetInvited: n
     setCheck(null);
     setError(undefined);
     setEnrolled(null);
-    setFile(chosen ? { name: chosen.name, text: await chosen.text() } : null);
+    setFile(null);
+    if (!chosen) return;
+    try {
+      setFile({ name: chosen.name, text: await readAsCsv(chosen) });
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : "That file could not be read.");
+    }
   }
 
   function runCheck() {
@@ -130,11 +160,11 @@ export function ImportForm({ notYetInvited: initialPending }: { notYetInvited: n
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <label className="grid min-w-0 flex-1 gap-1.5 text-sm font-medium">
-              CSV file
+              Spreadsheet (.xlsx or .csv)
               <input
                 key={inputKey}
                 type="file"
-                accept=".csv,text/csv"
+                accept=".xlsx,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 onChange={choose}
                 className="border-input bg-background file:bg-secondary file:text-primary h-10 w-full min-w-0 rounded-lg border text-sm file:mr-3 file:h-full file:cursor-pointer file:border-0 file:px-3 file:font-semibold focus:border-[var(--ring)] focus:ring-4 focus:ring-[color-mix(in_oklab,var(--ring)_18%,transparent)] focus:outline-none"
               />

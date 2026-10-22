@@ -44,7 +44,7 @@ export default async function ImportMembersPage() {
       <div className="grid max-w-4xl gap-4">
         <Panel
           title="1. Prepare the file"
-          description="Fill in the template in Excel or Google Sheets, then save or download it as CSV."
+          description="Fill in the template in Excel or Google Sheets. Upload the Excel workbook as it is (.xlsx, first sheet), or save it as CSV."
           action={
             <Link
               href="/members/import/template"
