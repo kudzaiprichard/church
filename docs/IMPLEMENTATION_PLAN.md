@@ -27,7 +27,7 @@ The single place to see where the build stands. Update it as described in
 | 3 | Finance | `feat/phase-3-finance` | ✅ Done | #18 | 2026-10-22 | 2026-10-22 |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ✅ Done | #19 | 2026-10-22 | 2026-10-22 |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ✅ Done | #20 | 2026-10-22 | 2026-10-22 |
-| 6 | Hardening & launch | `feat/phase-6-hardening` | ⬜ Not started | — | — | — |
+| 6 | Hardening & launch | `feat/phase-6-hardening` | 🟡 In progress | — | 2026-10-22 | — |
 
 **Legend:** ⬜ Not started · 🟡 In progress · ✅ Done · ⛔ Blocked (reason in the phase section)
 
@@ -889,16 +889,22 @@ and run `/api/cron/daily` twice: one notification → install the PWA on a phone
 
 ## Phase 6 — Hardening & launch
 
-**Status:** ⬜ Not started
+**Status:** 🟡 In progress
+**Started early:** on 2026-10-22 the maintainer chose to begin with the work that needs no
+external service or church data — the scope integration tests, the accessibility, 360 px and
+performance passes, the member import tool and the README — while the services and the data
+(below) are gathered. The phase is completed only once every entry criterion is met.
 **Branch:** `feat/phase-6-hardening`
 **Goal:** Prove the access rule holds everywhere, polish, and go live with real data.
 **Scope:** §10 (Testing, Definition of done), §11 (remaining decisions).
 **Depends on:** Phases 0–5.
 
 ### Entry criteria
-- [ ] Phase 5 ✅ and merged.
+- [x] Phase 5 ✅ and merged.
 - [ ] Q6 and Q7 answered (real project targets and real church contact details).
+      *Outstanding; the maintainer approved starting without them (see Started early).*
 - [ ] Existing member list available for import (spreadsheet), with baptism dates.
+      *Outstanding; the import tool is built and tested against a sample file meanwhile.*
 
 ### Deliverables
 - [ ] Integration test harness against Docker Postgres (separate test database, migrated and
