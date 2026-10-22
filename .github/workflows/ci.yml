@@ -3,6 +3,8 @@ name: CI
 on:
   pull_request:
     branches: [main]
+    # The defaults plus ready_for_review, so marking a draft ready runs the jobs it skipped.
+    types: [opened, synchronize, reopened, ready_for_review]
   push:
     branches: [main]
 

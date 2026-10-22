@@ -3,8 +3,9 @@
 Everything still to do to take the portal live, across all phases. Tick items here as they
 are done. Secrets never go in this file — it is in a public repository.
 
-Phases 0–6 are merged to `main` (2026-10-22). What follows is what the build could not finish
-on its own: outside services, church data, and the checks that need them. The step-by-step
+Phases 0–6 are done and merged to `main` (2026-10-22). What follows is **Phase 7 — Launch** in
+`IMPLEMENTATION_PLAN.md`, plus everything else that is open: the outside services, the church
+data, and the checks that need them. The step-by-step
 production setup, with how to check each step, is in [`PRODUCTION.md`](./PRODUCTION.md). This list is the
 same work, plus everything else that is open.
 
@@ -96,19 +97,18 @@ Steps are in `.env.example` under *File storage*.
 
 - [ ] Branch protection: the repo is public, so the "main protection" ruleset is now free to
       create (spec in `.docs/BRANCH_PROTECTION.md`) — not created yet, by choice.
-- [ ] Confirm CI (`Lint & build (web)`, including the integration tests) passes on the next
-      ready-for-review PR; it skips drafts.
+- [ ] CI runs on every non-draft PR to `main` (and now when a draft is marked ready); keep it
+      green. It passed, integration tests included, on PR #21.
 
-## 10. Launch checks (the rest of Phase 6's exit criteria)
+## 10. Launch checks (Phase 7's exit criteria)
 
-- [ ] All scope integration tests pass in CI.
 - [ ] Deleting a sermon removes its audio from storage (step 5).
 - [ ] The portal installs from the browser on an Android phone and an iPhone and opens on the
       dashboard.
 - [ ] Production serves real data; the leadership walk-through — one session per office
       (Apostle, Matron, Elder, a group leader, a member) — completes without defects.
-- [ ] Phase 6 marked ✅ in [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md) (`docs(plan): complete phase 6`), on a
-      new branch, since `feat/phase-6-hardening` was merged early.
+- [ ] Phase 7 marked ✅ in [`IMPLEMENTATION_PLAN.md`](./IMPLEMENTATION_PLAN.md)
+      (`docs(plan): complete phase 7`), on the branch `feat/phase-7-launch`.
 
 ## 11. Local clean-up (this machine)
 

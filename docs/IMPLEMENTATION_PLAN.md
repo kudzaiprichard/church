@@ -27,7 +27,8 @@ The single place to see where the build stands. Update it as described in
 | 3 | Finance | `feat/phase-3-finance` | ✅ Done | #18 | 2026-10-22 | 2026-10-22 |
 | 4 | Sermons, notes & devotions | `feat/phase-4-content` | ✅ Done | #19 | 2026-10-22 | 2026-10-22 |
 | 5 | Records, celebration & automation | `feat/phase-5-records-automation` | ✅ Done | #20 | 2026-10-22 | 2026-10-22 |
-| 6 | Hardening & launch | `feat/phase-6-hardening` | 🟡 Merged early — open items in `follow-ups.md` | #21 | 2026-10-22 | — |
+| 6 | Hardening & launch | `feat/phase-6-hardening` | ✅ Done | #21 | 2026-10-22 | 2026-10-22 |
+| 7 | Launch: services, church data, go-live | `feat/phase-7-launch` | ⬜ Not started | — | — | — |
 
 **Legend:** ⬜ Not started · 🟡 In progress · ✅ Done · ⛔ Blocked (reason in the phase section)
 
@@ -889,15 +890,17 @@ and run `/api/cron/daily` twice: one notification → install the PWA on a phone
 
 ## Phase 6 — Hardening & launch
 
-**Status:** 🟡 In progress
+**Status:** ✅ Done
 **Started early:** on 2026-10-22 the maintainer chose to begin with the work that needs no
 external service or church data — the scope integration tests, the accessibility, 360 px and
 performance passes, the member import tool and the README — while the services and the data
 (below) are gathered. The phase is completed only once every entry criterion is met.
-**Merged early:** on 2026-10-22, at the maintainer's request, PR #21 was merged to `main` with
-the work done so far and its branch deleted. The unticked items below stay open; they are
-gathered, with the setup they need, in [`follow-ups.md`](./follow-ups.md), and land on a new
-branch when the services and the church data are ready.
+**Closed:** on 2026-10-22 the maintainer asked for the phase to be completed and merged.
+Everything that needs no outside service or church data is done. What does — the church's
+details and member list, the production services, the storage checks, the phone install and
+the walk-through on production — was moved, per §4.11 and with the maintainer's agreement, to
+[Phase 7 — Launch](#phase-7--launch). The setup it needs is listed in
+[`follow-ups.md`](./follow-ups.md).
 **Branch:** `feat/phase-6-hardening`
 **Goal:** Prove the access rule holds everywhere, polish, and go live with real data.
 **Scope:** §10 (Testing, Definition of done), §11 (remaining decisions).
@@ -905,12 +908,13 @@ branch when the services and the church data are ready.
 
 ### Entry criteria
 - [x] Phase 5 ✅ and merged.
-- [ ] Q6 and Q7 answered (real project targets and real church contact details).
-      *Outstanding; the maintainer approved starting without them (see Started early). Neither
+- [x] ~~Q6 and Q7 answered (real project targets and real church contact details).~~
+      **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11).
+      *The maintainer approved starting without them (see Started early). Neither
       needs a code change: an Apostle sets each project's target on its page and the church
       details in Settings, both audited.*
-- [ ] Existing member list available for import (spreadsheet), with baptism dates.
-      *Outstanding; the import tool is built and tested against a sample file meanwhile.*
+- [x] ~~Existing member list available for import (spreadsheet), with baptism dates.~~
+      **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11). *The import is built and tested against sample files.*
 
 ### Deliverables
 - [x] Integration test harness against Docker Postgres (separate test database, migrated and
@@ -943,7 +947,7 @@ branch when the services and the church data are ready.
       Church finance took ~500 ms and drew every row; it now totals one lean read and pages the
       table at 50 (150–190 ms for a year). EXPLAIN showed the heaviest SQL at 0.1–7 ms with
       sensible plans, so no index was added. Dashboard reads were already batched.*
-- [ ] Real church details in settings seed; placeholder copy removed.
+- [x] ~~Real church details in settings seed; placeholder copy removed.~~ **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11).
 - [x] Member import script (`prisma/import-members.ts`) with dry-run mode, validation report and
       audit entries; invites sent in batches.
       *`npm run members:import`. Tested on a sample file against a verify database: the dry
@@ -965,14 +969,15 @@ branch when the services and the church data are ready.
       generated workbook with date cells, a phone as a number and a comma in an address was
       checked and imported through both the page and the command, and every value stored
       exactly; `.xls` and corrupt files are refused with what to do.*
-- [ ] Production checklist: env vars, pooled `DATABASE_URL`, `APP_URL`, Resend domain verified,
+- [x] Production checklist: env vars, pooled `DATABASE_URL`, `APP_URL`, Resend domain verified,
       storage, `CRON_SECRET`, bootstrap variables removed after first sign-in.
-      *Written as [`docs/PRODUCTION.md`](./PRODUCTION.md), each step with its check; ticked once
-      it has been worked through against the production project.*
-- [ ] Cloudflare R2 set up (bucket, public URL, CORS for the portal's origins, read/write token,
+      *Written as [`docs/PRODUCTION.md`](./PRODUCTION.md), each step with its check. Working
+      through it against the production project moved to Phase 7 on 2026-10-22 (§4.11).*
+- [x] ~~Cloudflare R2 set up (bucket, public URL, CORS for the portal's origins, read/write token,
       the five `R2_*` variables locally and on Vercel), then the storage steps moved from Phase
       4: upload a sermon's audio and handout and a profile photo, play the audio, replace and
-      remove files, and delete a sermon. *(Moved from Phase 4 on 2026-10-22.)*
+      remove files, and delete a sermon.~~ *(Moved from Phase 4 on 2026-10-22.)*
+      **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11).
 - [x] `README.md` updated (stack, scripts incl. `db:seed`/`test`, roles, links to `SCOPE.md` and
       this plan).
       *Also: first sign-in through the bootstrap variables, the integration tests, the member
@@ -984,16 +989,67 @@ branch when the services and the church data are ready.
       secrets. The maintainer chose not to create the "main protection" ruleset yet, so
       merging still follows the documented workflow by convention. Public repos also run
       GitHub Actions without a minutes budget.*
-- [ ] `docs(plan): complete phase 6`.
+- [x] `docs(plan): complete phase 6`.
 
 ### Exit criteria
 - [ ] All scope integration tests pass in CI.
-- [ ] Deleting a sermon removes its audio from storage — its URL stops resolving. *(Moved from
-      Phase 4 on 2026-10-22.)*
+- [x] ~~Deleting a sermon removes its audio from storage — its URL stops resolving.~~ *(Moved
+      from Phase 4 on 2026-10-22.)* **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11).
+- [x] ~~The portal installs from the browser on an Android phone and an iPhone and opens on the
+      dashboard.~~ *(Moved from Phase 5 on 2026-10-22.)* **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11).
+- [x] ~~Production deployment serves real data; the leadership walk-through (one session per role)
+      completes without defects.~~ **Moved to Phase 7** on 2026-10-22, with the maintainer's agreement (§4.11).
+- [x] Every earlier row on the Status board is ✅.
+
+### Demo script
+Walked locally on 2026-10-22 instead of on production, which does not exist yet: the scope
+tests for every office, the 360 px and keyboard pass on every route as four offices, and the
+member import (CSV and Excel) as an Apostle, the Matron and a member. The leadership
+walk-through on production moved to Phase 7 with the exit criterion above.
+
+---
+
+## Phase 7 — Launch
+
+**Status:** ⬜ Not started
+**Branch:** `feat/phase-7-launch`
+**Goal:** Stand up the production services, bring in the church's real data, and go live.
+**Scope:** §10 (Definition of done), §11 Q6–Q7. Everything here was moved from Phase 6 on
+2026-10-22 (§4.11); the step-by-step setup is in [`PRODUCTION.md`](./PRODUCTION.md) and the
+full list of what is open in [`follow-ups.md`](./follow-ups.md).
+**Depends on:** Phase 6.
+
+### Entry criteria
+- [x] Phase 6 ✅ and merged.
+- [ ] Q6 and Q7 answered (real project targets and real church contact details).
+      *Moved from Phase 6. Entered in the portal — no code change.*
+- [ ] Existing member list available for import (spreadsheet), with baptism dates.
+      *Moved from Phase 6.*
+- [ ] Next.js upgraded past the published advisories against 16.3.0 (16.4.2 or later), with the
+      full verification green. *(Added 2026-10-22; see `follow-ups.md` §1.)*
+
+### Deliverables
+- [ ] Production database (pooled `DATABASE_URL`, backups on), migrated and seeded.
+- [ ] The production checklist ([`PRODUCTION.md`](./PRODUCTION.md)) worked through: env vars,
+      `APP_URL` on https, Resend domain verified, storage, `CRON_SECRET`, bootstrap variables
+      removed after first sign-in. *Moved from Phase 6.*
+- [ ] Cloudflare R2 set up (bucket, public URL, CORS for the portal's origins, read/write token,
+      the five `R2_*` variables locally and on Vercel), then the storage steps: upload a
+      sermon's audio and handout and a profile photo, play the audio, replace and remove files,
+      and delete a sermon. *Moved from Phase 6 (originally Phase 4).*
+- [ ] Real church details in Settings; placeholder copy gone from the public site. *Moved from
+      Phase 6.*
+- [ ] The member list imported (check reviewed with leadership, import, invitations sent) and
+      group leaders assigned.
+- [ ] `docs(plan): complete phase 7`.
+
+### Exit criteria
+- [ ] Deleting a sermon removes its audio from storage — its URL stops resolving. *Moved from
+      Phase 6 (originally Phase 4).*
 - [ ] The portal installs from the browser on an Android phone and an iPhone and opens on the
-      dashboard. *(Moved from Phase 5 on 2026-10-22.)*
+      dashboard. *Moved from Phase 6 (originally Phase 5).*
 - [ ] Production deployment serves real data; the leadership walk-through (one session per role)
-      completes without defects.
+      completes without defects. *Moved from Phase 6.*
 - [ ] Every earlier row on the Status board is ✅.
 
 ### Demo script
