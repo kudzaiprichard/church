@@ -954,6 +954,13 @@ performance passes, the member import tool and the README — while the services
       judged by the audit log, so a purged token never brings a second email.
       `import-run.it.test.ts` covers the check, the all-or-nothing import and resumable
       invitations; walked in the browser as an Apostle, the Matron and a member at 360 px.*
+      *Excel workbooks too (2026-10-22, at the maintainer's request), in both: the first sheet of
+      an `.xlsx` is read with `read-excel-file` — in the browser on the portal, so the server
+      only ever receives text — and turned into the same CSV text, so a workbook and a CSV meet
+      one set of rules. Date cells become dates and number cells text (`cellText`, tested). A
+      generated workbook with date cells, a phone as a number and a comma in an address was
+      checked and imported through both the page and the command, and every value stored
+      exactly; `.xls` and corrupt files are refused with what to do.*
 - [ ] Production checklist: env vars, pooled `DATABASE_URL`, `APP_URL`, Resend domain verified,
       storage, `CRON_SECRET`, bootstrap variables removed after first sign-in.
       *Written as [`docs/PRODUCTION.md`](./PRODUCTION.md), each step with its check; ticked once
